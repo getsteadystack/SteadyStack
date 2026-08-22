@@ -11,7 +11,7 @@ import { importCmd } from "./commands/import-kuma.js";
 const program = new Command();
 
 program
-  .name("pulse")
+  .name("steadystack")
   .description(
     chalk.bold("SteadyStack CLI") +
       " — Monitoring as Code, live debugging, and CI/CD integration\n" +
@@ -29,7 +29,7 @@ program.addCommand(waitCmd);
 // Helpful aliases at the top level
 program.on("command:*", () => {
   console.error(chalk.red(`Unknown command: ${program.args.join(" ")}`));
-  console.log(chalk.dim("Run 'pulse --help' for available commands."));
+  console.log(chalk.dim("Run 'steadystack --help' or 'ss --help' for available commands."));
   process.exit(1);
 });
 

@@ -17,16 +17,17 @@
   "bugs": {
     "url": "https://github.com/getsteadystack/SteadyStack/issues"
   },
-  "license": "MIT",
+  "license": "Apache-2.0",
   "author": "SteadyStack Team",
   "repository": {
     "type": "git",
-    "url": "https://github.com/getsteadystack/SteadyStack",
+    "url": "git+https://github.com/getsteadystack/SteadyStack.git",
     "directory": "apps/cli"
   },
   "bin": {
-    "ss": "./dist/index.js",
-    "steadystack": "./dist/index.js"
+    "pulse": "dist/index.js",
+    "ss": "dist/index.js",
+    "steadystack": "dist/index.js"
   },
   "files": [
     "dist",
