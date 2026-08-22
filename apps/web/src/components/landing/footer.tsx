@@ -236,6 +236,23 @@ export default function LandingFooter() {
         {/* Featured Badges & Directories */}
         <div className="flex flex-wrap justify-center items-center gap-6 pt-8 border-t border-border/50">
           <a
+            href="https://www.producthunt.com/products/steadystack?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-steadystack"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="SteadyStack on Product Hunt"
+            className="transition-opacity hover:opacity-85"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1229492&theme=light&t=1787428498964"
+              width={250}
+              height={54}
+              alt="SteadyStack - Uptime monitoring that never pages you for nothing | Product Hunt"
+              loading="lazy"
+              className="block h-11 w-auto"
+            />
+          </a>
+          <a
             href="https://confettisaas.com/saas/steadystack-dev?ref=badge"
             target="_blank"
             rel="noopener noreferrer"
