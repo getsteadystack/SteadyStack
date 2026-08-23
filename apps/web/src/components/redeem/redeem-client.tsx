@@ -259,10 +259,10 @@ export function RedeemClient({
                       <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
                       <span>
                         {detectedTier === 3
-                          ? "500 Active Monitors"
+                          ? "1,500 Active Monitors"
                           : detectedTier === 2
-                            ? "150 Active Monitors"
-                            : "50 Active Monitors"}
+                            ? "250 Active Monitors"
+                            : "150 Active Monitors"}
                       </span>
                     </li>
                     <li className="flex items-center gap-2">

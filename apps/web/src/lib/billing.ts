@@ -190,7 +190,7 @@ export const PLAN_VERSIONS: Record<string, Record<PlanTier, Partial<PlanLimits>>
   },
   appsumo_tier_1: {
     INITIATE: {
-      maxMonitors: 50,
+      maxMonitors: 150,
       minIntervalSeconds: 60,
       maxAlertChannels: 10,
       maxStatusPages: 3,
@@ -200,7 +200,7 @@ export const PLAN_VERSIONS: Record<string, Record<PlanTier, Partial<PlanLimits>>
       maxManualChecksPerWindow: 5,
     },
     NETRUNNER: {
-      maxMonitors: 50,
+      maxMonitors: 150,
       minIntervalSeconds: 60,
       maxAlertChannels: 10,
       maxStatusPages: 3,
@@ -210,7 +210,7 @@ export const PLAN_VERSIONS: Record<string, Record<PlanTier, Partial<PlanLimits>>
       maxManualChecksPerWindow: 5,
     },
     CONSTRUCT: {
-      maxMonitors: 50,
+      maxMonitors: 150,
       minIntervalSeconds: 60,
       maxAlertChannels: 10,
       maxStatusPages: 3,
@@ -222,7 +222,7 @@ export const PLAN_VERSIONS: Record<string, Record<PlanTier, Partial<PlanLimits>>
   },
   appsumo_tier_2: {
     INITIATE: {
-      maxMonitors: 150,
+      maxMonitors: 250,
       minIntervalSeconds: 30,
       maxAlertChannels: 25,
       maxStatusPages: 10,
@@ -232,7 +232,7 @@ export const PLAN_VERSIONS: Record<string, Record<PlanTier, Partial<PlanLimits>>
       maxManualChecksPerWindow: 10,
     },
     NETRUNNER: {
-      maxMonitors: 150,
+      maxMonitors: 250,
       minIntervalSeconds: 30,
       maxAlertChannels: 25,
       maxStatusPages: 10,
@@ -242,15 +242,19 @@ export const PLAN_VERSIONS: Record<string, Record<PlanTier, Partial<PlanLimits>>
       maxManualChecksPerWindow: 10,
     },
     CONSTRUCT: {
-      maxMonitors: 1500,
-      minIntervalSeconds: 10,
-      maxAlertChannels: 250,
-      maxStatusPages: 75,
+      maxMonitors: 250,
+      minIntervalSeconds: 30,
+      maxAlertChannels: 25,
+      maxStatusPages: 10,
+      customDomainAllowed: true,
+      maxSeats: 10,
+      multiSeatAllowed: true,
+      maxManualChecksPerWindow: 10,
     },
   },
   appsumo_tier_3: {
     INITIATE: {
-      maxMonitors: 500,
+      maxMonitors: 1500,
       minIntervalSeconds: 10,
       maxAlertChannels: 250,
       maxStatusPages: 100,
@@ -260,7 +264,7 @@ export const PLAN_VERSIONS: Record<string, Record<PlanTier, Partial<PlanLimits>>
       maxManualChecksPerWindow: 0,
     },
     NETRUNNER: {
-      maxMonitors: 500,
+      maxMonitors: 1500,
       minIntervalSeconds: 10,
       maxAlertChannels: 250,
       maxStatusPages: 100,
@@ -270,7 +274,7 @@ export const PLAN_VERSIONS: Record<string, Record<PlanTier, Partial<PlanLimits>>
       maxManualChecksPerWindow: 0,
     },
     CONSTRUCT: {
-      maxMonitors: 500,
+      maxMonitors: 1500,
       minIntervalSeconds: 10,
       maxAlertChannels: 250,
       maxStatusPages: 100,
