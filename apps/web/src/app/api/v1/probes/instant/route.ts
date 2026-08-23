@@ -156,6 +156,7 @@ export async function POST(req: NextRequest) {
             "User-Agent": `SteadyStack-Edge-Probe/1.0 (${regionCode})`,
           },
           signal: controller.signal,
+          redirect: "error",
         });
         clearTimeout(timer);
 
