@@ -7,7 +7,7 @@ import LoginClient from "./login-client";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Log In",
+  title: "Log In | SteadyStack",
   description: "Sign in to your SteadyStack edge monitoring dashboard.",
   alternates: {
     canonical: "https://steadystack.dev/login",

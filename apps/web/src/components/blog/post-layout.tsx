@@ -221,8 +221,8 @@ export default function PostLayout({
                     <span>SteadyStack Free</span>
                   </div>
                   <p className="text-[11px] text-muted-foreground leading-relaxed mb-3">
-                    50 monitors, 60s intervals, 7 global edge regions, and multi-node quorum
-                    consensus.
+                    50 monitors (3m standard, 1m for first 10), 3 global edge regions, and 2-of-3
+                    quorum consensus.
                   </p>
                   <Link
                     href={"/auth/sign-up" as any}

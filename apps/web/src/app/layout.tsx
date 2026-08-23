@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
     default: "SteadyStack — Know the second your stack breaks",
-    template: "%s | SteadyStack",
+    template: "%s",
   },
   description:
     "Know the second your stack breaks. Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification, live latency tracking, and zero false positives — free for commercial use.",

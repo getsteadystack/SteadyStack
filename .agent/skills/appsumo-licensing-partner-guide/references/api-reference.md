@@ -5,6 +5,7 @@ Base URL: `https://api.licensing.appsumo.com/v2/`
 ## Authentication
 
 All requests require:
+
 ```
 X-AppSumo-Licensing-Key: YOUR_API_KEY
 ```
@@ -24,11 +25,13 @@ Find your API key in the AppSumo Partner Portal (hidden by default — click the
 List all licenses for your application.
 
 **Query parameters:**
+
 - `status` — Filter by `active`, `inactive`, or `deactivated`
 - `page` — Page number (starts at 1)
 - `limit` — Results per page (max 100)
 
 **Example:**
+
 ```
 GET https://api.licensing.appsumo.com/v2/licenses?limit=1&page=1&status=active
 ```
@@ -44,6 +47,7 @@ Fetch all license events for your application, with webhook responses (limited t
 **Query parameters:** `status`, `page`, `limit`
 
 **Example:**
+
 ```
 GET https://api.licensing.appsumo.com/v2/licenses/events?limit=1&page=1&status=active
 ```
@@ -55,6 +59,7 @@ GET https://api.licensing.appsumo.com/v2/licenses/events?limit=1&page=1&status=a
 Get details for a specific license.
 
 **Example:**
+
 ```
 GET https://api.licensing.appsumo.com/v2/licenses/2191a2c1-01a9-4060-8067-1b466484f21b
 ```
@@ -75,10 +80,10 @@ Get detailed webhook request/response history for a specific license. Useful for
 
 ## License Status Values
 
-| Status | Meaning |
-|--------|---------|
-| `inactive` | License exists but has not been activated yet |
-| `active` | License is active and the user has access |
+| Status        | Meaning                                                   |
+| ------------- | --------------------------------------------------------- |
+| `inactive`    | License exists but has not been activated yet             |
+| `active`      | License is active and the user has access                 |
 | `deactivated` | License has been deactivated (refund, cancellation, etc.) |
 
 ---
@@ -90,11 +95,13 @@ Get detailed webhook request/response history for a specific license. Useful for
 Retrieve your complete partner profile.
 
 **Example:**
+
 ```
 GET https://api.licensing.appsumo.com/v2/profile
 ```
 
 **Response includes:**
+
 - Profile ID and timestamps
 - `webhook_url` and `redirect_url`
 - `contacts` array (size + individual contact details: ID, name, email, timestamps)
@@ -112,6 +119,7 @@ Update your partner profile (webhook URL, redirect URL).
 Add a new contact to your partner profile. AppSumo uses contacts as a backup communication channel if direct app requests fail.
 
 **Required body:**
+
 ```json
 {
   "email": "developer@yourcompany.com",
@@ -120,6 +128,7 @@ Add a new contact to your partner profile. AppSumo uses contacts as a backup com
 ```
 
 **Example:**
+
 ```
 POST https://api.licensing.appsumo.com/v2/profile/contact
 ```
@@ -133,6 +142,7 @@ POST https://api.licensing.appsumo.com/v2/profile/contact
 Remove a contact. Get the `contact_id` from GET /profile.
 
 **Example:**
+
 ```
 DELETE https://api.licensing.appsumo.com/v2/profile/contact/19
 ```
@@ -144,6 +154,7 @@ DELETE https://api.licensing.appsumo.com/v2/profile/contact/19
 ## When to Use the API
 
 The API is **optional**. Common use cases:
+
 - Auditing: verify a license is still valid before granting access
 - Monthly sync: check that license statuses in your system match AppSumo's records
 - Debugging: inspect webhook response history to diagnose delivery failures

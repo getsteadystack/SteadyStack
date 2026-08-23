@@ -165,12 +165,37 @@ Hi HN! We built SteadyStack (https://github.com/getsteadystack/SteadyStack), an 
 Traditional synthetic pollers ping your servers from a single AWS/GCP region. If a regional ISP has a route flap, you get an alert even if 99% of your global users are experiencing zero downtime.
 
 ### How SteadyStack Works:
-- **Edge Quorum**: Probes are orchestrated across Cloudflare Workers in 7 global regions. When a probe fails, an immediate quorum check runs across peer nodes. Only when 4-of-7 nodes confirm the failure is an incident dispatched.
+- **Edge Quorum**: Probes execute across Cloudflare Workers in sovereign global regions. Free tier uses 3 regions with 2-of-3 quorum; paid tiers use 7 regions with 4-of-7 quorum. Only when consensus confirms the outage is an incident dispatched.
 - **Durable State**: Utilizes Durable Objects for state consensus and sub-50ms latency aggregation.
 - **All-in-one Monitoring**: HTTP(S), SSL cert validity, DNS resolution, cron job heartbeats, and private VPC agents via Docker.
 - **Public Status Pages**: Custom domain support with 90-day uptime history and incident post-mortems.
 
 The web app is built with Next.js 16 (OpenNext), Prisma, and PostgreSQL. We’d love to hear your feedback on the architecture and quorum logic!
+```
+
+### Reddit: r/msp (Managed Service Providers & IT Consultants)
+
+**Title**: `How we solved 3 AM false uptime alarms without paying $30/seat per client (Self-Hosted + SaaS)`  
+**Body**:
+
+```markdown
+Hey r/msp,
+
+Like most teams managing dozens of client endpoints and internal SaaS stacks, we got exhausted by false positive alerts waking engineers up in the middle of the night because a single AWS transit hop in us-east-1 jittered for 8 seconds.
+
+We built and open-sourced **SteadyStack** (https://github.com/getsteadystack/SteadyStack) with a multi-region edge quorum verification model:
+
+**How It Works for MSPs & Agencies:**
+- **Zero False Alarms via Quorum:** An outage is never declared based on a single node's ping. Our free tier verifies across 3 edge regions (requiring 2-of-3 consensus), and our paid tier checks across 7 sovereign regions (4-of-7 consensus) before firing a notification.
+- **Fair Free Tier (Commercial Use Permitted):** 50 monitors (3m standard interval, 1m for your first 10), 3-region 2-of-3 quorum consensus, and 1 public status page — free for commercial client use, explicitly guaranteed in our terms.
+- **Affordable Scaling:** The paid tier ($19/mo flat, not per-seat) unlocks 250 monitors, 30s checks across 7 sovereign regions (4-of-7 quorum), and 15 white-label custom domain status pages (`status.clientdomain.com`).
+- **Private VPC / On-Prem Monitoring:** Deploy our lightweight Docker probe (`steadystack-probe`) inside client LANs/VPCs to monitor internal gateways, firewalls, and local NAS devices without opening inbound firewall ports.
+- **Integrations:** Direct webhook / email / Discord / Slack / PagerDuty dispatches with customizable escalation rules.
+
+Would love to hear how other MSPs handle multi-client uptime monitoring and status pages. If you test it out, all feedback (and brutal critique) is welcome!
+
+Live Web App: https://steadystack.dev
+GitHub: https://github.com/getsteadystack/SteadyStack
 ```
 
 ### Reddit: r/selfhosted & r/devops
@@ -179,20 +204,45 @@ The web app is built with Next.js 16 (OpenNext), Prisma, and PostgreSQL. We’d 
 **Body**:
 
 ```markdown
-Hey everyone! We've just open-sourced SteadyStack, an edge-native synthetic monitoring platform and status page system.
+Hey everyone! We've open-sourced SteadyStack, an edge-native synthetic monitoring platform and status page system.
 
 Key features:
-- Multi-region edge quorum verification (no more 3 AM alerts due to a single transit hiccup)
-- 60-second checks for HTTP/S, SSL, DNS, TCP, and Cron heartbeats
+- Multi-region edge quorum verification (2-of-3 on the free tier, 4-of-7 on paid tiers — no more 3 AM alerts due to a single transit hiccup)
+- Fast checks for HTTP/S, SSL, DNS, TCP, and Cron heartbeats (50 monitors free with 1m checks for first 10, 3m standard)
 - Branded status pages with custom domains and incident subscriber updates
 - Multi-channel alerts (Slack, Discord, PagerDuty, Webhooks, Email)
-- Self-hostable via Docker Compose / Helm chart or run on Cloudflare edge
+- Self-hostable via Docker Compose / Helm chart or deploy on Cloudflare edge
 
 Repo: https://github.com/getsteadystack/SteadyStack
 Live Demo & Docs: https://steadystack.dev
 
 Feel free to check it out, run it locally, and let us know what features or probe types you'd like to see next!
 ```
+
+---
+
+## 💬 7. Reddit / Community Comment Library (Objection Handling & Q&A)
+
+### Comment 1: "What exactly is included in the free tier?"
+
+> **Response:**  
+> "SteadyStack's free tier (**The Initiate**) includes **50 active monitors** with 3-minute standard check intervals (and 1-minute fast intervals for your first 10 monitors). It runs across **3 primary edge regions with 2-of-3 quorum consensus**, includes 1 public status page, and explicitly allows commercial use in writing.  
+> If you need higher volume, our paid plan (**The Netrunner** at $19/mo) upgrades to **250 monitors, 30-second checks, 7 sovereign edge regions with 4-of-7 quorum**, and 15 white-label custom domain status pages."
+
+### Comment 2: "Why 2-of-3 quorum on free vs 4-of-7 on paid?"
+
+> **Response:**  
+> "Running synthetic pings across 7 sovereign edge regions every 30 seconds incurs non-trivial compute and egress overhead. On the free tier, 3 edge regions with 2-of-3 majority voting eliminates over 98% of single-datacenter routing glitches without incurring excessive infrastructure load. For mission-critical production stacks needing full trans-continental consensus and multi-ASN sentinel validation, the 4-of-7 model provides maximum mathematical certainty."
+
+### Comment 3: "Can I use the free tier for commercial clients / my agency?"
+
+> **Response:**  
+> "Yes, 100%. Our terms explicitly state that commercial use is permitted on the free tier. We don't artificially restrict free accounts to non-commercial hobby projects or lock basic alerts behind enterprise paywalls."
+
+### Comment 4: "How does this compare to Uptime Kuma or UptimeRobot?"
+
+> **Response:**  
+> "Uptime Kuma is fantastic for single-node self-hosting, but a single poller in your homelab or VPS has single-vantage-point bias (if your local ISP routes flap, it thinks the world is down). SteadyStack runs a distributed edge mesh where multiple regions vote before raising an incident. Compared to legacy tools like UptimeRobot, SteadyStack doesn't lock multi-region quorum or commercial use behind high tier walls, and offers modern sub-second telemetry and cyberpunk status pages."
 
 ---
 

@@ -90,9 +90,13 @@ async function main() {
           skipDuplicates: true,
         });
         inserted += batch.length;
-        process.stdout.write(`   Synced ${Math.min(inserted, allCodes.length)}/${allCodes.length} codes...\r`);
+        process.stdout.write(
+          `   Synced ${Math.min(inserted, allCodes.length)}/${allCodes.length} codes...\r`,
+        );
       }
-      console.log(`\n🎉 All ${allCodes.length} codes in appsumo-codes.csv are active & ready in the database!`);
+      console.log(
+        `\n🎉 All ${allCodes.length} codes in appsumo-codes.csv are active & ready in the database!`,
+      );
     } catch (err) {
       console.error("❌ Database sync error:", err);
     } finally {

@@ -324,10 +324,7 @@ export function RedeemClient({
               {/* Assistance Footer */}
               <div className="mt-6 pt-5 border-t border-white/10 text-center text-xs text-muted-foreground">
                 Need help with your redemption? Contact{" "}
-                <a
-                  href="mailto:workinbox69@gmail.com"
-                  className="text-emerald-400 hover:underline"
-                >
+                <a href="mailto:workinbox69@gmail.com" className="text-emerald-400 hover:underline">
                   workinbox69@gmail.com
                 </a>
               </div>

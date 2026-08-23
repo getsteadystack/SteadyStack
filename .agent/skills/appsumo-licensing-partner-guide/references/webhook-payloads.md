@@ -18,20 +18,20 @@ HTTP status must be `200`.
 
 ## Webhook Object Fields
 
-| Field | Type | Description |
-|-------|------|-------------|
-| `license_key` | string (UUID) | The license key for this event. RFC 4122 UUID. |
-| `prev_license_key` | string (UUID) | Previous license key. Only present on `upgrade` and `downgrade`. |
-| `event` | string | One of: `purchase`, `activate`, `upgrade`, `downgrade`, `migrate`, `deactivate` |
-| `event_timestamp` | integer | Unix timestamp (ms) when the webhook was sent. Changes on retry. |
-| `created_at` | integer | Unix timestamp (s) when the license was created. Does not change on retry. |
-| `license_status` | string | Current license status on AppSumo's side (`inactive`, `active`, `deactivated`) |
-| `tier` | integer | License tier number (1, 2, 3, ...) |
-| `test` | boolean | `true` for test/validation requests; ignore data but still return 200 + success |
-| `extra` | object | Metadata. Contains `reason` string explaining why the webhook fired. |
-| `partner_plan_name` | string | **Add-on only.** Identifier for the add-on type (e.g., `"add_on_user_seats"`). |
-| `parent_license_key` | string (UUID) | **Add-on only.** Links the add-on's license to its parent deal's license key. |
-| `unit_quantity` | integer | **Add-on only.** Number of units purchased (e.g., 15 seats, 1 white-label). |
+| Field                | Type          | Description                                                                     |
+| -------------------- | ------------- | ------------------------------------------------------------------------------- |
+| `license_key`        | string (UUID) | The license key for this event. RFC 4122 UUID.                                  |
+| `prev_license_key`   | string (UUID) | Previous license key. Only present on `upgrade` and `downgrade`.                |
+| `event`              | string        | One of: `purchase`, `activate`, `upgrade`, `downgrade`, `migrate`, `deactivate` |
+| `event_timestamp`    | integer       | Unix timestamp (ms) when the webhook was sent. Changes on retry.                |
+| `created_at`         | integer       | Unix timestamp (s) when the license was created. Does not change on retry.      |
+| `license_status`     | string        | Current license status on AppSumo's side (`inactive`, `active`, `deactivated`)  |
+| `tier`               | integer       | License tier number (1, 2, 3, ...)                                              |
+| `test`               | boolean       | `true` for test/validation requests; ignore data but still return 200 + success |
+| `extra`              | object        | Metadata. Contains `reason` string explaining why the webhook fired.            |
+| `partner_plan_name`  | string        | **Add-on only.** Identifier for the add-on type (e.g., `"add_on_user_seats"`).  |
+| `parent_license_key` | string (UUID) | **Add-on only.** Links the add-on's license to its parent deal's license key.   |
+| `unit_quantity`      | integer       | **Add-on only.** Number of units purchased (e.g., 15 seats, 1 white-label).     |
 
 ---
 
@@ -42,6 +42,7 @@ HTTP status must be `200`.
 Fires when a customer buys the product. Use this to pre-create a placeholder account.
 
 **Standard (no add-ons):**
+
 ```json
 {
   "license_key": "3794577c-3dbc-11ec-9bbc-0242ac130002",
@@ -54,6 +55,7 @@ Fires when a customer buys the product. Use this to pre-create a placeholder acc
 ```
 
 **With 2 deal add-ons (3 separate webhook calls):**
+
 ```json
 {
   "license_key": "9869ba65-cf39-405e-98db-6e2ca29f94fa",
@@ -67,6 +69,7 @@ Fires when a customer buys the product. Use this to pre-create a placeholder acc
   "unit_quantity": 1
 }
 ```
+
 ```json
 {
   "license_key": "9204570c-7832-47e2-8708-efb67d702995",
@@ -81,6 +84,7 @@ Fires when a customer buys the product. Use this to pre-create a placeholder acc
   "parent_license_key": "9869ba65-cf39-405e-98db-6e2ca29f94fa"
 }
 ```
+
 ```json
 {
   "license_key": "1a5eb69f-4fb3-4734-ba69-e6e9fdd7da1b",
@@ -97,6 +101,7 @@ Fires when a customer buys the product. Use this to pre-create a placeholder acc
 ```
 
 **Standalone add-on purchased after parent deal already activated** (triggers both `purchase` AND `activate` for the add-on):
+
 ```json
 {
   "license_key": "b0c3ceec-d4dd-4ca6-a074-744e08733729",
@@ -111,6 +116,7 @@ Fires when a customer buys the product. Use this to pre-create a placeholder acc
   "parent_license_key": "826315d7-1bfc-43d9-a3b4-ef80c47352b6"
 }
 ```
+
 ```json
 {
   "license_key": "b0c3ceec-d4dd-4ca6-a074-744e08733729",
@@ -135,6 +141,7 @@ Fires when a customer activates their license and begins the OAuth flow.
 Note: `license_status` is `"inactive"` — AppSumo activates it only after receiving a `200` response.
 
 **Standard:**
+
 ```json
 {
   "license_key": "3794577c-3dbc-11ec-9bbc-0242ac130002",
@@ -151,6 +158,7 @@ Note: `license_status` is `"inactive"` — AppSumo activates it only after recei
 ```
 
 **With 2 deal add-ons:**
+
 ```json
 {
   "license_key": "9869ba65-cf39-405e-98db-6e2ca29f94fa",
@@ -164,6 +172,7 @@ Note: `license_status` is `"inactive"` — AppSumo activates it only after recei
   "unit_quantity": 1
 }
 ```
+
 ```json
 {
   "license_key": "9204570c-7832-47e2-8708-efb67d702995",
@@ -206,6 +215,7 @@ A simultaneous `deactivate` event is sent for the old `license_key`.
 ```
 
 Simultaneous deactivate for old key:
+
 ```json
 {
   "license_key": "3794577c-3dbc-11ec-9bbc-0242ac130002",
@@ -222,6 +232,7 @@ Simultaneous deactivate for old key:
 ```
 
 **Upgrade with add-ons** (also sends `migrate` events for add-ons):
+
 ```json
 {
   "license_key": "5be40bfd-1f04-44e9-ab4f-cc0e8848415c",
@@ -236,6 +247,7 @@ Simultaneous deactivate for old key:
   "unit_quantity": 1
 }
 ```
+
 ```json
 {
   "license_key": "6e3d9ed5-96f8-47e9-9e37-cce4fcbd2fea",
@@ -344,10 +356,12 @@ Sent when saving/re-validating the webhook URL. Must return `200` + success resp
 ## Webhook Security (HMAC SHA256)
 
 AppSumo sends two headers with every webhook:
+
 - `X-Appsumo-Signature` — HMAC SHA256 encrypted value
 - `X-Appsumo-Timestamp` — Unix timestamp
 
 To verify (optional but recommended):
+
 1. Concatenate: `timestamp + request_body`
 2. Generate HMAC SHA256 using your API key as the secret
 3. Compare your generated hash against `X-Appsumo-Signature`

@@ -147,8 +147,8 @@ export function ServiceStatusCard({ service, initialProbe }: ServiceStatusCardPr
               <Globe2 className="h-3.5 w-3.5 text-cyan-500" />
               <span>Vantage Points</span>
             </div>
-            <div className="text-2xl font-bold font-mono text-foreground">6 Regions</div>
-            <p className="text-xs text-muted-foreground mt-0.5">NA, EU, APAC, SA, AF</p>
+            <div className="text-2xl font-bold font-mono text-foreground">7 Regions</div>
+            <p className="text-xs text-muted-foreground mt-0.5">NA, EU, APAC Edge DOs</p>
           </div>
 
           <div className="rounded-xl border border-border/80 bg-background/50 p-4">
@@ -159,7 +159,7 @@ export function ServiceStatusCard({ service, initialProbe }: ServiceStatusCardPr
             <div className="text-xl font-bold font-mono text-foreground truncate">
               {lastChecked}
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">Automated 10s mesh</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Edge consensus mesh</p>
           </div>
         </div>
 

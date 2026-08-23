@@ -43,6 +43,7 @@ AppSumo validates your OAuth Redirect URL by sending a GET request with no paylo
 ## Step 2: Get Your OAuth Credentials
 
 Once both URLs are successfully validated, AppSumo auto-generates:
+
 - `client_id`
 - `client_secret`
 
@@ -51,12 +52,14 @@ These appear in the Partner Portal. They're hidden by default — click the eye 
 ## Step 3: Get Your API Key
 
 Your API key is also in the Partner Portal (same eye-icon pattern). You'll use this for:
+
 - Authenticating Licensing API requests (`X-AppSumo-Licensing-Key` header)
 - Verifying webhook signatures (HMAC SHA256 shared secret)
 
 ## Step 4: Test with Developer Credits
 
 Once configured, AppSumo provides developer credits so you can:
+
 - Click the buy button on your product page
 - Receive real webhook payloads
 - Walk through the full OAuth activation flow

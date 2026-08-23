@@ -21,7 +21,9 @@ Single-origin uptime monitors query your endpoints from one static IP or datacen
 
 When any edge probe node detects a non-2xx status code or a timeout, it does **not** immediately fire an alert. Instead, it submits the failure event to the **LatencyAggregator Durable Object**.
 
-1. **Phase 1 (Probe Detection)**: Node `wnam` records a connection timeout.
-2. **Phase 2 (Immediate Quorum Trigger)**: The central orchestrator commands 6 additional sovereign nodes (`enam`, `weur`, `eeur`, `apac`, `apac-ne`, and the out-of-band `sentinel-hetzner` node) to execute immediate out-of-cycle confirmation checks.
-3. **Phase 3 (4-of-7 Consensus Evaluation)**: An incident is only declared if **4 or more of the 7 regions** confirm that the endpoint is unreachable.
-4. **Phase 4 (Dispatch)**: If consensus is reached, incident routing rules execute and push notifications to PagerDuty, Slack, or Webhooks.
+1. **Phase 1 (Probe Detection)**: A regional edge node records a connection failure or timeout.
+2. **Phase 2 (Immediate Quorum Trigger)**: The central orchestrator triggers out-of-cycle partner node confirmations across independent regions.
+3. **Phase 3 (Consensus Evaluation)**:
+   - **Free Tier ("The Initiate")**: Requires **2 of 3 primary edge regions** to confirm the failure.
+   - **Paid Tiers ("The Netrunner" / "The Construct")**: Requires **4 of 7 sovereign edge regions** (including out-of-band multi-ASN sentinel nodes) to confirm failure.
+4. **Phase 4 (Dispatch)**: If consensus threshold is reached, incident routing rules execute and push notifications to PagerDuty, Slack, Discord, or Webhooks.

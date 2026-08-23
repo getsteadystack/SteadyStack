@@ -15,7 +15,9 @@ export async function POST(req: NextRequest) {
 
     // Optional partner token verification
     if (appsumoSecret && authHeader && authHeader !== `Bearer ${appsumoSecret}`) {
-      console.warn("[AppSumo Webhook] Authorization header did not match secret, proceeding in permissive mode.");
+      console.warn(
+        "[AppSumo Webhook] Authorization header did not match secret, proceeding in permissive mode.",
+      );
     }
 
     const body: any = await req.json().catch(() => ({}));
@@ -24,32 +26,28 @@ export async function POST(req: NextRequest) {
     const event = (body.event || body.action || "activate").toString().trim().toLowerCase();
 
     // Normalize license key (supports v2 license_key, prev_license_key, and legacy code/uuid fields)
-    const rawKey = (
-      body.license_key ||
-      body.code ||
-      body.invoice_item_uuid ||
-      body.uuid ||
-      ""
-    ).toString().trim().toUpperCase();
+    const rawKey = (body.license_key || body.code || body.invoice_item_uuid || body.uuid || "")
+      .toString()
+      .trim()
+      .toUpperCase();
 
     const prevLicenseKey = (body.prev_license_key || "").toString().trim().toUpperCase();
 
     // Normalize tier (1, 2, or 3)
-    const tierNumber = Number(
-      body.tier ||
-      body.plan_id?.replace(/[^0-9]/g, "") ||
-      1
-    );
+    const tierNumber = Number(body.tier || body.plan_id?.replace(/[^0-9]/g, "") || 1);
     const tier = Math.min(Math.max(tierNumber, 1), 3);
 
     // Handle test event or validation probe
     if (event === "test" || body.test === true || !rawKey) {
-      return NextResponse.json({
-        success: true,
-        message: "success",
-        status: "success",
-        event: event || "test",
-      }, { status: 200 });
+      return NextResponse.json(
+        {
+          success: true,
+          message: "success",
+          status: "success",
+          event: event || "test",
+        },
+        { status: 200 },
+      );
     }
 
     const licenseKey = rawKey;
@@ -63,12 +61,15 @@ export async function POST(req: NextRequest) {
         });
 
         if (existing && existing.status === "REDEEMED") {
-          return NextResponse.json({
-            success: true,
-            message: "success",
-            status: "success",
-            already_redeemed: true,
-          }, { status: 200 });
+          return NextResponse.json(
+            {
+              success: true,
+              message: "success",
+              status: "success",
+              already_redeemed: true,
+            },
+            { status: 200 },
+          );
         }
 
         if (existing) {
@@ -93,12 +94,15 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        return NextResponse.json({
-          success: true,
-          message: "success",
-          status: "success",
-          redirect_url: `https://steadystack.dev/redeem?code=${encodeURIComponent(licenseKey)}`,
-        }, { status: 200 });
+        return NextResponse.json(
+          {
+            success: true,
+            message: "success",
+            status: "success",
+            redirect_url: `https://steadystack.dev/redeem?code=${encodeURIComponent(licenseKey)}`,
+          },
+          { status: 200 },
+        );
       }
 
       // 2. Upgrade / Downgrade Events
@@ -170,12 +174,15 @@ export async function POST(req: NextRequest) {
           });
         }
 
-        return NextResponse.json({
-          success: true,
-          message: "success",
-          status: "success",
-          tier,
-        }, { status: 200 });
+        return NextResponse.json(
+          {
+            success: true,
+            message: "success",
+            status: "success",
+            tier,
+          },
+          { status: 200 },
+        );
       }
 
       // 3. Deactivation / Refund Events
@@ -237,36 +244,48 @@ export async function POST(req: NextRequest) {
           }
         }
 
-        return NextResponse.json({
-          success: true,
-          message: "success",
-          status: "success",
-        }, { status: 200 });
+        return NextResponse.json(
+          {
+            success: true,
+            message: "success",
+            status: "success",
+          },
+          { status: 200 },
+        );
       }
 
       default:
-        return NextResponse.json({
-          success: true,
-          message: "success",
-          status: "success",
-        }, { status: 200 });
+        return NextResponse.json(
+          {
+            success: true,
+            message: "success",
+            status: "success",
+          },
+          { status: 200 },
+        );
     }
   } catch (error: any) {
     console.error("AppSumo partner webhook error:", error);
-    return NextResponse.json({
-      success: true,
-      message: "success",
-      fallback: true,
-    }, { status: 200 });
+    return NextResponse.json(
+      {
+        success: true,
+        message: "success",
+        fallback: true,
+      },
+      { status: 200 },
+    );
   }
 }
 
 export async function GET() {
-  return NextResponse.json({
-    success: true,
-    message: "success",
-    status: "active",
-    service: "SteadyStack AppSumo Licensing v2 API",
-    docs: "https://docs.licensing.appsumo.com",
-  }, { status: 200 });
+  return NextResponse.json(
+    {
+      success: true,
+      message: "success",
+      status: "active",
+      service: "SteadyStack AppSumo Licensing v2 API",
+      docs: "https://docs.licensing.appsumo.com",
+    },
+    { status: 200 },
+  );
 }

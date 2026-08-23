@@ -49,7 +49,8 @@ export function ConversionCta({ service }: ConversionCtaProps) {
               <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
             </Link>
             <p className="text-xs text-muted-foreground text-center mt-2">
-              Free 50 monitors • 10s intervals • No credit card required
+              Free 50 monitors • 3m standard (1m for first 10) • 2-of-3 Edge Quorum • No credit card
+              required
             </p>
           </div>
         </div>

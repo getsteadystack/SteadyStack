@@ -7,7 +7,7 @@ import SignupClient from "./signup-client";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Get Started Free",
+  title: "Get Started Free | SteadyStack",
   description:
     "Create your SteadyStack account. Start monitoring up to 50 endpoints with multi-region edge quorum consensus and commercial use permitted in writing.",
   alternates: {

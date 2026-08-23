@@ -42,18 +42,19 @@ For full setup walkthrough: see `references/quick-start.md`
 
 AppSumo sends webhook events for these license actions:
 
-| Event | When it fires |
-|-------|--------------|
-| `purchase` | Customer buys the product |
-| `activate` | Customer activates their license |
-| `upgrade` | Customer upgrades to a higher tier |
-| `downgrade` | Customer downgrades to a lower tier |
-| `migrate` | Add-on-specific: fires on upgrade/downgrade of a parent deal |
+| Event        | When it fires                                                          |
+| ------------ | ---------------------------------------------------------------------- |
+| `purchase`   | Customer buys the product                                              |
+| `activate`   | Customer activates their license                                       |
+| `upgrade`    | Customer upgrades to a higher tier                                     |
+| `downgrade`  | Customer downgrades to a lower tier                                    |
+| `migrate`    | Add-on-specific: fires on upgrade/downgrade of a parent deal           |
 | `deactivate` | License is deactivated (refund, cancellation, or AppSumo staff action) |
 
 **Test webhooks**: When saving a webhook URL in the Partner Portal, AppSumo sends a test POST with `"test": true`. The endpoint must return `200` with `{"event": "purchase", "success": true}` (or the event type received). Do not trigger real product actions for test events.
 
 **Required response format** for any webhook:
+
 ```json
 {
   "event": "activate",
@@ -62,6 +63,7 @@ AppSumo sends webhook events for these license actions:
 ```
 
 **Important nuances:**
+
 - On `activate`: `license_status` will be `"inactive"` in the payload — AppSumo only marks it active after receiving a successful `200` response from the partner.
 - On `deactivate`: `license_status` will be `"active"` in the payload — AppSumo deactivates it after the partner responds with `200`.
 - On `upgrade`/`downgrade`: A new `license_key` UUID is always generated. The old key receives a simultaneous `deactivate` event. Use `prev_license_key` to find the existing user and update their key and tier.
@@ -72,6 +74,7 @@ For full webhook payload examples (including add-on payloads): see `references/w
 ### Webhook Security (HMAC SHA256)
 
 AppSumo signs every webhook with two headers:
+
 - `X-Appsumo-Signature` — HMAC SHA256 of `timestamp + request_body`, signed with the shared API key
 - `X-Appsumo-Timestamp` — Unix timestamp of when the request was sent
 
@@ -85,19 +88,23 @@ After a purchase, customers activate via OAuth. The flow:
 
 **Step 1 — Extract the `code`**
 After user consent, AppSumo redirects to the partner's OAuth Redirect URL with a `?code=` parameter.
+
 ```
 https://your-url.com/?code=1d512d96ba99465ba9942bdf282233ea
 ```
+
 The code is **single-use** — it expires after first use or if the OAuth attempt fails.
 
 **Step 2 — Fetch an access token**
 POST to `https://appsumo.com/openid/token/` with:
+
 - `client_id` and `client_secret`
 - `redirect_uri` (must match exactly what's in the Partner Portal)
 - `code` from Step 1
 - `grant_type`: `authorization_code`
 
 Response:
+
 ```json
 {
   "access_token": "82b35f3d810f4cf49dd7a52d4b22a594",
@@ -112,6 +119,7 @@ Response:
 GET `https://appsumo.com/openid/license_key/?access_token=YOUR_ACCESS_TOKEN`
 
 Response:
+
 ```json
 {
   "license_key": "d8bfa201-d8c0-4bc8-a27c-b1c12efa4a5a",
@@ -122,11 +130,11 @@ Response:
 
 **Step 4 — Handle the user**
 
-| License status | Meaning | Action |
-|---------------|---------|--------|
-| `active` | Previously activated | Log the user in |
-| `inactive` | Valid but not yet activated | Create account, activate license, grant access |
-| `deactivated` | No longer valid | Restrict/disable access |
+| License status | Meaning                     | Action                                         |
+| -------------- | --------------------------- | ---------------------------------------------- |
+| `active`       | Previously activated        | Log the user in                                |
+| `inactive`     | Valid but not yet activated | Create account, activate license, grant access |
+| `deactivated`  | No longer valid             | Restrict/disable access                        |
 
 When the access token expires (`401 Unauthorized`), use `refresh_token` to get a new one via POST to `https://appsumo.com/openid/token/`.
 
@@ -144,17 +152,17 @@ Base URL: `https://api.licensing.appsumo.com/v2/`
 
 ### Endpoints
 
-| Method | Endpoint | Description |
-|--------|----------|-------------|
-| GET | `/licenses` | List all licenses (filter by status, paginate) |
-| GET | `/licenses/events` | List all license events |
-| GET | `/licenses/:license_key` | Get a specific license |
-| GET | `/licenses/:license_key/events` | Get events for a specific license |
-| GET | `/licenses/:license_key/webhook-responses` | Get webhook response history for a license |
-| GET | `/profile` | Get partner profile (webhook URL, redirect URL, contacts) |
-| PUT | `/profile` | Update partner profile |
-| POST | `/profile/contact` | Add a contact (requires `email` and `name`) |
-| DELETE | `/profile/contact/:contact_id` | Remove a contact |
+| Method | Endpoint                                   | Description                                               |
+| ------ | ------------------------------------------ | --------------------------------------------------------- |
+| GET    | `/licenses`                                | List all licenses (filter by status, paginate)            |
+| GET    | `/licenses/events`                         | List all license events                                   |
+| GET    | `/licenses/:license_key`                   | Get a specific license                                    |
+| GET    | `/licenses/:license_key/events`            | Get events for a specific license                         |
+| GET    | `/licenses/:license_key/webhook-responses` | Get webhook response history for a license                |
+| GET    | `/profile`                                 | Get partner profile (webhook URL, redirect URL, contacts) |
+| PUT    | `/profile`                                 | Update partner profile                                    |
+| POST   | `/profile/contact`                         | Add a contact (requires `email` and `name`)               |
+| DELETE | `/profile/contact/:contact_id`             | Remove a contact                                          |
 
 Query params for list endpoints: `status` (active/inactive/deactivated), `page`, `limit` (max 100).
 
@@ -171,6 +179,7 @@ Add-ons are supplementary purchases attached to a parent deal (e.g., extra seats
 **How to identify an add-on webhook**: presence of `parent_license_key` field — this links the add-on's `license_key` to its parent deal's `license_key`.
 
 **Add-on specific fields**:
+
 - `parent_license_key` — UUID of the parent deal's license
 - `partner_plan_name` — identifier for the add-on type (e.g., `"add_on_user_seats"`)
 - `unit_quantity` — number of units purchased
@@ -182,31 +191,39 @@ Add-ons are supplementary purchases attached to a parent deal (e.g., extra seats
 ## Common Troubleshooting
 
 **403 Forbidden during OAuth**
+
 - `redirect_uri` doesn't match exactly what's in the Partner Portal — check for trailing slashes, http vs https, etc.
 - The `code` has already been used or expired — restart the activation process to get a fresh code
 - `client_id` or `client_secret` is wrong
 
 **Webhook not saving in Partner Portal**
+
 - Endpoint must return `200 OK` with `{"event": "<event_type>", "success": true}` for test events
 - Check that your server accepts POST requests from `appsumo.com`
 
 **Webhook URL validation fails**
+
 - Ensure the endpoint is publicly accessible (not localhost or behind a firewall)
 - Ensure it returns HTTP 200 (not 201, not 204)
 
 **Upgrade/downgrade: can't find the user**
+
 - Use `prev_license_key` to look up the existing user, then replace with the new `license_key` and update the tier
 
 **`activate` event but license_status is `inactive`**
+
 - This is correct behavior. AppSumo marks the license active only after receiving a 200 response from the partner. Return a success response and activate the user in your system.
 
 **How to collect user email**
+
 - AppSumo does not send emails in webhooks. Collect email during the OAuth redirect flow — when the user lands on your `redirect_uri`, prompt them to create an account with email/password.
 
 **Manually triggering webhook events**
+
 - Do not do this. AppSumo exclusively manages all webhook events. Contact AppSumo support if you need a manual event — self-listed partners: support@appsumo.com, Select Partners: reach out via Slack.
 
 **Resetting OAuth/Webhook URLs after going live**
+
 - Contact your Launch Operations Associate to invalidate and reopen URLs for testing. Do not change these URLs on a live product without coordinating with AppSumo — it will break the connection.
 
 ---

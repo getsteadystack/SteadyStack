@@ -186,11 +186,11 @@ export default function Hero() {
             </div>
             <div className="text-[10px] font-bold text-muted-foreground tracking-widest font-mono uppercase flex items-center gap-1.5">
               <Server className="size-3 text-primary" />
-              STEADYSTACK_7_REGION_CONSENSUS_TELEMETRY
+              STEADYSTACK_CONSENSUS_TELEMETRY
             </div>
             <div className="flex items-center gap-2 text-[10px] font-mono text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
               <span className="size-1.5 rounded-full bg-primary animate-ping" />
-              200 OK (4/7 Quorum Active)
+              200 OK (Quorum Verified · 2/3 Free · 4/7 Pro)
             </div>
           </div>
 
