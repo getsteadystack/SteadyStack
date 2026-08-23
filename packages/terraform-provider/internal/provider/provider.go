@@ -96,6 +96,8 @@ func (p *SteadyStackProvider) Resources(ctx context.Context) []func() resource.R
 	return []func() resource.Resource{
 		resources.NewMonitorResource,
 		resources.NewAlertChannelResource,
+		resources.NewStatusPageResource,
+		resources.NewAlertRuleResource,
 	}
 }
 

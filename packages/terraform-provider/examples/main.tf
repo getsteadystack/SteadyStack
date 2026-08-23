@@ -61,3 +61,38 @@ resource "steadystack_monitor" "api_production" {
 
   tags = ["production", "api", "critical"]
 }
+
+# Configure Alert Routing Rules
+resource "steadystack_alert_rule" "api_down_alert" {
+  monitor_id    = steadystack_monitor.api_production.id
+  trigger       = "STATUS_CHANGE"
+  target_status = "DOWN"
+  enabled       = true
+  channel_ids   = [
+    steadystack_alert_channel.pagerduty_sre.id,
+    steadystack_alert_channel.opsgenie_oncall.id,
+  ]
+}
+
+resource "steadystack_alert_rule" "api_latency_alert" {
+  monitor_id  = steadystack_monitor.api_production.id
+  trigger     = "LATENCY"
+  threshold   = 1500 # Alert if latency > 1500ms
+  comparison  = "GT"
+  enabled     = true
+  channel_ids = [
+    steadystack_alert_channel.pagerduty_sre.id,
+  ]
+}
+
+# Manage Public or Private Status Page
+resource "steadystack_status_page" "public_status" {
+  slug               = "acme-status"
+  title              = "ACME Production Status"
+  description        = "Real-time uptime and incident reporting for ACME services"
+  custom_domain      = "status.example.com"
+  is_private         = false
+  show_uptime        = true
+  show_response_time = true
+  history_days       = 90
+}

@@ -42,6 +42,38 @@ type AlertChannel struct {
 	Config map[string]interface{} `json:"config"`
 }
 
+type StatusPage struct {
+	ID               string                 `json:"id,omitempty"`
+	Slug             string                 `json:"slug"`
+	Title            string                 `json:"title"`
+	Description      string                 `json:"description,omitempty"`
+	CustomDomain     string                 `json:"customDomain,omitempty"`
+	IsPrivate        bool                   `json:"isPrivate"`
+	Password         string                 `json:"password,omitempty"`
+	Theme            map[string]interface{} `json:"theme,omitempty"`
+	ShowUptime       bool                   `json:"showUptime"`
+	ShowResponseTime bool                   `json:"showResponseTime"`
+	HistoryDays      int64                  `json:"historyDays"`
+}
+
+type AlertRuleChannel struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+type AlertRule struct {
+	ID           string             `json:"id,omitempty"`
+	MonitorID    string             `json:"monitorId"`
+	Trigger      string             `json:"trigger"`
+	Threshold    *int64             `json:"threshold,omitempty"`
+	Comparison   string             `json:"comparison,omitempty"`
+	TargetStatus string             `json:"targetStatus,omitempty"`
+	Enabled      bool               `json:"enabled"`
+	ChannelIDs   []string           `json:"channelIds,omitempty"`
+	Channels     []AlertRuleChannel `json:"channels,omitempty"`
+}
+
 type Region struct {
 	Code     string `json:"code"`
 	Name     string `json:"name"`
@@ -213,6 +245,154 @@ func (c *Client) UpdateAlertChannel(id string, ch *AlertChannel) (*AlertChannel,
 
 func (c *Client) DeleteAlertChannel(id string) error {
 	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v1/alert-channels/%s", c.HostURL, id), nil)
+	if err != nil {
+		return err
+	}
+
+	return c.sendRequest(req, nil)
+}
+
+// --- Status Page Operations ---
+
+func (c *Client) GetStatusPage(id string) (*StatusPage, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/v1/status-pages/%s", c.HostURL, id), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp APIResponse[StatusPage]
+	if err := c.sendRequest(req, &resp); err != nil {
+		return nil, err
+	}
+
+	return &resp.Data, nil
+}
+
+func (c *Client) CreateStatusPage(sp *StatusPage) (*StatusPage, error) {
+	payload, err := json.Marshal(sp)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/v1/status-pages", c.HostURL), bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	var resp APIResponse[StatusPage]
+	if err := c.sendRequest(req, &resp); err != nil {
+		return nil, err
+	}
+
+	return &resp.Data, nil
+}
+
+func (c *Client) UpdateStatusPage(id string, sp *StatusPage) (*StatusPage, error) {
+	payload, err := json.Marshal(sp)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/api/v1/status-pages/%s", c.HostURL, id), bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	var resp APIResponse[StatusPage]
+	if err := c.sendRequest(req, &resp); err != nil {
+		return nil, err
+	}
+
+	return &resp.Data, nil
+}
+
+func (c *Client) DeleteStatusPage(id string) error {
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v1/status-pages/%s", c.HostURL, id), nil)
+	if err != nil {
+		return err
+	}
+
+	return c.sendRequest(req, nil)
+}
+
+// --- Alert Rule Operations ---
+
+func (c *Client) GetAlertRule(id string) (*AlertRule, error) {
+	req, err := http.NewRequest("GET", fmt.Sprintf("%s/api/v1/alert-rules/%s", c.HostURL, id), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	var resp APIResponse[AlertRule]
+	if err := c.sendRequest(req, &resp); err != nil {
+		return nil, err
+	}
+
+	// Populate ChannelIDs from Channels relation if not present
+	if len(resp.Data.ChannelIDs) == 0 && len(resp.Data.Channels) > 0 {
+		resp.Data.ChannelIDs = make([]string, len(resp.Data.Channels))
+		for i, ch := range resp.Data.Channels {
+			resp.Data.ChannelIDs[i] = ch.ID
+		}
+	}
+
+	return &resp.Data, nil
+}
+
+func (c *Client) CreateAlertRule(ar *AlertRule) (*AlertRule, error) {
+	payload, err := json.Marshal(ar)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", fmt.Sprintf("%s/api/v1/alert-rules", c.HostURL), bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	var resp APIResponse[AlertRule]
+	if err := c.sendRequest(req, &resp); err != nil {
+		return nil, err
+	}
+
+	if len(resp.Data.ChannelIDs) == 0 && len(resp.Data.Channels) > 0 {
+		resp.Data.ChannelIDs = make([]string, len(resp.Data.Channels))
+		for i, ch := range resp.Data.Channels {
+			resp.Data.ChannelIDs[i] = ch.ID
+		}
+	}
+
+	return &resp.Data, nil
+}
+
+func (c *Client) UpdateAlertRule(id string, ar *AlertRule) (*AlertRule, error) {
+	payload, err := json.Marshal(ar)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("PATCH", fmt.Sprintf("%s/api/v1/alert-rules/%s", c.HostURL, id), bytes.NewBuffer(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	var resp APIResponse[AlertRule]
+	if err := c.sendRequest(req, &resp); err != nil {
+		return nil, err
+	}
+
+	if len(resp.Data.ChannelIDs) == 0 && len(resp.Data.Channels) > 0 {
+		resp.Data.ChannelIDs = make([]string, len(resp.Data.Channels))
+		for i, ch := range resp.Data.Channels {
+			resp.Data.ChannelIDs[i] = ch.ID
+		}
+	}
+
+	return &resp.Data, nil
+}
+
+func (c *Client) DeleteAlertRule(id string) error {
+	req, err := http.NewRequest("DELETE", fmt.Sprintf("%s/api/v1/alert-rules/%s", c.HostURL, id), nil)
 	if err != nil {
 		return err
 	}

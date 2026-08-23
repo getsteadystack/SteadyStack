@@ -286,6 +286,22 @@ export default function LandingFooter() {
               className="block h-11 w-auto"
             />
           </a>
+          <a
+            href="https://aixcollection.com/ai/steadystack"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="SteadyStack on AI X Collection"
+            className="transition-opacity hover:opacity-85"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://aixcollection.com/assets/images/badge-dark.png"
+              alt="AI X Collection"
+              height={54}
+              loading="lazy"
+              className="block h-11 w-auto"
+            />
+          </a>
         </div>
 
         {/* Footer Bottom */}
