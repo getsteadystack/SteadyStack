@@ -32,6 +32,12 @@ export const DOCS_NAVIGATION: NavSection[] = [
     items: [
       { title: "Monitors", slug: "monitors", href: "/docs/monitors" },
       {
+        title: "Response Assertions",
+        slug: "response-assertions",
+        href: "/docs/response-assertions",
+        badge: "Payload",
+      },
+      {
         title: "Quorum Consensus",
         slug: "quorum-consensus",
         href: "/docs/quorum-consensus",

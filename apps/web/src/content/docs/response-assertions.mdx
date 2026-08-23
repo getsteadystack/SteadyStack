@@ -1,0 +1,167 @@
+---
+title: "Response Assertions & Payload Validation"
+description: "Define expectations on HTTP status codes, body text, JSON paths, and regex patterns to catch silent 200 OK failures."
+section: "Synthetic Surveillance"
+order: 3.5
+badge: "Payload"
+lastUpdated: "2026-08-22"
+---
+
+An assertion is a validation rule that instructs SteadyStack on what a healthy response looks like beyond just "the web server replied."
+
+Without assertions, a monitor reports `UP` whenever a server responds — even if that response is a soft 200 error page, a database connection failure splash screen, or a JSON payload with `"status": "degraded"`. Assertions eliminate silent outages by enforcing that the response strictly satisfies your payload contracts.
+
+When any assertion fails, SteadyStack marks the check cycle as `DOWN` and records the exact reason in telemetry logs.
+
+---
+
+## Supported Assertion Types
+
+You can configure five assertion types in a single `expectation` block. All defined assertions must pass for the check to report `UP`.
+
+### 1. HTTP Status Codes Check
+
+Verify that the response returns one of the acceptable HTTP status codes.
+
+```json
+{
+  "expectation": {
+    "status_codes": [200, 201]
+  }
+}
+```
+
+### 2. Body Contains
+
+Verify that the response body contains a specific required substring anywhere in the raw text.
+
+```json
+{
+  "expectation": {
+    "body_contains": "\"status\":\"healthy\""
+  }
+}
+```
+
+### 3. Body Excludes
+
+Verify that the response body does **not** contain forbidden substrings (e.g., error messages or maintenance banners).
+
+```json
+{
+  "expectation": {
+    "body_excludes": "maintenance mode"
+  }
+}
+```
+
+### 4. Body Regular Expressions (Regex)
+
+Apply a regular expression against the response body. The check passes only if the regex finds a valid match.
+
+```json
+{
+  "expectation": {
+    "body_regex": "\"version\":\\s*\"2\\.[0-9]+\""
+  }
+}
+```
+
+### 5. JSON Path & Rich Field Assertions
+
+Evaluate dot-notation path expressions against the parsed JSON response body.
+
+```json
+{
+  "expectation": {
+    "json_path": {
+      "data.status": "healthy",
+      "services.database": "connected"
+    }
+  }
+}
+```
+
+For richer comparison logic, use the `json_assertions` array:
+
+```json
+{
+  "expectation": {
+    "json_assertions": [
+      { "path": "$.status", "operator": "equals", "value": "ok" },
+      { "path": "$.version", "operator": "contains", "value": "v2." },
+      { "path": "$.error_count", "operator": "equals", "value": "0" },
+      { "path": "$.maintenance", "operator": "not_equals", "value": "true" }
+    ]
+  }
+}
+```
+
+**Supported JSON Operators**: `equals` (`==`), `not_equals` (`!=`), `contains`, `not_contains`.
+
+---
+
+## Configuring via Terraform / OpenTofu
+
+Declare response assertions directly in your infrastructure as code:
+
+```hcl
+resource "steadystack_monitor" "api_health" {
+  name     = "Production API Gateway"
+  url      = "https://api.example.com/health"
+  type     = "HTTP"
+  interval = 30
+
+  # Response Expectations
+  expectation_json = jsonencode({
+    status_codes  = [200]
+    body_contains = "\"status\":\"ok\""
+    body_excludes = "Fatal Error"
+    json_path = {
+      "status"            = "ok"
+      "database.healthy"  = "true"
+    }
+  })
+}
+```
+
+---
+
+## Configuring via CLI YAML Manifest
+
+```yaml
+monitors:
+  - name: User Authentication Microservice
+    url: https://auth.example.com/health
+    type: HTTP
+    method: GET
+    interval: 30
+    timeout: 5
+    expectation:
+      status_codes: [200]
+      json_assertions:
+        - path: $.status
+          operator: equals
+          value: healthy
+        - path: $.active_sessions
+          operator: not_equals
+          value: "0"
+```
+
+---
+
+## Common Assertion Recipes
+
+| Use Case                        | Config Field      | Example                             |
+| :------------------------------ | :---------------- | :---------------------------------- |
+| **API returns 200 or 204**      | `status_codes`    | `[200, 204]`                        |
+| **Check JSON health status**    | `json_path`       | `{"data.healthy": "true"}`          |
+| **Detect maintenance splash**   | `body_excludes`   | `"Scheduled Maintenance"`           |
+| **Check dynamic version regex** | `body_regex`      | `"build_hash\":\s*\"[a-f0-9]{40}\"` |
+| **Assert nested array item**    | `json_assertions` | `$.nodes[0].healthy equals "true"`  |
+
+---
+
+## Diagnostic Tool: Payload Regex Tester
+
+Before deploying complex regular expressions to production monitors, test your pattern against sample response bodies using our free interactive tool at **[`/tools/payload-regex`](/tools/payload-regex)**.
