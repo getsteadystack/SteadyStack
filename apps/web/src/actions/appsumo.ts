@@ -105,10 +105,16 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
       });
     }
 
-    const targetPlan: PlanTier = tier === 3 ? "CONSTRUCT" : "NETRUNNER";
-    const tierVersion = `appsumo_tier_${tier}`;
+    // 3. Calculate stacked tier if user is adding multiple codes
+    const previousRedeemedCount = await db.appSumoLicense.count({
+      where: { userId, status: "REDEEMED" },
+    });
 
-    // 3. Update or create user subscription with lifetime lifetime flags
+    const stackedTier = Math.min(3, Math.max(tier, previousRedeemedCount + 1));
+    const targetPlan: PlanTier = stackedTier === 3 ? "CONSTRUCT" : "NETRUNNER";
+    const tierVersion = `appsumo_tier_${stackedTier}`;
+
+    // 4. Update or create user subscription with lifetime flags
     const existingSubscription = await db.subscription.findUnique({
       where: { userId },
     });
@@ -120,7 +126,7 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
           plan: targetPlan,
           status: "ACTIVE",
           tierVersion,
-          appsumoTier: tier,
+          appsumoTier: stackedTier,
           isLifetime: true,
           currentPeriodEnd: null,
           trialEndsAt: null,
@@ -134,7 +140,7 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
           plan: targetPlan,
           status: "ACTIVE",
           tierVersion,
-          appsumoTier: tier,
+          appsumoTier: stackedTier,
           isLifetime: true,
           currentPeriodEnd: null,
           trialEndsAt: null,
@@ -143,7 +149,7 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
       });
     }
 
-    // 4. Update user tier
+    // 5. Update user tier
     await db.user.update({
       where: { id: userId },
       data: {
@@ -151,7 +157,7 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
       },
     });
 
-    // 5. Mark license as redeemed
+    // 6. Mark license as redeemed
     await db.appSumoLicense.update({
       where: { id: license.id },
       data: {
@@ -165,12 +171,17 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
     revalidatePath("/dashboard/settings");
     revalidatePath("/redeem");
 
+    const message =
+      previousRedeemedCount > 0
+        ? `Code stacked successfully! Your account is upgraded to AppSumo Tier ${stackedTier} Lifetime (${previousRedeemedCount + 1} codes applied).`
+        : `AppSumo Tier ${stackedTier} Lifetime Deal redeemed successfully!`;
+
     return {
       success: true,
-      tier,
+      tier: stackedTier,
       plan: targetPlan,
       tierVersion,
-      message: `Congratulations! AppSumo Tier ${tier} Lifetime Access has been activated for your workspace.`,
+      message,
     };
   } catch (error: any) {
     console.error("Failed to redeem AppSumo code:", error);

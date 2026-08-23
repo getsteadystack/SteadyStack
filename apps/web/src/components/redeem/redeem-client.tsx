@@ -325,10 +325,10 @@ export function RedeemClient({
               <div className="mt-6 pt-5 border-t border-white/10 text-center text-xs text-muted-foreground">
                 Need help with your redemption? Contact{" "}
                 <a
-                  href="mailto:support@steadystack.dev"
+                  href="mailto:workinbox69@gmail.com"
                   className="text-emerald-400 hover:underline"
                 >
-                  support@steadystack.dev
+                  workinbox69@gmail.com
                 </a>
               </div>
             </div>

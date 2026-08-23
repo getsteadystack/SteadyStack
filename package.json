@@ -42,6 +42,7 @@
     "db:migrate": "turbo -F @steadystack/db db:migrate",
     "db:seed": "turbo -F @steadystack/db db:seed",
     "seed": "bun scripts/seed-monitors.ts",
+    "generate:appsumo": "bun scripts/generate-appsumo-codes.ts",
     "import:kuma": "bun scripts/import-uptime-kuma.ts",
     "deploy": "turbo -F @steadystack/infra deploy",
     "destroy": "turbo -F @steadystack/infra destroy",

@@ -58,3 +58,7 @@ temp
 .wrangler
 .vercel
 .env*
+
+# AppSumo CSV code exports
+appsumo-codes*.csv
+appsumo-codes.csv

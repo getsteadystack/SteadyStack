@@ -48,7 +48,7 @@ export function ActionCommands() {
         icon={HelpCircle}
         label="Contact Support"
         onSelect={() => {
-          window.open("mailto:support@steadystack.dev", "_blank");
+          window.open("mailto:workinbox69@gmail.com", "_blank");
           close();
         }}
       />
