@@ -72,10 +72,10 @@
 - [x] Design Terraform resource schema for `steadystack_monitor`, `steadystack_status_page`, `steadystack_alert_rule`
 - [x] Scaffold Terraform provider using `hashicorp/terraform-plugin-framework` (Go)
 - [x] Implement CRUD operations for each resource via the SteadyStack REST API
-- [ ] Write acceptance tests for all resources
-- [ ] Publish to Terraform Registry
+- [x] Write acceptance tests for all resources
+- [x] Publish to Terraform Registry
 - [x] Add `examples/` directory with common Terraform configurations
-- [ ] Create documentation page at `steadystack.dev/docs/terraform`
+- [x] Create documentation page at `steadystack.dev/docs/terraform`
 
 ---
 

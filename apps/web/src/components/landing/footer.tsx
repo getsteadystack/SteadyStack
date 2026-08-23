@@ -104,6 +104,12 @@ export default function LandingFooter() {
                 </span>
               </Link>
               <Link
+                href={"/docs/terraform" as any}
+                className="text-muted-foreground hover:text-foreground text-xs font-medium transition-colors w-fit flex items-center gap-1"
+              >
+                Terraform / IaC
+              </Link>
+              <Link
                 href={"https://pulse-41cf5b0d.mintlify.site/introduction" as any}
                 className="text-muted-foreground hover:text-foreground text-xs font-medium transition-colors w-fit"
               >
