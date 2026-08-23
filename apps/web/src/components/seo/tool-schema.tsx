@@ -22,6 +22,11 @@ export function ToolSchema({
     applicationCategory: category,
     operatingSystem: "All",
     browserRequirements: "Requires JavaScript. Requires HTML5.",
+    creator: {
+      "@type": "Organization",
+      name: "SteadyStack",
+      url: "https://steadystack.dev",
+    },
     offers: {
       "@type": "Offer",
       price: "0",

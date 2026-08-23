@@ -119,6 +119,8 @@ const jsonLd = {
       applicationCategory: "DeveloperApplication",
       description:
         "Know the second your stack breaks. Cloudflare edge-native monitoring platform with multi-region quorum verification, synthetic checks, and zero false alarms.",
+      creator: { "@id": `${BASE_URL}/#organization` },
+      publisher: { "@id": `${BASE_URL}/#organization` },
       offers: {
         "@type": "AggregateOffer",
         priceCurrency: "USD",

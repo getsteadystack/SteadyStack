@@ -81,6 +81,7 @@ export default async function VsCompetitorPage({
     datePublished: date,
     dateModified: date,
     author: { "@type": "Person", name: author },
+    creator: { "@type": "Person", name: author },
     publisher: {
       "@type": "Organization",
       name: "SteadyStack",

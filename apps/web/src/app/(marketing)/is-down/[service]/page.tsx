@@ -161,6 +161,12 @@ export default async function ServiceDownPage({
         url: pageUrl,
         applicationCategory: "DeveloperApplication",
         operatingSystem: "Cloud Edge",
+        browserRequirements: "Requires JavaScript. Requires HTML5.",
+        creator: {
+          "@type": "Organization",
+          name: "SteadyStack",
+          url: baseUrl,
+        },
         offers: {
           "@type": "Offer",
           price: "0",

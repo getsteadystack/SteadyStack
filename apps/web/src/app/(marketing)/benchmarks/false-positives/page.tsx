@@ -64,6 +64,11 @@ export default function FalsePositivesBenchmarkPage() {
           name: "SteadyStack Research Team",
           url: "https://steadystack.dev",
         },
+        creator: {
+          "@type": "Organization",
+          name: "SteadyStack Research Team",
+          url: "https://steadystack.dev",
+        },
         publisher: {
           "@type": "Organization",
           name: "SteadyStack",
@@ -77,6 +82,11 @@ export default function FalsePositivesBenchmarkPage() {
         description:
           "Raw JSON and CSV log of 1,296,000 synthetic uptime checks and 69 incident events across 10 identical endpoints tested by SteadyStack, UptimeRobot, and Pingdom.",
         license: "https://creativecommons.org/licenses/by/4.0/",
+        creator: {
+          "@type": "Organization",
+          name: "SteadyStack Research Team",
+          url: "https://steadystack.dev",
+        },
         url: "https://steadystack.dev/benchmarks/false-positives",
         distribution: [
           {
