@@ -1,0 +1,27 @@
+---
+title: "Quorum Consensus"
+description: "How 4-of-7 multi-region edge verification eliminates false positives."
+section: "Synthetic Surveillance"
+order: 4
+badge: "Core"
+lastUpdated: "2026-08-22"
+---
+
+The core architectural innovation in SteadyStack is **Quorum Consensus Verification**.
+
+---
+
+## The Problem with Legacy Monitors
+
+Single-origin uptime monitors query your endpoints from one static IP or datacenter. When a Tier 1 telecom transit route experiences localized BGP flapping, high packet loss, or regional DDoS scrubbing, legacy tools assume your entire application is down and page your on-call engineers.
+
+---
+
+## How SteadyStack Solves This
+
+When any edge probe node detects a non-2xx status code or a timeout, it does **not** immediately fire an alert. Instead, it submits the failure event to the **LatencyAggregator Durable Object**.
+
+1. **Phase 1 (Probe Detection)**: Node `wnam` records a connection timeout.
+2. **Phase 2 (Immediate Quorum Trigger)**: The central orchestrator commands 6 additional sovereign nodes (`enam`, `weur`, `eeur`, `apac`, `apac-ne`, and the out-of-band `sentinel-hetzner` node) to execute immediate out-of-cycle confirmation checks.
+3. **Phase 3 (4-of-7 Consensus Evaluation)**: An incident is only declared if **4 or more of the 7 regions** confirm that the endpoint is unreachable.
+4. **Phase 4 (Dispatch)**: If consensus is reached, incident routing rules execute and push notifications to PagerDuty, Slack, or Webhooks.

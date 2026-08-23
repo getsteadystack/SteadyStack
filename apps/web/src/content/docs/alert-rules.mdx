@@ -1,0 +1,37 @@
+---
+title: "Alert Rules"
+description: "Configure conditional incident routing, triggers, and threshold evaluations."
+section: "Alerting & Incidents"
+order: 6
+badge: "Alerts"
+lastUpdated: "2026-08-22"
+---
+
+Alert rules define when, why, and where SteadyStack dispatches incident notifications.
+
+---
+
+## Trigger Types
+
+- `STATUS_CHANGE`: Trigger when a monitor transitions state (e.g., `UP` -> `DOWN`, `DOWN` -> `UP`, or `DEGRADED`).
+- `LATENCY`: Trigger when response time exceeds a static millisecond threshold or dynamic anomaly limit.
+- `SSL_EXPIRY`: Trigger when an SSL/TLS certificate has fewer than $N$ days remaining before expiration.
+- `DNS_WATCHDOG`: Trigger if DNS records change unexpectedly.
+- `DOMAIN_EXPIRY`: Trigger when WHOIS domain registration is nearing expiration.
+
+---
+
+## Example Rule Configuration
+
+```hcl
+resource "steadystack_alert_rule" "critical_api_down" {
+  monitor_id    = steadystack_monitor.api.id
+  trigger       = "STATUS_CHANGE"
+  target_status = "DOWN"
+  enabled       = true
+  channel_ids   = [
+    steadystack_alert_channel.pagerduty_oncall.id,
+    steadystack_alert_channel.slack_sre.id
+  ]
+}
+```

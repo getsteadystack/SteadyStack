@@ -1,0 +1,51 @@
+---
+title: "Introduction"
+description: "Edge-native synthetic surveillance and zero-false-positive uptime monitoring."
+section: "Getting Started"
+order: 1
+badge: "Overview"
+lastUpdated: "2026-08-22"
+---
+
+Welcome to **SteadyStack** — an autonomous, edge-native synthetic monitoring and developer surveillance platform engineered from the ground up to eradicate false-positive midnight alerts.
+
+Traditional uptime checkers ping your servers from a single AWS or GCP data center. When an upstream transit provider suffers localized packet loss, you get paged at 3:00 AM for an outage that never happened.
+
+SteadyStack completely eliminates this noise using a **4-of-7 sovereign multi-region edge quorum verification model**.
+
+---
+
+## Core Philosophy
+
+### 1. Zero-False-Positive Quorum Architecture
+
+Every synthetic check executes across independent Cloudflare Workers edge nodes in North America, Western Europe, Eastern Europe, and Asia-Pacific. A failure is only escalated into an incident when a **4-of-7 quorum threshold** independently verifies downtime.
+
+### 2. Sub-10-Second Anomaly Detection
+
+Checks run at intervals as tight as **10 seconds**, backed by sub-second consensus aggregation in Durable Objects.
+
+### 3. Monitoring as Code (IaC Native)
+
+Manage your entire monitoring fleet, notification routing rules, and status pages via our official **Terraform / OpenTofu Provider** or CLI.
+
+---
+
+## Feature Overview
+
+| Capability               | SteadyStack                          | Legacy Checkers           |
+| :----------------------- | :----------------------------------- | :------------------------ |
+| **Edge Nodes**           | 7 Sovereign Quorum Regions           | Single Origin Data Center |
+| **Check Latency**        | 10s – 60s Intervals                  | 300s (5 minutes)          |
+| **Consensus Model**      | 4-of-7 Multi-Region Quorum           | Single-region threshold   |
+| **Dynamic Thresholding** | AI-Driven Latency Anomaly Learning   | Fixed static thresholds   |
+| **IaC Support**          | Terraform & OpenTofu Provider        | Web UI click-ops only     |
+| **Status Pages**         | Custom domains, dark cyberpunk theme | Basic generic templates   |
+
+---
+
+## Next Steps
+
+- **[5-Minute Quickstart](/docs/quickstart)**: Create your first synthetic monitor and incident routing channel.
+- **[Quorum Consensus](/docs/quorum-consensus)**: Deep dive into how our multi-region verification engine functions.
+- **[Terraform Provider](/docs/terraform)**: Manage your infrastructure as code.

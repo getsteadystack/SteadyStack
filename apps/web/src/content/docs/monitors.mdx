@@ -1,0 +1,51 @@
+---
+title: "Monitors"
+description: "Comprehensive guide to HTTP, PING, PORT, SSL, DNS, and Heartbeat synthetic surveillance."
+section: "Synthetic Surveillance"
+order: 3
+badge: "Surveillance"
+lastUpdated: "2026-08-22"
+---
+
+SteadyStack provides six specialized surveillance engine protocols designed to pinpoint infrastructure regressions before customers notice.
+
+---
+
+## Supported Monitor Types
+
+### 1. HTTP / HTTPS
+
+Executes full HTTP requests with custom headers, query params, HTTP verbs (GET, POST, PUT, DELETE, HEAD, PATCH), and JSON/string request bodies. Validates status code ranges and response payload strings.
+
+### 2. PING / ICMP
+
+Executes low-level ICMP network echo checks to measure raw network transmission round-trip time (RTT) and packet loss percentage.
+
+### 3. PORT / TCP Socket
+
+Opens direct TCP socket handshakes to arbitrary network ports (e.g., PostgreSQL `:5432`, Redis `:6379`, SSH `:22`) to ensure network daemon availability.
+
+### 4. SSL Cryptographic Sentinel
+
+Monitors TLS/SSL certificate chains, cryptographic cipher suites, issuer authenticity, and alerts before certificate expiration (e.g., 30, 14, or 7 days prior).
+
+### 5. DNS Sentinel
+
+Queries authoritative nameservers for `A`, `AAAA`, `CNAME`, `MX`, and `TXT` records to detect unauthorized DNS spoofing or accidental propagation errors.
+
+### 6. HEARTBEAT (Cron Job Watchdog)
+
+Passive incoming webhook watcher. Your internal background worker or cron script pings a unique SteadyStack heartbeat URL upon task completion. If no ping is received within the expected window, an incident triggers.
+
+---
+
+## Quorum Edge Region Targeting
+
+Configure each monitor to run across sovereign edge clusters:
+
+- `wnam`: North America West (San Jose / Portland)
+- `enam`: North America East (Ashburn / New York)
+- `weur`: Western Europe (Frankfurt / Amsterdam)
+- `eeur`: Eastern Europe (Warsaw)
+- `apac`: Asia-Pacific (Singapore / Tokyo)
+- `sentinel-hetzner`: Independent Out-of-Band Verification Node (Nuremberg, Germany)

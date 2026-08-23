@@ -1,0 +1,73 @@
+---
+title: "GitHub Actions CI/CD Gates"
+description: "Block broken deployments and automate synthetic smoke tests in GitHub Actions workflows."
+section: "IaC & CI/CD Gates"
+order: 13
+badge: "CI/CD"
+lastUpdated: "2026-08-22"
+---
+
+The official **SteadyStack GitHub Action** (`getsteadystack/steadystack-action`) allows you to run instant multi-region synthetic checks against staging, preview (e.g., Vercel / Cloudflare Pages), or production deployments directly within your CI/CD pipelines.
+
+If any endpoint returns non-2xx responses or violates latency thresholds, your GitHub Action will fail immediately, preventing broken releases from hitting production.
+
+---
+
+## Quick Setup
+
+Add the action step to your `.github/workflows/deploy.yml` workflow:
+
+```yaml
+name: Production Deployment & Health Gate
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy to Cloudflare / Vercel
+        run: npm run deploy
+
+      - name: SteadyStack Synthetic Health Gate
+        uses: getsteadystack/steadystack-action@v1
+        with:
+          api-key: ${{ secrets.STEADYSTACK_API_KEY }}
+          monitor-id: "mon_production_gateway"
+          wait-for-quorum: true
+          timeout-seconds: 60
+          max-latency-ms: 1000
+```
+
+---
+
+## Action Inputs & Configuration
+
+| Input             | Required | Default | Description                                                        |
+| :---------------- | :------- | :------ | :----------------------------------------------------------------- |
+| `api-key`         | **Yes**  | —       | SteadyStack API key (`pg_live_...`) with write permissions.        |
+| `monitor-id`      | Optional | —       | ID of an existing monitor to trigger immediate quorum check on.    |
+| `url`             | Optional | —       | Ephemeral preview URL (e.g. `https://pr-123.preview.example.com`). |
+| `wait-for-quorum` | No       | `true`  | Waits for 4-of-7 regional nodes to confirm health status.          |
+| `max-latency-ms`  | No       | `2000`  | Maximum acceptable round-trip latency before failing build.        |
+| `timeout-seconds` | No       | `30`    | Maximum time to wait for verification completion.                  |
+
+---
+
+## Preview Environment Ephemeral Testing
+
+For pull requests with dynamic preview URLs:
+
+```yaml
+- name: Verify Ephemeral Pull Request Preview
+  uses: getsteadystack/steadystack-action@v1
+  with:
+    api-key: ${{ secrets.STEADYSTACK_API_KEY }}
+    url: ${{ steps.preview_deploy.outputs.url }}/api/health
+    expected-status: 200
+    regions: "wnam,weur,apac"
+```

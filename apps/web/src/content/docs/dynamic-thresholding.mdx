@@ -1,0 +1,23 @@
+---
+title: "Dynamic Thresholding"
+description: "AI-driven latency anomaly learning and degradation detection."
+section: "Synthetic Surveillance"
+order: 5
+badge: "AI"
+lastUpdated: "2026-08-22"
+---
+
+Static latency thresholds (e.g., alert if latency > 500ms) suffer from two major flaws:
+
+1. They cause false alerts during expected traffic spikes or global network jitter.
+2. They fail to catch creeping 200ms regressions on endpoints that normally respond in 20ms.
+
+---
+
+## Machine Learning Baseline Calculation
+
+SteadyStack's dynamic thresholding engine continuously computes an exponential moving average (EMA) and standard deviation variance for each monitor and region combination over a rolling 7-day window.
+
+- **Baseline Calculation**: Computes p50, p90, and p99 latency per region.
+- **Anomaly Detection**: An anomaly is flagged when latency exceeds $2.5\sigma$ standard deviations from the regional baseline for 3 consecutive check cycles.
+- **Runbook Attachment**: Automatically embeds your team's runbook link in the notification payload when an anomaly is confirmed.

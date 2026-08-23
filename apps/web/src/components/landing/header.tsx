@@ -279,9 +279,7 @@ export default function LandingHeader() {
 
           {/* Docs Direct Link */}
           <Link
-            href="https://pulse-41cf5b0d.mintlify.site/introduction"
-            target="_blank"
-            rel="noopener noreferrer"
+            href={"/docs" as any}
             className="px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
           >
             Docs
@@ -382,9 +380,7 @@ export default function LandingHeader() {
                   Pricing
                 </Link>
                 <Link
-                  href="https://pulse-41cf5b0d.mintlify.site/introduction"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href={"/docs" as any}
                   className="p-2 rounded-lg hover:bg-accent text-foreground font-semibold"
                   onClick={() => setIsMobileMenuOpen(false)}
                 >

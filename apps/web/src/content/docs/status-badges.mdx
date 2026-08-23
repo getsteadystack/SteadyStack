@@ -1,0 +1,37 @@
+---
+title: "Status Badges & Widgets"
+description: "Embed dynamic real-time SVG status badges in your READMEs, dashboards, and websites."
+section: "Status Pages"
+order: 9
+badge: "Badges"
+lastUpdated: "2026-08-22"
+---
+
+SteadyStack provides dynamic SVG status badges generated at Cloudflare edge nodes with zero origin overhead and sub-5ms response caching.
+
+---
+
+## Badge URL Format
+
+Embed directly into GitHub READMEs, docs, or web applications:
+
+```html
+<!-- Markdown badge embed -->
+![SteadyStack Status](https://steadystack.dev/api/badge/your-slug.svg?style=flat&theme=dark)
+```
+
+### Style Options
+
+- `style`: `flat`, `for-the-badge`, `plastic`, `cyber`
+- `theme`: `dark`, `light`, `neon`
+- `size`: `sm`, `md`, `lg`
+
+---
+
+## Embeddable Web Widget
+
+Embed a live status widget in your web application:
+
+```html
+<script src="https://steadystack.dev/widget.js" data-slug="your-slug" async></script>
+```

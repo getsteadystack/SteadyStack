@@ -1,0 +1,66 @@
+---
+title: "Prometheus & Grafana Observability"
+description: "Scrape SteadyStack latency, availability, and uptime metrics into Prometheus, Datadog, or Grafana."
+section: "APIs & Observability"
+order: 14
+badge: "Metrics"
+lastUpdated: "2026-08-22"
+---
+
+SteadyStack provides a native OpenMetrics / Prometheus exporter endpoint at `/api/v1/metrics/prometheus` for ingesting surveillance data directly into enterprise observability stacks.
+
+---
+
+## Prometheus Scrape Configuration
+
+Add a scrape job to your `prometheus.yml`:
+
+```yaml
+scrape_configs:
+  - job_name: 'steadystack'
+    scrape_interval: 30s
+    metrics_path: '/api/v1/metrics/prometheus'
+    scheme: 'https'
+    static_configs:
+      - targets: ['app.steadystack.dev']
+    authorization:
+      type: Bearer
+      credentials: 'pg_live_your_api_key_here'
+```
+
+---
+
+## Exported Metrics Reference
+
+### Monitor Latency (`steadystack_monitor_latency_ms`)
+
+Gauge representing the most recent check latency in milliseconds, partitioned by monitor ID, protocol, and regional probe node.
+
+```text
+# HELP steadystack_monitor_latency_ms Round-trip latency in milliseconds
+# TYPE steadystack_monitor_latency_ms gauge
+steadystack_monitor_latency_ms{monitor_id="mon-123",name="API Gateway",type="HTTP",region="weur"} 48.2
+steadystack_monitor_latency_ms{monitor_id="mon-123",name="API Gateway",type="HTTP",region="wnam"} 82.5
+```
+
+### Operational Status (`steadystack_monitor_status`)
+
+Boolean gauge indicating current health state: `1` for UP, `0` for DOWN, `2` for DEGRADED.
+
+```text
+steadystack_monitor_status{monitor_id="mon-123",name="API Gateway"} 1
+```
+
+### 30-Day SLA Ratio (`steadystack_monitor_sla_ratio`)
+
+Calculated historical availability percentage over the rolling 30-day window (e.g. `0.9999` for 99.99%).
+
+---
+
+## Pre-Built Grafana Dashboard
+
+Import dashboard ID `19284` into your Grafana instance or use the Terraform configuration in `integrations/grafana/dashboard.json` to monitor:
+
+- Global latency heatmaps per sovereign edge region
+- Real-time SLA error budget burn rates
+- Active incident count and mean time to recovery (MTTR)

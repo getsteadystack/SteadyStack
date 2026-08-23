@@ -1,0 +1,48 @@
+---
+title: "SLA & Audit Reports"
+description: "SLA availability mathematics, maintenance window exclusions, and SOC2 audit exports."
+section: "Status Pages & Reporting"
+order: 18
+badge: "SOC2"
+lastUpdated: "2026-08-22"
+---
+
+SteadyStack provides enterprise-grade Service Level Agreement (SLA) accounting and compliance reporting for B2B engineering teams.
+
+---
+
+## The Mathematics of Uptime
+
+Availability is calculated on a per-second basis over the selected evaluation window:
+
+$$\text{Availability } (\%) = \left( 1 - \frac{\text{Total Downtime Seconds}}{\text{Total Seconds in Period} - \text{Scheduled Maintenance Seconds}} \right) \times 100$$
+
+### Uptime Equivalents per Month (30 Days)
+
+| Target SLA                    | Allowed Downtime / Month | Allowed Downtime / Year |
+| :---------------------------- | :----------------------- | :---------------------- |
+| **99.0% (Two Nines)**         | 7 hours, 18 minutes      | 3.65 days               |
+| **99.9% (Three Nines)**       | 43 minutes, 49 seconds   | 8.76 hours              |
+| **99.95% (Three Nines Five)** | 21 minutes, 54 seconds   | 4.38 hours              |
+| **99.99% (Four Nines)**       | 4 minutes, 22 seconds    | 52.6 minutes            |
+
+---
+
+## Scheduled Maintenance Windows
+
+To prevent routine database migrations or server upgrades from harming your SLA metrics:
+
+1. Navigate to **Status Pages -> Maintenance Windows**.
+2. Schedule the start and end timestamp.
+3. Select which monitors are affected.
+
+During the active maintenance window, checks continue to collect telemetry, but any failures are excluded from your public status page and SOC2 SLA audit reports.
+
+---
+
+## Exporting Audit Reports
+
+Under **Dashboard -> Reports -> SLA Reports**, you can export:
+
+- **Cryptographically Signed PDF Summary**: Suitable for enterprise procurement and SOC2 Type II auditors.
+- **Raw CSV Time-Series**: Full second-by-second incident timestamps and quorum logs.

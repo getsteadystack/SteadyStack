@@ -1,0 +1,41 @@
+---
+title: "Incident Runbooks & Postmortems"
+description: "Equip on-call engineers with instant runbook links and automated postmortem summaries."
+section: "Alerting & Incidents"
+order: 17
+badge: "SRE"
+lastUpdated: "2026-08-22"
+---
+
+When production goes down at 3:00 AM, engineers shouldn't have to search Notion or Confluence for how to triage an issue. SteadyStack embeds executable incident runbooks directly into every alert.
+
+---
+
+## Attaching Runbooks to Monitors
+
+You can attach a Markdown URL or inline runbook instructions directly to any synthetic monitor:
+
+```hcl
+resource "steadystack_monitor" "checkout" {
+  name        = "Stripe Checkout Worker"
+  url         = "https://checkout.example.com/health"
+  type        = "HTTP"
+  interval    = 15
+
+  # Embedded Runbook URL
+  description = "Runbook: https://wiki.example.com/sre/checkout-triage"
+}
+```
+
+When an alert is dispatched to **Slack**, **Discord**, or **PagerDuty**, the runbook link is formatted as a primary one-click action button.
+
+---
+
+## Automated Postmortem Generation
+
+Following any resolved incident exceeding 5 minutes of downtime, SteadyStack compiles a structured postmortem draft:
+
+- **Incident Duration**: Exact timestamp of first quorum failure to full 7-region recovery.
+- **Root Cause Classification**: Status code response, TLS certificate handshake error, or timeout breakdown.
+- **Regional Impact Matrix**: Which geographies observed downtime vs which remained healthy.
+- **Export Formats**: One-click export to Markdown, PDF, or Jira issue templates.

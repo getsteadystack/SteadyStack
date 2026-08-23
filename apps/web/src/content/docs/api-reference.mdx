@@ -1,0 +1,44 @@
+---
+title: "REST API Reference"
+description: "Direct programmatic REST API endpoints for monitors, metrics, status pages, and webhooks."
+section: "IaC & Developer Tools"
+order: 12
+badge: "API"
+lastUpdated: "2026-08-22"
+---
+
+SteadyStack provides a high-performance REST API v1 for programmatic access.
+
+---
+
+## Authentication
+
+All REST API requests require a Bearer token in the `Authorization` HTTP header. Generate an API Key under **Workspace Settings -> API Keys**.
+
+```bash
+curl -X GET "https://app.steadystack.dev/api/v1/monitors" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+---
+
+## API Endpoints Overview
+
+| Method   | Endpoint                 | Description                           | Scope   |
+| :------- | :----------------------- | :------------------------------------ | :------ |
+| `GET`    | `/api/v1/monitors`       | List all monitors                     | `read`  |
+| `POST`   | `/api/v1/monitors`       | Create a new monitor                  | `write` |
+| `GET`    | `/api/v1/monitors/:id`   | Fetch monitor details                 | `read`  |
+| `PATCH`  | `/api/v1/monitors/:id`   | Update monitor parameters             | `write` |
+| `DELETE` | `/api/v1/monitors/:id`   | Delete monitor                        | `write` |
+| `GET`    | `/api/v1/alert-channels` | List notification channels            | `read`  |
+| `POST`   | `/api/v1/alert-channels` | Create notification channel           | `write` |
+| `GET`    | `/api/v1/status-pages`   | List hosted status pages              | `read`  |
+| `POST`   | `/api/v1/status-pages`   | Create hosted status page             | `write` |
+| `GET`    | `/api/v1/regions`        | Discover available edge check regions | `read`  |
+
+---
+
+## Interactive OpenAPI Explorer
+
+Explore the full interactive OpenAPI documentation at **[`/docs/api`](/docs/api)**.

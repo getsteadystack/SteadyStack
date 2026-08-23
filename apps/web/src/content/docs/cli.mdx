@@ -1,0 +1,49 @@
+---
+title: "CLI & Docker Probes"
+description: "Inspect live surveillance in the terminal and deploy custom on-premise Docker probe nodes."
+section: "IaC & Developer Tools"
+order: 11
+badge: "CLI"
+lastUpdated: "2026-08-22"
+---
+
+The SteadyStack CLI brings monitoring surveillance and incident management into your terminal workflow.
+
+---
+
+## Installation
+
+```bash
+# Via Bun or npm
+bun add -g @steadystack/cli
+# or
+npm install -g @steadystack/cli
+```
+
+---
+
+## Common CLI Commands
+
+```bash
+# Login and configure API credentials
+steadystack login
+
+# Stream live real-time latency across all monitors
+steadystack monitors live
+
+# Trigger an immediate manual quorum check
+steadystack check --id <monitor-id>
+```
+
+---
+
+## Private On-Premise Docker Probe
+
+Run custom probe nodes behind your corporate firewalls or VPNs to surveil private VPC endpoints:
+
+```bash
+docker run -d \
+  --name steadystack-probe \
+  -e STEADYSTACK_PROBE_KEY="prb_live_xxxxxxxxxxxxxxxx" \
+  ghcr.io/getsteadystack/steadystack-probe:latest
+```

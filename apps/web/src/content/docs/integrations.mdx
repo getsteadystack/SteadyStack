@@ -1,0 +1,38 @@
+---
+title: "Integrations"
+description: "Connect SteadyStack to PagerDuty, Opsgenie, Slack, Discord, Telegram, and Webhooks."
+section: "Alerting & Incidents"
+order: 7
+badge: "Integrations"
+lastUpdated: "2026-08-22"
+---
+
+SteadyStack natively integrates with modern escalation providers and team communication platforms.
+
+---
+
+## Supported Notification Channels
+
+### PagerDuty
+
+Integrates with PagerDuty Events API v2.
+
+- Automatically triggers a PagerDuty Incident with deduplication key when downtime is confirmed by quorum.
+- Automatically resolves the incident in PagerDuty when recovery is verified.
+
+### Opsgenie
+
+Integrates with Opsgenie Alert API with custom alias deduplication and team routing tags.
+
+### Slack & Discord
+
+Dispatches rich webhook cards containing:
+
+- Affected monitor name and target URL
+- Failing edge region and quorum breakdown
+- Response latency and HTTP status code
+- Incident remediation runbook link
+
+### Webhooks (JSON Payloads)
+
+Dispatches signed HMAC-SHA256 JSON payloads containing full incident details to any custom endpoint or automated remediation serverless function.

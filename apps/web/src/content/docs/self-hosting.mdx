@@ -1,0 +1,55 @@
+---
+title: "Self-Hosting & Docker Deployments"
+description: "Deploy SteadyStack on your own servers or run private VPC probes with Docker Compose."
+section: "IaC & CI/CD Gates"
+order: 19
+badge: "Docker"
+lastUpdated: "2026-08-22"
+---
+
+SteadyStack can be completely self-hosted on your own infrastructure or deployed as private probe agents inside restricted AWS VPCs, GCP networks, or bare-metal server clusters.
+
+---
+
+## 1-Click Docker Compose Deployment
+
+Clone the SteadyStack repository and start the full production stack:
+
+```bash
+git clone https://github.com/getsteadystack/SteadyStack.git
+cd SteadyStack
+
+# Copy and configure environment variables
+cp .env.example .env
+
+# Launch PostgreSQL 16, Redis 7, Web Dashboard, and Probe Engine
+docker compose -f docker-compose.prod.yml up -d
+```
+
+---
+
+## Architecture of Self-Hosted Stack
+
+The `docker-compose.prod.yml` spins up four isolated services:
+
+1. **`postgres`** (`postgres:16-alpine`): Persistent relational storage for monitors, incidents, and user auth.
+2. **`redis`** (`redis:7-alpine`): Sub-millisecond pub/sub bus and check queue caching.
+3. **`steadystack-web`**: Next.js 16 dashboard and REST API v1 server.
+4. **`steadystack-probe`**: Lightweight Go probe runner that executes synthetic checks and streams results back to the database.
+
+---
+
+## Connecting Private VPC Probes
+
+To monitor internal databases (`10.0.0.0/8`), staging clusters, or Kubernetes services behind a firewall:
+
+```bash
+docker run -d \
+  --name private-vpc-probe \
+  --restart unless-stopped \
+  -e STEADYSTACK_PROBE_KEY="prb_live_xxxxxxxxxxxxxxxx" \
+  -e STEADYSTACK_REGION="internal-vpc-us-east-1" \
+  ghcr.io/getsteadystack/steadystack-probe:latest
+```
+
+Once registered, your private probe will appear in the SteadyStack region selector dropdown.

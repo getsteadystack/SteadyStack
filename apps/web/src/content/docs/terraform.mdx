@@ -1,0 +1,78 @@
+---
+title: "Terraform / OpenTofu Provider"
+description: "Manage synthetic surveillance, alert routing rules, and status pages as code."
+section: "IaC & Developer Tools"
+order: 10
+badge: "IaC"
+lastUpdated: "2026-08-22"
+---
+
+The official HashiCorp Terraform and OpenTofu provider for SteadyStack enables teams to version control their monitoring infrastructure alongside their application code.
+
+---
+
+## Provider Setup
+
+```hcl
+terraform {
+  required_providers {
+    steadystack = {
+      source  = "getsteadystack/SteadyStack"
+      version = "~> 1.0"
+    }
+  }
+}
+
+provider "steadystack" {
+  api_key = var.steadystack_api_key # or set export STEADYSTACK_API_KEY="..."
+}
+```
+
+---
+
+## Complete Example Manifest
+
+```hcl
+# 1. Discover Edge Regions
+data "steadystack_regions" "edge" {}
+
+# 2. Edge Uptime Monitor
+resource "steadystack_monitor" "api" {
+  name                 = "Production API Gateway"
+  url                  = "https://api.example.com/health"
+  type                 = "HTTP"
+  interval             = 30
+  timeout              = 5
+  method               = "GET"
+  check_regions        = ["wnam", "enam", "weur", "apac"]
+  dynamic_thresholding = true
+  tags                 = ["production", "api"]
+}
+
+# 3. Notification Dispatch Channel
+resource "steadystack_alert_channel" "pagerduty" {
+  name        = "PagerDuty SRE High Priority"
+  type        = "PAGERDUTY"
+  config_json = jsonencode({
+    routingKey = var.pagerduty_routing_key
+  })
+}
+
+# 4. Alert Routing Rule
+resource "steadystack_alert_rule" "api_down_alert" {
+  monitor_id    = steadystack_monitor.api.id
+  trigger       = "STATUS_CHANGE"
+  target_status = "DOWN"
+  enabled       = true
+  channel_ids   = [steadystack_alert_channel.pagerduty.id]
+}
+
+# 5. Hosted Status Page
+resource "steadystack_status_page" "public" {
+  slug          = "company-status"
+  title         = "Company Cloud Status"
+  custom_domain = "status.company.com"
+  show_uptime   = true
+  history_days  = 90
+}
+```

@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { CodeBlock } from "@/components/blog/code-block";
 import type { TocItem } from "@/components/blog/table-of-contents";
+export type { TocItem };
 
 // Helper to generate URL-safe slugs for headings
 export function slugify(text: string): string {

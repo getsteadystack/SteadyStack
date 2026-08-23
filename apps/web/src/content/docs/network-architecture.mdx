@@ -1,0 +1,51 @@
+---
+title: "Network Architecture & Out-of-Band Sentinel"
+description: "How 7 sovereign edge clusters and independent Hetzner hardware eradicate global blind spots."
+section: "Synthetic Surveillance"
+order: 16
+badge: "Network"
+lastUpdated: "2026-08-22"
+---
+
+Most modern uptime providers host their checking infrastructure exclusively within a single cloud provider (such as AWS us-east-1). When AWS experiences an IAM or networking degradation, or when Cloudflare undergoes route maintenance, traditional tools fail simultaneously.
+
+SteadyStack uses a **heterogeneous multi-cloud out-of-band topology**.
+
+---
+
+## Global Edge Topology
+
+```
+                       [ YOUR ENDPOINT ]
+                               │
+       ┌───────────────┬───────┴───────┬───────────────┐
+       │               │               │               │
+  ┌────▼────┐     ┌────▼────┐     ┌────▼────┐     ┌────▼────┐
+  │  wnam   │     │  enam   │     │  weur   │     │  apac   │
+  │ (US-W)  │     │ (US-E)  │     │ (EU-W)  │     │ (APAC)  │
+  └────┬────┘     └────┬────┘     └────┬────┘     └────┬────┘
+       │               │               │               │
+       └───────────────┼───────────────┘               │
+                       │                               │
+                       ▼                               ▼
+       ┌───────────────────────────────┐   ┌───────────────────────┐
+       │   Cloudflare Edge Quorum      │   │  Out-of-Band Sentinel │
+       │     (6 Sovereign Nodes)       │   │   (Hetzner Nuremberg) │
+       └───────────────┬───────────────┘   └───────────┬───────────┘
+                       │                               │
+                       └───────────────┬───────────────┘
+                                       ▼
+                       ┌───────────────────────────────┐
+                       │  4-of-7 Quorum Consensus OK   │
+                       └───────────────────────────────┘
+```
+
+---
+
+## The Out-of-Band Hetzner Sentinel Node
+
+In addition to 6 high-density Cloudflare Worker edge nodes across North America, Europe, and Asia, SteadyStack operates an independent, dedicated bare-metal sentinel node hosted at Hetzner Online GmbH (Nuremberg, Germany).
+
+- **Independent AS Routing**: Uses autonomous system `AS24940` (Hetzner) with multi-homed Tier 1 transit providers (Telia, NTT, Lumen).
+- **Control Plane Verification**: If Cloudflare experiences a global edge control plane incident, the Hetzner sentinel continues executing checks and can autonomously dispatch SMS / PagerDuty alerts.
+- **DNS Root Fallback**: Queries root TLD nameservers directly over raw UDP/TCP rather than relying on local recursive resolvers.

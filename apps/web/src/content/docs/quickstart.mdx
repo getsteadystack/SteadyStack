@@ -1,0 +1,68 @@
+---
+title: "Quickstart"
+description: "Deploy your first synthetic check and notification channel in under 5 minutes."
+section: "Getting Started"
+order: 2
+badge: "5 min"
+lastUpdated: "2026-08-22"
+---
+
+Get up and running with SteadyStack surveillance in three simple steps.
+
+---
+
+## Step 1: Create a Synthetic Monitor
+
+In the SteadyStack Dashboard, click **New Monitor** or use the CLI:
+
+```bash
+# Using the SteadyStack CLI
+steadystack monitors create \
+  --name "API Production" \
+  --url "https://api.example.com/health" \
+  --interval 30 \
+  --type HTTP
+```
+
+Or declare it with Terraform:
+
+```hcl
+resource "steadystack_monitor" "api" {
+  name          = "API Production"
+  url           = "https://api.example.com/health"
+  type          = "HTTP"
+  interval      = 30
+  check_regions = ["wnam", "weur", "apac"]
+}
+```
+
+---
+
+## Step 2: Connect a Notification Channel
+
+Add an incident destination channel to dispatch alerts to your team.
+
+SteadyStack natively supports:
+
+- **PagerDuty & Opsgenie** (Automatic incident creation and recovery resolution)
+- **Slack & Discord** (Rich interactive embed cards)
+- **Telegram & SMS** (Instant mobile push notifications)
+- **Webhooks** (Raw JSON payloads for custom incident workflows)
+
+---
+
+## Step 3: Publish a Branded Status Page
+
+Expose real-time uptime metrics to your users with automated TLS on your custom domain:
+
+```hcl
+resource "steadystack_status_page" "company" {
+  slug          = "company-status"
+  title         = "Company Cloud Status"
+  custom_domain = "status.company.com"
+  show_uptime   = true
+  history_days  = 90
+}
+```
+
+Point a `CNAME` record for `status.company.com` to `cname.steadystack.dev` and SteadyStack will automatically issue and renew a Cloudflare SSL certificate.
