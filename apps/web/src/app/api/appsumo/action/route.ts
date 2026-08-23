@@ -2,8 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import db from "@steadystack/db";
 
 /**
- * AppSumo Partner Actions Webhook API.
- * Handles automatic activations, upgrades, downgrades, and refunds from AppSumo's platform.
+ * AppSumo Licensing API (v2) Webhook Handler.
+ * Supports events: test, purchase, activate, upgrade, downgrade, deactivate, refund.
+ * Docs: https://docs.licensing.appsumo.com/webhook/webhook__connect.html
  */
 export async function POST(req: NextRequest) {
   try {
@@ -15,83 +16,150 @@ export async function POST(req: NextRequest) {
     }
 
     const body: any = await req.json().catch(() => ({}));
-    const { action, plan_id, invoice_item_uuid, uuid } = body;
 
-    // Supported AppSumo payload formats
-    const code = (body.code || invoice_item_uuid || uuid || "").toString().trim().toUpperCase();
-    const tierNumber = Number(plan_id?.replace(/[^0-9]/g, "") || body.tier || 1);
+    // Normalize event/action name
+    const event = (body.event || body.action || "").toString().trim().toLowerCase();
+
+    // Normalize license key (supports v2 license_key, prev_license_key, and legacy code/uuid fields)
+    const licenseKey = (
+      body.license_key ||
+      body.code ||
+      body.invoice_item_uuid ||
+      body.uuid ||
+      ""
+    )
+      .toString()
+      .trim()
+      .toUpperCase();
+
+    const prevLicenseKey = (body.prev_license_key || "").toString().trim().toUpperCase();
+
+    // Normalize tier (1, 2, or 3)
+    const tierNumber = Number(
+      body.tier ||
+      body.plan_id?.replace(/[^0-9]/g, "") ||
+      1
+    );
     const tier = Math.min(Math.max(tierNumber, 1), 3);
 
-    switch (action) {
+    // 1. Handle AppSumo Test Ping
+    if (event === "test" || body.test === true) {
+      return NextResponse.json({
+        message: "success",
+        status: "success",
+        event: "test",
+      });
+    }
+
+    switch (event) {
+      // 2. Purchase / Activation Events
+      case "purchase":
       case "activate": {
-        if (!code) {
-          return NextResponse.json({ message: "Activation code is required" }, { status: 400 });
+        if (!licenseKey) {
+          return NextResponse.json({ message: "license_key is required" }, { status: 400 });
         }
 
         const existing = await db.appSumoLicense.findUnique({
-          where: { code },
+          where: { code: licenseKey },
         });
 
         if (existing && existing.status === "REDEEMED") {
-          return NextResponse.json(
-            { message: "License already activated", status: "success" },
-            { status: 200 },
-          );
+          return NextResponse.json({
+            message: "success",
+            status: "success",
+            already_redeemed: true,
+          });
         }
 
         if (existing) {
           await db.appSumoLicense.update({
-            where: { code },
+            where: { code: licenseKey },
             data: {
               tier,
               plan: tier === 3 ? "CONSTRUCT" : "NETRUNNER",
               status: "ACTIVE",
-              invoiceId: invoice_item_uuid || null,
+              invoiceId: body.invoice_item_uuid || null,
             },
           });
         } else {
           await db.appSumoLicense.create({
             data: {
-              code,
+              code: licenseKey,
               tier,
               plan: tier === 3 ? "CONSTRUCT" : "NETRUNNER",
               status: "ACTIVE",
-              invoiceId: invoice_item_uuid || null,
+              invoiceId: body.invoice_item_uuid || null,
             },
           });
         }
 
         return NextResponse.json({
+          message: "success",
           status: "success",
-          message: `AppSumo Tier ${tier} code ready for redemption`,
-          redirect_url: `https://steadystack.dev/redeem?code=${encodeURIComponent(code)}`,
+          redirect_url: `https://steadystack.dev/redeem?code=${encodeURIComponent(licenseKey)}`,
         });
       }
 
+      // 3. Upgrade / Downgrade Events
       case "upgrade":
       case "downgrade": {
-        const license = await db.appSumoLicense.findUnique({
-          where: { code },
-        });
-
-        if (!license) {
-          return NextResponse.json({ message: "License code not found" }, { status: 404 });
+        const targetKey = licenseKey || prevLicenseKey;
+        if (!targetKey) {
+          return NextResponse.json({ message: "license_key is required" }, { status: 400 });
         }
 
-        await db.appSumoLicense.update({
-          where: { code },
-          data: {
-            tier,
-            plan: tier === 3 ? "CONSTRUCT" : "NETRUNNER",
-          },
+        let license = await db.appSumoLicense.findUnique({
+          where: { code: targetKey },
         });
 
-        if (license.userId) {
+        if (!license && prevLicenseKey) {
+          license = await db.appSumoLicense.findUnique({
+            where: { code: prevLicenseKey },
+          });
+        }
+
+        // Create or update the new license record
+        if (licenseKey && licenseKey !== prevLicenseKey) {
+          await db.appSumoLicense.upsert({
+            where: { code: licenseKey },
+            create: {
+              code: licenseKey,
+              tier,
+              plan: tier === 3 ? "CONSTRUCT" : "NETRUNNER",
+              status: "ACTIVE",
+              userId: license?.userId || null,
+            },
+            update: {
+              tier,
+              plan: tier === 3 ? "CONSTRUCT" : "NETRUNNER",
+              status: "ACTIVE",
+            },
+          });
+
+          // Mark previous license key as deactivated for traceability
+          if (prevLicenseKey) {
+            await db.appSumoLicense.updateMany({
+              where: { code: prevLicenseKey },
+              data: { status: "DEACTIVATED" },
+            });
+          }
+        } else if (license) {
+          await db.appSumoLicense.update({
+            where: { code: targetKey },
+            data: {
+              tier,
+              plan: tier === 3 ? "CONSTRUCT" : "NETRUNNER",
+            },
+          });
+        }
+
+        const activeUserId = license?.userId;
+        if (activeUserId) {
           const targetPlan = tier === 3 ? "CONSTRUCT" : "NETRUNNER";
           const tierVersion = `appsumo_tier_${tier}`;
 
           await db.subscription.update({
-            where: { userId: license.userId },
+            where: { userId: activeUserId },
             data: {
               plan: targetPlan,
               tierVersion,
@@ -101,62 +169,102 @@ export async function POST(req: NextRequest) {
           });
 
           await db.user.update({
-            where: { id: license.userId },
+            where: { id: activeUserId },
             data: { tier: targetPlan },
           });
         }
 
         return NextResponse.json({
+          message: "success",
           status: "success",
-          message: `License updated to Tier ${tier}`,
+          tier,
         });
       }
 
+      // 4. Deactivation / Refund Events
+      case "deactivate":
       case "refund": {
-        const license = await db.appSumoLicense.findUnique({
-          where: { code },
-        });
-
-        if (!license) {
-          return NextResponse.json({ message: "License code not found" }, { status: 404 });
+        if (!licenseKey) {
+          return NextResponse.json({ message: "license_key is required" }, { status: 400 });
         }
 
-        await db.appSumoLicense.update({
-          where: { code },
-          data: {
-            status: "REFUNDED",
-          },
+        const license = await db.appSumoLicense.findUnique({
+          where: { code: licenseKey },
         });
 
-        if (license.userId) {
-          await db.subscription.update({
-            where: { userId: license.userId },
+        if (license) {
+          await db.appSumoLicense.update({
+            where: { code: licenseKey },
             data: {
-              plan: "INITIATE",
-              tierVersion: "v1_launch",
-              appsumoTier: null,
-              isLifetime: false,
-              status: "CANCELED",
+              status: event === "deactivate" ? "DEACTIVATED" : "REFUNDED",
             },
           });
 
-          await db.user.update({
-            where: { id: license.userId },
-            data: { tier: "INITIATE" },
-          });
+          if (license.userId) {
+            // Check if user has any other active AppSumo licenses
+            const remainingLicenses = await db.appSumoLicense.findMany({
+              where: {
+                userId: license.userId,
+                status: "REDEEMED",
+                NOT: { code: licenseKey },
+              },
+            });
+
+            if (remainingLicenses.length > 0) {
+              const newTier = Math.min(3, remainingLicenses.length);
+              const targetPlan = newTier === 3 ? "CONSTRUCT" : "NETRUNNER";
+              await db.subscription.update({
+                where: { userId: license.userId },
+                data: {
+                  plan: targetPlan,
+                  tierVersion: `appsumo_tier_${newTier}`,
+                  appsumoTier: newTier,
+                  isLifetime: true,
+                },
+              });
+              await db.user.update({
+                where: { id: license.userId },
+                data: { tier: targetPlan },
+              });
+            } else {
+              // Downgrade to Free Initiate plan
+              await db.subscription.update({
+                where: { userId: license.userId },
+                data: {
+                  plan: "INITIATE",
+                  tierVersion: "v1_launch",
+                  appsumoTier: null,
+                  isLifetime: false,
+                  status: "CANCELED",
+                },
+              });
+              await db.user.update({
+                where: { id: license.userId },
+                data: { tier: "INITIATE" },
+              });
+            }
+          }
         }
 
         return NextResponse.json({
+          message: "success",
           status: "success",
-          message: "License refunded and workspace downgraded to free tier",
         });
       }
 
       default:
-        return NextResponse.json({ message: `Unknown action: ${action}` }, { status: 400 });
+        return NextResponse.json({ message: "success", status: "ignored" }, { status: 200 });
     }
   } catch (error: any) {
     console.error("AppSumo partner webhook error:", error);
     return NextResponse.json({ error: error?.message || "Internal server error" }, { status: 500 });
   }
+}
+
+export async function GET() {
+  return NextResponse.json({
+    status: "active",
+    service: "SteadyStack AppSumo Licensing v2 API",
+    docs: "https://docs.licensing.appsumo.com",
+  });
 }
