@@ -12,6 +12,8 @@ model Subscription {
   trialEndsAt          DateTime?
   cancelAtPeriodEnd    Boolean   @default(false)
   tierVersion          String    @default("v1_launch")
+  appsumoTier          Int?
+  isLifetime           Boolean   @default(false)
   grandfatheredAt      DateTime? @default(now())
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt

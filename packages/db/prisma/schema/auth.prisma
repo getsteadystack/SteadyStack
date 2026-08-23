@@ -27,6 +27,7 @@ model User {
   members              Member[]
   invitations          Invitation[]
   auditLogs            AuditLog[]
+  appSumoLicenses      AppSumoLicense[]
 
 
   @@unique([email])

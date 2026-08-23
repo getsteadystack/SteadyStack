@@ -16,6 +16,9 @@ import {
 import { PLANS, type PlanTier, type UsageSummary } from "@/lib/billing";
 import { toast } from "@/components/ui/sonner";
 import { syncStripeSubscriptionAction } from "@/actions/user";
+import { redeemAppSumoCode } from "@/actions/appsumo";
+import Link from "next/link";
+import { Sparkles, Key } from "lucide-react";
 
 interface BillingFormProps {
   initialUsage?: UsageSummary;
@@ -29,6 +32,8 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
   const [syncingStripe, setSyncingStripe] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
+  const [appsumoCode, setAppsumoCode] = useState("");
+  const [redeemingSumo, setRedeemingSumo] = useState(false);
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -108,6 +113,30 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
       toast.error(msg);
     } finally {
       setLoadingPlan(null);
+    }
+  };
+
+  const handleRedeemSumo = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const clean = appsumoCode.trim().toUpperCase();
+    if (!clean) {
+      toast.error("Please enter an AppSumo code");
+      return;
+    }
+
+    try {
+      setRedeemingSumo(true);
+      const res = await redeemAppSumoCode(clean);
+      if (res.success) {
+        toast.success(res.message || "AppSumo lifetime access activated!");
+        window.location.reload();
+      } else {
+        toast.error(res.error || "Failed to redeem AppSumo code");
+      }
+    } catch (err: any) {
+      toast.error(err?.message || "Redemption failed");
+    } finally {
+      setRedeemingSumo(false);
     }
   };
 
@@ -441,6 +470,49 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
             </div>
           );
         })}
+      </div>
+
+      {/* AppSumo Lifetime License Redemption Box */}
+      <div className="relative overflow-hidden rounded-xl border border-emerald-500/30 bg-[#0E1512]/60 p-5 backdrop-blur-md">
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
+              <Sparkles className="size-3" />
+              AppSumo Partner Lifetime Deal
+            </div>
+            <h4 className="text-sm font-bold text-white">Have an AppSumo License Code?</h4>
+            <p className="text-xs text-slate-300">
+              Redeem your lifetime license to instantly upgrade your workspace without recurring
+              subscription fees.
+            </p>
+          </div>
+
+          <form onSubmit={handleRedeemSumo} className="flex items-center gap-2 w-full md:w-auto">
+            <div className="relative flex-1 md:w-64">
+              <Key className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+              <input
+                type="text"
+                value={appsumoCode}
+                onChange={(e) => setAppsumoCode(e.target.value.toUpperCase())}
+                placeholder="SUMO-XXXX-YYYY-ZZZZ"
+                className="w-full pl-9 pr-3 py-2 bg-black/60 border border-white/15 focus:border-emerald-500 rounded-lg text-xs font-mono text-white outline-none"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={redeemingSumo || !appsumoCode.trim()}
+              className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold text-xs transition-all shadow-md shrink-0 flex items-center gap-1.5 cursor-pointer"
+            >
+              {redeemingSumo ? <Loader2 className="size-3.5 animate-spin" /> : "Redeem"}
+            </button>
+            <Link
+              href={"/redeem" as any}
+              className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium transition-all shrink-0"
+            >
+              Full Portal
+            </Link>
+          </form>
+        </div>
       </div>
 
       {/* Stripe Tax & VAT/GST Compliance Footer Badge */}

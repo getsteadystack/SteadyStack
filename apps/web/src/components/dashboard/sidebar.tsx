@@ -40,6 +40,8 @@ export function Sidebar() {
   const [telemetry, setTelemetry] = useState<{
     tier: string;
     isAdmin?: boolean;
+    isLifetime?: boolean;
+    appsumoTier?: number | null;
     edgeNodes: string;
     vpcProbeCount: number;
     maxVpcProbes: number;
@@ -74,9 +76,11 @@ export function Sidebar() {
   const tierColorClass =
     currentTier === "ADMIN"
       ? "text-amber-400 bg-amber-500/20 border-amber-500/40 shadow-sm"
-      : currentTier === "INITIATE"
-        ? "text-amber-500 bg-amber-500/10 border-amber-500/20"
-        : "text-primary bg-primary/10 border-primary/20";
+      : telemetry?.isLifetime
+        ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/30 shadow-sm"
+        : currentTier === "INITIATE"
+          ? "text-amber-500 bg-amber-500/10 border-amber-500/20"
+          : "text-primary bg-primary/10 border-primary/20";
 
   return (
     <aside
@@ -201,6 +205,11 @@ export function Sidebar() {
                       ADMIN
                     </span>
                   )}
+                  {telemetry?.isLifetime && (
+                    <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                      {telemetry.appsumoTier ? `LTD T${telemetry.appsumoTier}` : "LIFETIME"}
+                    </span>
+                  )}
                   <span className={`text-[9px] font-bold px-1.5 py-0.5 border ${tierColorClass}`}>
                     {displayTier}
                   </span>
@@ -226,6 +235,14 @@ export function Sidebar() {
                   {telemetry ? telemetry.regions : "3 Primary Regions"}
                 </span>
               </div>
+              {telemetry?.isLifetime && (
+                <div className="flex items-center justify-between text-[9px]">
+                  <span className="text-muted-foreground tracking-wider uppercase">TYPE</span>
+                  <span className="text-emerald-400 font-semibold font-mono">
+                    LIFETIME (NO RENEWAL)
+                  </span>
+                </div>
+              )}
               {telemetry && telemetry.maxVpcProbes > 0 && (
                 <div className="flex items-center justify-between text-[9px]">
                   <span className="text-muted-foreground tracking-wider uppercase">VPC AGENTS</span>
@@ -236,19 +253,34 @@ export function Sidebar() {
               )}
             </div>
 
-            {currentTier === "INITIATE" && (
+            {currentTier === "INITIATE" && !telemetry?.isLifetime && (
               <div className="text-[10px] text-muted-foreground leading-relaxed border-l border-amber-500/50 pl-2 py-0.5">
                 Upgrade to Pro for 7-region quorum & 30s checks.
               </div>
             )}
 
-            {currentTier !== "CONSTRUCT" && (
-              <Link
-                href="/dashboard/settings?tab=billing"
-                className="w-full bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-primary hover:text-white transition-all duration-300 py-2.5 flex items-center justify-center gap-1.5 cursor-pointer rounded-none border border-foreground/10"
-              >
-                <span>&gt; UPGRADE_LICENSE</span>
-              </Link>
+            {telemetry?.isLifetime ? (
+              currentTier === "CONSTRUCT" || telemetry.appsumoTier === 3 ? (
+                <div className="w-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider py-2 flex items-center justify-center gap-1.5 border border-emerald-500/30">
+                  <span>✓ LIFETIME_ACTIVE</span>
+                </div>
+              ) : (
+                <Link
+                  href={"/dashboard/settings?tab=billing" as any}
+                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold uppercase tracking-wider transition-all duration-300 py-2 flex items-center justify-center gap-1.5 cursor-pointer rounded-none border border-emerald-400 shadow-sm"
+                >
+                  <span>&gt; STACK_TIER</span>
+                </Link>
+              )
+            ) : (
+              currentTier !== "CONSTRUCT" && (
+                <Link
+                  href={"/dashboard/settings?tab=billing" as any}
+                  className="w-full bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-primary hover:text-white transition-all duration-300 py-2.5 flex items-center justify-center gap-1.5 cursor-pointer rounded-none border border-foreground/10"
+                >
+                  <span>&gt; UPGRADE_LICENSE</span>
+                </Link>
+              )
             )}
           </>
         ) : (

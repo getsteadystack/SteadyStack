@@ -82,6 +82,17 @@ export async function getLicenseTelemetry() {
       select: { tier: true, email: true },
     });
 
+    const subscription = await prisma.subscription.findUnique({
+      where: { userId: session.user.id },
+    });
+
+    const isLifetime = Boolean(subscription?.isLifetime || subscription?.appsumoTier);
+    const appsumoTier =
+      subscription?.appsumoTier ||
+      (subscription?.tierVersion?.startsWith("appsumo_tier_")
+        ? Number.parseInt(subscription.tierVersion.replace("appsumo_tier_", ""), 10)
+        : null);
+
     const { getUserPlan } = await import("@/lib/billing-server");
     const userPlan = await getUserPlan(session.user.id);
     const userTier = (dbUser?.tier === "ADMIN" ? "ADMIN" : userPlan).toUpperCase();
@@ -120,6 +131,8 @@ export async function getLicenseTelemetry() {
     return {
       tier: userTier,
       isAdmin,
+      isLifetime,
+      appsumoTier,
       edgeNodes,
       vpcProbeCount: probeCount,
       maxVpcProbes,
@@ -132,6 +145,8 @@ export async function getLicenseTelemetry() {
     return {
       tier: fallbackTier,
       isAdmin: false,
+      isLifetime: false,
+      appsumoTier: null,
       edgeNodes: fallbackTier === "INITIATE" ? "3 Nodes (2-of-3)" : "7 Nodes (4-of-7)",
       vpcProbeCount: 0,
       maxVpcProbes: fallbackTier === "NETRUNNER" ? 3 : fallbackTier === "CONSTRUCT" ? 10 : 0,

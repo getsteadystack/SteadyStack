@@ -1,0 +1,17 @@
+model AppSumoLicense {
+  id         String    @id @default(cuid())
+  code       String    @unique
+  tier       Int       @default(1) // 1, 2, 3
+  plan       String    @default("NETRUNNER")
+  status     String    @default("ACTIVE") // ACTIVE, REDEEMED, REVOKED, REFUNDED
+  userId     String?
+  user       User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  redeemedAt DateTime?
+  invoiceId  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([code])
+  @@index([userId])
+  @@index([status])
+}

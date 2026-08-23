@@ -53,6 +53,14 @@ export async function getUserPlan(userId: string): Promise<PlanTier> {
     } catch {}
   }
 
+  // Lifetime AppSumo license checks
+  if (subscription?.isLifetime || subscription?.appsumoTier) {
+    if (subscription.appsumoTier === 3 || subscription.plan === "CONSTRUCT") {
+      return "CONSTRUCT";
+    }
+    return "NETRUNNER";
+  }
+
   if (subscription?.status === "TRIALING") {
     const trialEnd = subscription.trialEndsAt || subscription.currentPeriodEnd;
     if (trialEnd && new Date() < new Date(trialEnd)) {
