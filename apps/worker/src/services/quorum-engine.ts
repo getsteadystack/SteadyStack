@@ -337,7 +337,7 @@ export async function processProbeResultsBatch(
       await prisma.monitorEvent.create({
         data: {
           monitorId,
-          status: newStatus === "DEGRADED" ? "DOWN" : newStatus,
+          status: newStatus,
           latency: evaluation.averageLatency,
           errorReason: evaluation.reason || `Quorum transition to ${newStatus}`,
           region: evaluation.downRegions.join(",") || "global",
@@ -349,7 +349,7 @@ export async function processProbeResultsBatch(
       await prisma.monitor.update({
         where: { id: monitorId },
         data: {
-          status: newStatus === "DEGRADED" ? "DOWN" : newStatus,
+          status: newStatus,
           lastCheck: now,
           nextCheck: new Date(now.getTime() + (monitor.interval || 60) * 1000),
         },
@@ -392,7 +392,45 @@ export async function processProbeResultsBatch(
         } catch (alertErr) {
           console.error(`[QuorumEngine] Failed to create incident or dispatch alerts:`, alertErr);
         }
-      } else if (newStatus === "UP" && prevStatus === "DOWN") {
+      } else if (newStatus === "DEGRADED" && prevStatus !== "DEGRADED") {
+        try {
+          const { IncidentService } = await import("../lib/incident-service");
+          const incidentService = new IncidentService(prisma);
+          const incident = await incidentService.createIncident(
+            monitorId,
+            `[DEGRADED] ${monitor.name}: ${evaluation.downRegions.length} Region(s) Failing`,
+            evaluation.reason || `Regional degradation in: ${evaluation.downRegions.join(", ")}`,
+          );
+
+          // Dispatch shape alert notification to user channels
+          const { queueNotification } = await import("../lib/send-notification");
+          const { recordAlertSent } = await import("../check-runner");
+          const { NotificationType } = await import("../constants");
+
+          await queueNotification(
+            env,
+            {
+              type: NotificationType.REGIONAL_DEGRADATION,
+              monitorId: monitor.id,
+              monitorName: monitor.name,
+              url: monitor.url,
+              status: "DEGRADED",
+              incidentId: incident.id,
+              reason:
+                evaluation.reason ||
+                `Regional degradation in: ${evaluation.downRegions.join(", ")}`,
+              runbookUrl: monitor.runbookUrl,
+              timestamp: new Date().toISOString(),
+              failedRegions: evaluation.downRegions.length > 0 ? evaluation.downRegions : undefined,
+            },
+            undefined as any,
+          );
+
+          await recordAlertSent(monitor.id, env);
+        } catch (alertErr) {
+          console.error(`[QuorumEngine] Failed to create degradation incident:`, alertErr);
+        }
+      } else if (newStatus === "UP" && (prevStatus === "DOWN" || prevStatus === "DEGRADED")) {
         try {
           const { IncidentService } = await import("../lib/incident-service");
           const incidentService = new IncidentService(prisma);
@@ -430,7 +468,7 @@ export async function processProbeResultsBatch(
         prisma.monitorEvent.create({
           data: {
             monitorId,
-            status: newStatus === "DEGRADED" ? "DOWN" : newStatus,
+            status: newStatus,
             latency: evaluation.averageLatency,
             region: "global",
             timestamp: now,

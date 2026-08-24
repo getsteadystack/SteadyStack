@@ -34,8 +34,8 @@ export interface MonitorAlertData {
   monitorId: string;
   monitorName: string;
   url: string;
-  status: "UP" | "DOWN";
-  previousStatus: "UP" | "DOWN";
+  status: "UP" | "DOWN" | "DEGRADED";
+  previousStatus: "UP" | "DOWN" | "DEGRADED";
   timestamp: string;
   reason?: string | undefined;
   downtimeDuration?: string | undefined;
@@ -256,7 +256,9 @@ export async function sendMonitorAlert(
   let subject =
     data.status === "DOWN"
       ? `🔴 [CRITICAL] ${data.monitorName} is DOWN`
-      : `✅ [RESOLVED] ${data.monitorName} is UP`;
+      : data.status === "DEGRADED"
+        ? `🟡 [DEGRADED] ${data.monitorName} Partial Regional Failure`
+        : `✅ [RESOLVED] ${data.monitorName} is UP`;
 
   if (data.reason?.includes("expires in") || data.reason?.includes("SSL certificate expires")) {
     subject = `⚠️ [EXPIRY WARNING] ${data.monitorName} SSL Certificate Expires Soon`;

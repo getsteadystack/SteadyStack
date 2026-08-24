@@ -21,6 +21,7 @@ export type MonitorTypeValue = (typeof MonitorType)[keyof typeof MonitorType];
 export const MonitorStatus = {
   UP: "UP",
   DOWN: "DOWN",
+  DEGRADED: "DEGRADED",
   MAINTENANCE: "MAINTENANCE",
 } as const;
 
@@ -50,6 +51,7 @@ export type CheckErrorReasonValue = (typeof CheckErrorReason)[keyof typeof Check
 export const NotificationType = {
   INCIDENT_CREATED: "INCIDENT_CREATED",
   INCIDENT_RESOLVED: "INCIDENT_RESOLVED",
+  REGIONAL_DEGRADATION: "REGIONAL_DEGRADATION",
   HIGH_LATENCY: "HIGH_LATENCY",
   SSL_EXPIRY: "SSL_EXPIRY",
   CHECK_RESULT: "check_result",

@@ -22,13 +22,18 @@ export async function sendSlackAlert(
   incidentId?: string,
 ) {
   const isDown = data.status === "DOWN";
+  const isDegraded = data.status === "DEGRADED";
 
   let headerText = isDown
     ? "🚨 Alert: " + data.monitorName + " Unreachable"
-    : "✅ Recovery: " + data.monitorName + " Restored";
+    : isDegraded
+      ? "🟡 Degradation: " + data.monitorName + " Partial Regional Failure"
+      : "✅ Recovery: " + data.monitorName + " Restored";
 
   if (type === NotificationType.INCIDENT_CREATED)
     headerText = `🔥 Incident: ${data.monitorName} is DOWN`;
+  if (type === NotificationType.REGIONAL_DEGRADATION)
+    headerText = `🟡 Degradation: ${data.monitorName} Partial Regional Failure`;
   if (type === NotificationType.INCIDENT_RESOLVED)
     headerText = `✅ Resolved: ${data.monitorName} Recovered`;
   if (type === NotificationType.HIGH_LATENCY) headerText = `⚠️ High Latency: ${data.monitorName}`;

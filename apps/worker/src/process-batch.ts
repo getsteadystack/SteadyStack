@@ -190,7 +190,13 @@ export async function processBatch(
 
             failedRegions = quorumEval.downRegions;
             const isMajorOutage = quorumEval.isGlobalOutage;
-            const overallStatus = isMajorOutage ? Status.DOWN : Status.UP;
+            const isDegraded =
+              quorumEval.isRegionalDegradation || quorumEval.finalStatus === "DEGRADED";
+            const overallStatus = isMajorOutage
+              ? Status.DOWN
+              : isDegraded
+                ? Status.DEGRADED
+                : Status.UP;
             const avgLatency = quorumEval.averageLatency || getAverageLatency(regionalResults);
 
             // AGGRESSIVE AGGREGATION: Smart Filtering to save DB space and CPU
@@ -205,7 +211,12 @@ export async function processBatch(
               monitorId: monitor.id,
               status: overallStatus as any,
               latency: avgLatency,
-              errorReason: isMajorOutage ? `${failedRegions.length} regions failing` : undefined,
+              errorReason: isMajorOutage
+                ? `${failedRegions.length} regions failing`
+                : isDegraded
+                  ? quorumEval.reason ||
+                    `${failedRegions.length} regions degraded (${failedRegions.join(", ")})`
+                  : undefined,
               region: "global",
               timestamp: new Date(),
             });
@@ -257,7 +268,12 @@ export async function processBatch(
             result = {
               status: overallStatus,
               latency: avgLatency,
-              errorReason: isMajorOutage ? `${failedRegions.length} regions failing` : undefined,
+              errorReason: isMajorOutage
+                ? `${failedRegions.length} regions failing`
+                : isDegraded
+                  ? quorumEval.reason ||
+                    `${failedRegions.length} regions degraded (${failedRegions.join(", ")})`
+                  : undefined,
             };
           } catch (regionalError) {
             console.error(
@@ -676,6 +692,41 @@ export async function processBatch(
           await recordAlertSent(monitor.id, env);
         } else if (activeIncident) {
           // Still DOWN
+          await incidentService.logStillDown(activeIncident.id);
+        }
+      } else if (currentStatus === Status.DEGRADED && !maintenanceActive) {
+        const activeIncident = activeIncidentsMap.get(monitor.id);
+        const alertable = await shouldSendAlert(monitor.id, eventCountsMap, env, prisma);
+
+        if (!activeIncident && alertable) {
+          // CREATE DEGRADATION INCIDENT
+          const incident = await incidentService.createIncident(
+            monitor.id,
+            `[DEGRADED] ${monitor.name}: ${failedRegions.length} Region(s) Failing`,
+            errorReason || `Regional degradation detected in: ${failedRegions.join(", ")}`,
+          );
+
+          // Notify (REGIONAL_DEGRADATION)
+          await queueNotification(
+            env,
+            {
+              type: NotificationType.REGIONAL_DEGRADATION,
+              monitorId: monitor.id,
+              monitorName: monitor.name,
+              url: monitor.url,
+              status: Status.DEGRADED,
+              incidentId: incident.id,
+              reason:
+                errorReason || `Regional degradation detected in: ${failedRegions.join(", ")}`,
+              runbookUrl: monitor.runbookUrl,
+              timestamp: new Date().toISOString(),
+              failedRegions: failedRegions.length > 0 ? failedRegions : undefined,
+            },
+            ctx,
+          );
+
+          await recordAlertSent(monitor.id, env);
+        } else if (activeIncident) {
           await incidentService.logStillDown(activeIncident.id);
         }
       } else if (currentStatus === Status.UP && !maintenanceActive) {

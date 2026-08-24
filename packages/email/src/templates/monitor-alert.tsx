@@ -13,16 +13,24 @@ import {
 } from "../primitives";
 import { emailTheme } from "../styles/theme";
 import type { MonitorAlertData } from "../index";
-import * as React from "react";
 
 export function MonitorAlert({ data }: { data: MonitorAlertData }) {
   const isDown = data.status === "DOWN";
+  const isDegraded = data.status === "DEGRADED";
   const isSslWarning =
     data.reason?.includes("expires in") || data.reason?.includes("SSL certificate expires");
 
-  let statusColor = isDown ? "#ef4444" : "#10b981";
-  let statusBadgeText = isDown ? "CRITICAL ALERT" : "INCIDENT RESOLVED";
-  let statusTitle = isDown ? "Service Outage Detected" : "Service Recovered & Operational";
+  let statusColor = isDown ? "#ef4444" : isDegraded ? "#f59e0b" : "#10b981";
+  let statusBadgeText = isDown
+    ? "CRITICAL ALERT"
+    : isDegraded
+      ? "REGIONAL DEGRADATION"
+      : "INCIDENT RESOLVED";
+  let statusTitle = isDown
+    ? "Service Outage Detected"
+    : isDegraded
+      ? "Partial Regional Failure Detected"
+      : "Service Recovered & Operational";
 
   if (isSslWarning) {
     statusColor = "#f59e0b";

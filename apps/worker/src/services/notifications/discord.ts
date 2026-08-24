@@ -23,13 +23,20 @@ export async function sendDiscordAlert(
   type?: NotificationTypeValue | string,
 ) {
   const isDown = data.status === "DOWN";
-  let color = isDown ? COLOR_RED : COLOR_GREEN;
+  const isDegraded = data.status === "DEGRADED";
+  let color = isDown ? COLOR_RED : isDegraded ? COLOR_ORANGE : COLOR_GREEN;
 
   let title = isDown
     ? "🚨 System Critical: " + data.monitorName + " is DOWN"
-    : "✅ System Recovered: " + data.monitorName + " is ONLINE";
+    : isDegraded
+      ? "🟡 System Degraded: " + data.monitorName + " Partial Regional Failure"
+      : "✅ System Recovered: " + data.monitorName + " is ONLINE";
 
   if (type === NotificationType.INCIDENT_CREATED) title = `🔥 Incident Opened: ${data.monitorName}`;
+  if (type === NotificationType.REGIONAL_DEGRADATION) {
+    title = `🟡 Degradation: ${data.monitorName} Partial Regional Failure`;
+    color = COLOR_ORANGE;
+  }
   if (type === NotificationType.INCIDENT_RESOLVED)
     title = `✅ Incident Resolved: ${data.monitorName}`;
   if (type === NotificationType.HIGH_LATENCY) {

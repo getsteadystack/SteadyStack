@@ -23,9 +23,9 @@ export interface NotificationMessage {
   monitorId: string;
   monitorName: string;
   url: string;
-  status: "UP" | "DOWN";
+  status: "UP" | "DOWN" | "DEGRADED";
   latency?: number | undefined;
-  previousStatus?: "UP" | "DOWN" | undefined;
+  previousStatus?: "UP" | "DOWN" | "DEGRADED" | undefined;
   timestamp: string;
   reason?: string | undefined;
   failedRegions?: string[] | undefined;
@@ -293,8 +293,10 @@ export default {
           } else if (
             monitor.user?.email &&
             (notification.status === "DOWN" ||
+              notification.status === "DEGRADED" ||
               notification.status === "UP" ||
               notification.type === NotificationType.INCIDENT_CREATED ||
+              notification.type === NotificationType.REGIONAL_DEGRADATION ||
               notification.type === NotificationType.INCIDENT_RESOLVED)
           ) {
             // Default fallback: Always notify monitor owner on status changes even if custom alert rules are unset

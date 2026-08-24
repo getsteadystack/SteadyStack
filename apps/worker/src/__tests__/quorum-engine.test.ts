@@ -499,4 +499,43 @@ describe("Quorum Engine — Zero False Positive Consensus Verification", () => {
     expect(evaluation.isGlobalOutage).toBe(false);
     expect(evaluation.finalStatus).toBe("DEGRADED");
   });
+
+  test("Shape-Aware Failure Topology: Partial 3-region failure preserves exact topology shape and blast radius", () => {
+    // 3 of 7 regions fail (weur, apac, oc), 4 regions remain UP
+    const results = createMockResults([
+      { region: "wnam", status: "UP", latency: 35 },
+      { region: "enam", status: "UP", latency: 40 },
+      { region: "weur", status: "DOWN", statusCode: 502, errorReason: "Bad Gateway", latency: 120 },
+      { region: "eeur", status: "UP", latency: 45 },
+      {
+        region: "apac",
+        status: "DOWN",
+        statusCode: 504,
+        errorReason: "Gateway Timeout",
+        latency: 5000,
+      },
+      {
+        region: "oc",
+        status: "DOWN",
+        statusCode: 500,
+        errorReason: "Internal Server Error",
+        latency: 250,
+      },
+      { region: "sam", status: "UP", latency: 85 },
+    ]);
+
+    const evaluation = evaluateQuorum("mon-shape-1", results);
+
+    // Ensure it is NOT rounded to DOWN or UP
+    expect(evaluation.finalStatus).toBe("DEGRADED");
+    expect(evaluation.isRegionalDegradation).toBe(true);
+    expect(evaluation.isGlobalOutage).toBe(false);
+    expect(evaluation.downRegions).toEqual(["weur", "apac", "oc"]);
+    expect(evaluation.upRegions).toEqual(["wnam", "enam", "eeur", "sam"]);
+    expect(evaluation.confirmedDownCount).toBe(3);
+    expect(evaluation.totalEligibleProbes).toBe(7);
+    expect(evaluation.reason).toContain(
+      "Regional Degradation in weur, apac, oc (3/7 regions failing)",
+    );
+  });
 });

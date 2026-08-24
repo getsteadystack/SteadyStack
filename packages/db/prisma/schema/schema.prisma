@@ -29,6 +29,7 @@ enum MonitorType {
 enum MonitorStatus {
   UP
   DOWN
+  DEGRADED
   PAUSED
   MAINTENANCE
 }
