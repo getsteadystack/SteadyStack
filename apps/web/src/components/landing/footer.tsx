@@ -130,7 +130,7 @@ export default function LandingFooter() {
               >
                 Is It Down? Hub
                 <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono font-bold">
-                  300+
+                  400+
                 </span>
               </Link>
               <Link

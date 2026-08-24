@@ -10,10 +10,10 @@
     }
   },
   "scripts": {
-    "db:push": "prisma db push",
-    "db:generate": "prisma generate",
-    "db:migrate": "prisma migrate dev",
-    "db:studio": "prisma studio",
+    "db:push": "bunx prisma db push",
+    "db:generate": "bunx prisma generate",
+    "db:migrate": "bunx prisma migrate dev",
+    "db:studio": "bunx prisma studio",
     "db:seed": "bun run src/seed.ts",
     "depcheck": "depcheck",
     "publint": "publint"

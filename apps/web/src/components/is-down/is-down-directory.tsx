@@ -93,7 +93,7 @@ export function IsDownDirectory({ services }: IsDownDirectoryProps) {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
           <Input
             type="search"
-            placeholder="Search 300+ services (e.g. Stripe, GitHub, OpenAI, AWS, Vercel, Twilio)..."
+            placeholder="Search 400+ services (e.g. Stripe, GitHub, OpenAI, AWS, Steam, Netflix)..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="pl-12 pr-4 py-6 text-base rounded-2xl border-border bg-card/70 shadow-lg focus-visible:ring-primary"

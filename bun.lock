@@ -1,5 +1,6 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "steadystack",
@@ -26,6 +27,7 @@
         "oxfmt": "^0.19.0",
         "oxlint": "^1.34.0",
         "prettier": "^3.9.6",
+        "prisma": "^7.4.0",
         "publint": "^0.3.23",
         "turbo": "^2.10.11",
         "typescript": "catalog:",

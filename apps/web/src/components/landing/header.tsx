@@ -106,7 +106,7 @@ export default function LandingHeader() {
   const toolLinks = [
     {
       name: "Is It Down? Hub",
-      description: "Real-time status tracking for 300+ cloud services",
+      description: "Real-time status tracking for 400+ cloud services",
       href: "/is-down",
       icon: <Activity className="size-4 text-primary" />,
     },

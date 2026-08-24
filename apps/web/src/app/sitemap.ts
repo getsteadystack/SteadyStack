@@ -67,7 +67,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
-  // Programmatic SEO: "Is [Service] Down?" status pages (300+ services)
+  // Programmatic SEO: "Is [Service] Down?" status pages (400+ services)
   sitemapEntries.push({
     url: `${baseUrl}/is-down`,
     lastModified: new Date(),
