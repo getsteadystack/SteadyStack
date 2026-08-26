@@ -371,6 +371,8 @@ export async function processBatch(
                 } else {
                   // Check if secondary proxy also just failed at the proxy level
                   const isSecondaryProxyFailure =
+                    secondaryProxy.error === ProxyError.PROXY_UNAVAILABLE ||
+                    secondaryProxy.error === ProxyError.PROXY_FETCH_FAILED ||
                     secondaryProxy.error === ProxyError.MESH_TIMEOUT ||
                     secondaryProxy.error === ProxyError.MESH_CONGESTION_FAILSAFE;
 
