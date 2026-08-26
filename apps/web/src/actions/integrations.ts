@@ -898,9 +898,10 @@ export async function connectVercelWithToken(token: string) {
         const teamsData = (await teamsRes.json()) as any;
         const teamsList = teamsData.teams || [];
 
-        for (const team of teamsList) {
-          if (team.id) {
-            await prisma.userIntegration.upsert({
+        const upsertPromises = teamsList
+          .filter((team: any) => team.id)
+          .map((team: any) =>
+            prisma.userIntegration.upsert({
               where: {
                 userId_provider_teamId: {
                   userId: session.user.id,
@@ -921,10 +922,11 @@ export async function connectVercelWithToken(token: string) {
                 teamName: team.name || team.slug,
                 teamSlug: team.slug,
               },
-            });
-            teamsCount++;
-          }
-        }
+            }),
+          );
+
+        await Promise.all(upsertPromises);
+        teamsCount += upsertPromises.length;
       }
     } catch (err) {
       console.error("Failed to fetch teams during Vercel token verification:", err);
