@@ -286,15 +286,11 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    let createdCount = 0;
-    let updatedCount = 0;
-    const resultMonitors: { id: string; name: string; action: string }[] = [];
-
-    for (const m of parsedMonitors) {
+    const monitorPromises = parsedMonitors.map(async (m) => {
       const existingId = existingByName.get(m.name.toLowerCase().trim());
+      const encryptedHeaders = m.headers ? await encryptSecret(m.headers) : null;
 
       if (existingId) {
-        const encryptedHeaders = m.headers ? await encryptSecret(m.headers) : null;
         const updated = await prisma.monitor.update({
           where: { id: existingId },
           data: {
@@ -311,14 +307,12 @@ export async function POST(req: NextRequest) {
             tags: m.tags,
           },
         });
-        updatedCount++;
-        resultMonitors.push({
+        return {
           id: updated.id,
           name: updated.name,
           action: "updated",
-        });
+        };
       } else {
-        const encryptedHeaders = m.headers ? await encryptSecret(m.headers) : null;
         const created = await prisma.monitor.create({
           data: {
             userId,
@@ -342,12 +336,24 @@ export async function POST(req: NextRequest) {
             },
           },
         });
-        createdCount++;
-        resultMonitors.push({
+        return {
           id: created.id,
           name: created.name,
           action: "created",
-        });
+        };
+      }
+    });
+
+    const resultMonitors = await Promise.all(monitorPromises);
+
+    let createdCount = 0;
+    let updatedCount = 0;
+
+    for (const res of resultMonitors) {
+      if (res.action === "created") {
+        createdCount++;
+      } else if (res.action === "updated") {
+        updatedCount++;
       }
     }
 
