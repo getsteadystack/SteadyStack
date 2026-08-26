@@ -39,11 +39,23 @@ async function runDueChecks() {
 
   const results: Array<{ id: string; name: string; status: string; latency: number }> = [];
 
+  // Separate monitors into those in maintenance and those needing active checks
+  const maintenanceMonitors = [];
+  const activeMonitors = [];
+
   for (const monitor of dueMonitors) {
-    // If under active maintenance, update next check and continue
     if (monitor.maintenanceWindows && monitor.maintenanceWindows.length > 0) {
+      maintenanceMonitors.push(monitor);
+    } else {
+      activeMonitors.push(monitor);
+    }
+  }
+
+  // Batch update all monitors in maintenance to avoid N+1 queries
+  if (maintenanceMonitors.length > 0) {
+    const updateOperations = maintenanceMonitors.map((monitor) => {
       const nextCheck = new Date(Date.now() + (monitor.interval || 60) * 1000);
-      await prisma.monitor.update({
+      return prisma.monitor.update({
         where: { id: monitor.id },
         data: {
           status: "MAINTENANCE",
@@ -51,9 +63,11 @@ async function runDueChecks() {
           nextCheck,
         },
       });
-      continue;
-    }
+    });
+    await prisma.$transaction(updateOperations);
+  }
 
+  for (const monitor of activeMonitors) {
     const start = Date.now();
     let currentStatus: "UP" | "DOWN" = "DOWN";
     let latency = 0;
