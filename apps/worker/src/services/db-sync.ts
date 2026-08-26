@@ -18,35 +18,70 @@ export async function syncFallbackToDatabase(prisma: any, env: any) {
 
   let successCount = 0;
 
-  for (const item of items) {
-    try {
-      // Use a transaction to ensure both the event is created and the monitor status is updated
-      await prisma.$transaction([
-        prisma.monitorEvent.create({
-          data: {
-            monitorId: item.monitorId,
-            status: item.status as any,
-            latency: item.latency,
-            errorReason: item.errorReason,
-            timestamp: new Date(item.timestamp),
-          },
-        }),
-        prisma.monitor.update({
-          where: { id: item.monitorId },
-          data: {
-            status: item.status as any,
-            lastCheck: new Date(item.timestamp),
-            // Note: We deliberately DON'T update nextCheck here, as the active monitor worker
-            // should be handling the schedule.
-          },
-        }),
-      ]);
-      successCount++;
-    } catch (err: any) {
-      console.error(`[Sync] Failed to sync item for monitor ${item.monitorId}:`, err.message);
+  try {
+    // Attempt to process the entire batch in a single transaction to reduce N+1 queries
+    const eventsData = items.map((item) => ({
+      monitorId: item.monitorId,
+      status: item.status as any,
+      latency: item.latency,
+      errorReason: item.errorReason,
+      timestamp: new Date(item.timestamp),
+    }));
 
-      // If it's a transient DB error, we could ideally put it back, but that risks a loop.
-      // For now, we rely on the next cron run for other items.
+    const updatePromises = items.map((item) =>
+      prisma.monitor.update({
+        where: { id: item.monitorId },
+        data: {
+          status: item.status as any,
+          lastCheck: new Date(item.timestamp),
+          // Note: We deliberately DON'T update nextCheck here, as the active monitor worker
+          // should be handling the schedule.
+        },
+      }),
+    );
+
+    await prisma.$transaction([
+      prisma.monitorEvent.createMany({ data: eventsData }),
+      ...updatePromises,
+    ]);
+
+    successCount = items.length;
+  } catch (batchErr: any) {
+    console.warn(
+      `[Sync] Batch sync failed, falling back to sequential processing:`,
+      batchErr.message,
+    );
+
+    for (const item of items) {
+      try {
+        // Use a transaction to ensure both the event is created and the monitor status is updated
+        await prisma.$transaction([
+          prisma.monitorEvent.create({
+            data: {
+              monitorId: item.monitorId,
+              status: item.status as any,
+              latency: item.latency,
+              errorReason: item.errorReason,
+              timestamp: new Date(item.timestamp),
+            },
+          }),
+          prisma.monitor.update({
+            where: { id: item.monitorId },
+            data: {
+              status: item.status as any,
+              lastCheck: new Date(item.timestamp),
+              // Note: We deliberately DON'T update nextCheck here, as the active monitor worker
+              // should be handling the schedule.
+            },
+          }),
+        ]);
+        successCount++;
+      } catch (err: any) {
+        console.error(`[Sync] Failed to sync item for monitor ${item.monitorId}:`, err.message);
+
+        // If it's a transient DB error, we could ideally put it back, but that risks a loop.
+        // For now, we rely on the next cron run for other items.
+      }
     }
   }
 
