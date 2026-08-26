@@ -234,13 +234,14 @@ export class RegionalProbe extends DurableObject<Env> {
           errorClass: isUp ? undefined : code >= 500 ? "SERVER_ERROR" : "CLIENT_ERROR",
         };
       } catch (err: any) {
-        const latency = Math.round(performance.now() - reqStart);
+        let latency = Math.round(performance.now() - reqStart);
         let errorClass = "NETWORK_ERROR";
         let errorReason = err.message || "Unknown error";
 
         if (err.name === "TimeoutError" || err.message?.includes("timeout")) {
           errorClass = "TIMEOUT";
           errorReason = `Timed out after ${timeoutSeconds}s`;
+          latency = timeoutSeconds * 1000;
         } else if (err.message?.includes("fetch")) {
           errorClass = "DNS_OR_CONNECT_FAILURE";
         }
