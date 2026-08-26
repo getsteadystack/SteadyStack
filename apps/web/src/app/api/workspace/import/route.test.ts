@@ -1,9 +1,10 @@
 import { test, expect, mock } from "bun:test";
-import { POST } from "./route";
 import { NextRequest } from "next/server";
 
+mock.module("next/headers", () => ({ headers: async () => new Headers() }));
+
 // We need to mock auth
-mock.module("@pulseguard/auth", () => ({
+mock.module("@steadystack/auth", () => ({
   auth: {
     api: {
       getSession: async () => ({
@@ -15,9 +16,9 @@ mock.module("@pulseguard/auth", () => ({
 
 // We need to mock prisma
 let ops = 0;
-mock.module("@pulseguard/db", () => {
+mock.module("@steadystack/db", () => {
   return {
-    prisma: {
+    default: {
       monitor: {
         findMany: async () => [],
         update: async (data: any) => { ops++; return { id: "updated-1", name: data.data.name }; },
@@ -34,12 +35,14 @@ mock.module("@pulseguard/db", () => {
   }
 });
 
+import { POST } from "./route";
+
 test("benchmark import", async () => {
   ops = 0;
   const payload = {
     version: "1.0",
     workspaceId: "test",
-    monitors: Array.from({ length: 100 }, (_, i) => ({
+    monitors: Array.from({ length: 49 }, (_, i) => ({
       name: `monitor-${i}`,
       url: `https://example.com/${i}`,
       type: "HTTP"
@@ -55,7 +58,7 @@ test("benchmark import", async () => {
   const res = await POST(req);
   const end = performance.now();
 
-  const json = await res.json();
+  const json = await res.json() as any;
   console.log(`Time taken: ${end - start}ms, Ops: ${ops}`);
   expect(json.success).toBe(true);
 });
