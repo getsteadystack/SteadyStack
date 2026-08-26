@@ -165,13 +165,26 @@ export async function checkSingleRegion(
       errorClass: isUp ? undefined : statusNum >= 500 ? "SERVER_ERROR" : "CLIENT_ERROR",
     };
   } catch (error: any) {
+    let errorClass = "NETWORK_ERROR";
+    let errorReason = error instanceof Error ? error.message : "Unknown error";
+    let latency = Math.round(performance.now() - start);
+
+    if (error.name === "TimeoutError" || error.message?.includes("timeout")) {
+      errorClass = "TIMEOUT";
+      const timeoutSeconds = monitor.timeout || 10;
+      errorReason = `Timed out after ${timeoutSeconds}s`;
+      latency = timeoutSeconds * 1000;
+    } else if (error.message?.includes("fetch")) {
+      errorClass = "DNS_OR_CONNECT_FAILURE";
+    }
+
     return {
       region: resolvedRegion,
       status: "DOWN",
-      latency: Math.round(performance.now() - start),
+      latency,
       timestamp: new Date(),
-      errorReason: error instanceof Error ? error.message : "Unknown error",
-      errorClass: "NETWORK_ERROR",
+      errorReason,
+      errorClass,
     };
   }
 }
