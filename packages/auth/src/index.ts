@@ -13,13 +13,6 @@ import {
 } from "@steadystack/email";
 import { organization } from "better-auth/plugins";
 
-console.log("🔧 Initializing BetterAuth with config:", {
-  hasSecret: !!env.BETTER_AUTH_SECRET,
-  baseURL: env.BETTER_AUTH_URL,
-  corsOrigin: env.CORS_ORIGIN,
-  appUrl: env.NEXT_PUBLIC_APP_URL,
-});
-
 const safeDbUrl = env.DATABASE_URL || "postgresql://dummy:dummy@localhost:5432/dummy";
 const safeAuthUrl = env.BETTER_AUTH_URL || "http://localhost:3000";
 
@@ -252,5 +245,3 @@ export const auth = betterAuth({
     }),
   ],
 });
-
-console.log("✅ BetterAuth initialized successfully");
