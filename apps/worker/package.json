@@ -10,6 +10,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "re2js": "^1.2.14",
     "@cloudflare/puppeteer": "^0.0.9",
     "@steadystack/core": "workspace:*",
     "@steadystack/db": "workspace:*",
