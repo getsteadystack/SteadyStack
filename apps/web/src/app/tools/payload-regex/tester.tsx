@@ -131,9 +131,9 @@ interface AuditResult {
   status: number;
 }
 
-function getHighlightedHtml(text: string, patternString: string) {
+function HighlightedText({ text, patternString }: { text: string; patternString: string }) {
   if (!patternString) {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return <>{text}</>;
   }
   try {
     const regex = new RegExp(patternString, "gi");
@@ -149,34 +149,42 @@ function getHighlightedHtml(text: string, patternString: string) {
     }
 
     if (matches.length === 0) {
-      return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      return <>{text}</>;
     }
 
-    let result = "";
+    const elements: React.ReactNode[] = [];
     let lastIndex = 0;
 
-    for (const { start, end } of matches) {
+    for (let i = 0; i < matches.length; i++) {
+      const { start, end } = matches[i];
       if (start < lastIndex) continue;
 
       const before = text.substring(lastIndex, start);
-      result += before.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+      if (before) {
+        elements.push(<span key={`text-${lastIndex}-${start}`}>{before}</span>);
+      }
 
       const matchedText = text.substring(start, end);
-      const escapedMatch = matchedText
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;");
-      result += `<mark class="bg-yellow-500/30 text-yellow-500 border border-yellow-500/20 rounded px-0.5 font-bold animate-pulse">${escapedMatch}</mark>`;
+      elements.push(
+        <mark
+          key={`mark-${start}-${end}-${i}`}
+          className="bg-yellow-500/30 text-yellow-500 border border-yellow-500/20 rounded px-0.5 font-bold animate-pulse"
+        >
+          {matchedText}
+        </mark>,
+      );
 
       lastIndex = end;
     }
 
     const after = text.substring(lastIndex);
-    result += after.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    if (after) {
+      elements.push(<span key={`text-${lastIndex}-end`}>{after}</span>);
+    }
 
-    return result;
+    return <>{elements}</>;
   } catch (e) {
-    return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    return <>{text}</>;
   }
 }
 
@@ -683,12 +691,9 @@ export function PayloadTester() {
                       </div>
                     )}
                     <div className="absolute top-6 left-2 bottom-6 w-px bg-primary/10" />
-                    <pre
-                      className="whitespace-pre-wrap break-all leading-relaxed pl-4"
-                      dangerouslySetInnerHTML={{
-                        __html: getHighlightedHtml(result.payload, pattern),
-                      }}
-                    />
+                    <pre className="whitespace-pre-wrap break-all leading-relaxed pl-4">
+                      <HighlightedText text={result.payload} patternString={pattern} />
+                    </pre>
                   </div>
                 </div>
 
@@ -767,12 +772,9 @@ export function PayloadTester() {
               </Button>
             </div>
             <div className="flex-1 bg-muted/40 border border-primary/20 rounded-xl p-8 overflow-auto font-mono text-xs leading-loose custom-scrollbar">
-              <pre
-                className="text-foreground whitespace-pre-wrap break-all pl-4"
-                dangerouslySetInnerHTML={{
-                  __html: getHighlightedHtml(result.payload, pattern),
-                }}
-              />
+              <pre className="text-foreground whitespace-pre-wrap break-all pl-4">
+                <HighlightedText text={result.payload} patternString={pattern} />
+              </pre>
             </div>
           </motion.div>
         )}
