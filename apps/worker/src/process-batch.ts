@@ -345,10 +345,10 @@ export async function processBatch(
                 // confirmation of DOWN. Proxy failures (CORS blocks, scraper bans, etc.) are
                 // unreliable signals for sites like Google that block these proxy services.
                 const isProxyFailure =
-                  proxyResult.error === ProxyError.PROXY_UNAVAILABLE ||
-                  proxyResult.error === ProxyError.PROXY_FETCH_FAILED ||
-                  proxyResult.error === ProxyError.MESH_CONGESTION_FAILSAFE ||
-                  proxyResult.error === ProxyError.MESH_TIMEOUT;
+                  proxyResult.error &&
+                  !proxyResult.error.startsWith("TARGET_HTTP_") &&
+                  !proxyResult.error.startsWith("HTTP_") &&
+                  !proxyResult.error.startsWith("CLUSTER_HTTP_");
 
                 if (isProxyFailure) {
                   console.warn(
@@ -371,10 +371,10 @@ export async function processBatch(
                 } else {
                   // Check if secondary proxy also just failed at the proxy level
                   const isSecondaryProxyFailure =
-                    secondaryProxy.error === ProxyError.PROXY_UNAVAILABLE ||
-                    secondaryProxy.error === ProxyError.PROXY_FETCH_FAILED ||
-                    secondaryProxy.error === ProxyError.MESH_TIMEOUT ||
-                    secondaryProxy.error === ProxyError.MESH_CONGESTION_FAILSAFE;
+                    secondaryProxy.error &&
+                    !secondaryProxy.error.startsWith("TARGET_HTTP_") &&
+                    !secondaryProxy.error.startsWith("HTTP_") &&
+                    !secondaryProxy.error.startsWith("CLUSTER_HTTP_");
 
                   if (isProxyFailure && isSecondaryProxyFailure) {
                     // BOTH proxies failed at the infrastructure level — this is a proxy network
