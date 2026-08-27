@@ -444,6 +444,7 @@ export async function performInternalRequest(
     // Classify Error
     if (err.name === "TimeoutError" || (err.message && err.message.includes("Stats"))) {
       errorReason = CheckErrorReason.TIMEOUT;
+      currentStatus = Status.DEGRADED;
     } else if (
       err.code === "ECONNREFUSED" ||
       (err.message && err.message.includes("Connection refused"))

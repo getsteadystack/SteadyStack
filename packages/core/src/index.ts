@@ -620,10 +620,11 @@ export async function checkHttpUniversal(
       break;
     } catch (err: any) {
       const latency = Date.now() - start;
+      const errorReason = diagnoseError(err, currentUrl);
       return {
-        status: "DOWN",
+        status: errorReason.startsWith("TIMEOUT") ? "DEGRADED" : "DOWN",
         latency,
-        errorReason: diagnoseError(err, currentUrl),
+        errorReason,
         bodyText: "",
       };
     }
