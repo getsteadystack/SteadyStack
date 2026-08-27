@@ -180,7 +180,7 @@ export async function checkSingleRegion(
 
     return {
       region: resolvedRegion,
-      status: "DOWN",
+      status: errorClass === "TIMEOUT" ? "DEGRADED" : "DOWN",
       latency,
       timestamp: new Date(),
       errorReason,

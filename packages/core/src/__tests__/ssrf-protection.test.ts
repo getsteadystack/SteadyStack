@@ -61,7 +61,7 @@ describe("Probe Layer SSRF Security & Resource Abuse Protection Tests", () => {
       const res = await checkHttpUniversal("https://httpbin.org/delay/10", {
         timeoutSeconds: 1,
       });
-      expect(res.status).toBe("DOWN");
+      expect(res.status).toBe("DEGRADED");
     });
   });
 });
