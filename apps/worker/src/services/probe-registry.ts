@@ -267,6 +267,7 @@ export async function checkProbeHeartbeats(prisma: any): Promise<ProbeHeartbeatR
 
   const results: ProbeHeartbeatResult[] = [];
   const now = Date.now();
+  const disconnectedProbeIds: string[] = [];
 
   for (const probe of probes) {
     if (!probe.lastHeartbeat) {
@@ -283,16 +284,20 @@ export async function checkProbeHeartbeats(prisma: any): Promise<ProbeHeartbeatR
     const status = secondsSince > maxGap ? "DOWN" : "UP";
 
     if (status === "DOWN") {
-      await prisma.probe.update({
-        where: { id: probe.id },
-        data: { status: "DISCONNECTED" },
-      });
+      disconnectedProbeIds.push(probe.id);
     }
 
     results.push({
       probeId: probe.id,
       status,
       secondsSinceLastHeartbeat: secondsSince,
+    });
+  }
+
+  if (disconnectedProbeIds.length > 0) {
+    await prisma.probe.updateMany({
+      where: { id: { in: disconnectedProbeIds } },
+      data: { status: "DISCONNECTED" },
     });
   }
 
