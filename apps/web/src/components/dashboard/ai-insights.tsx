@@ -27,6 +27,21 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+export interface InsightAnalysisData {
+  analysis?: string;
+  guidance?: string;
+  technicalMetrics?: {
+    zScore?: number;
+    latency?: number;
+    baselineMean?: number;
+    deltaPercent?: number;
+    impactedRegions?: string[];
+  };
+  preventativeAction?: string;
+  provider?: "openrouter" | "ollama" | "openai" | "heuristic" | string;
+  modelName?: string;
+}
+
 export interface InsightMetadata {
   zScore?: number;
   score?: number;
@@ -36,17 +51,20 @@ export interface InsightMetadata {
   avg?: number;
   baselineMean?: number;
   impactedRegions?: string[];
+  aiAnalysis?: InsightAnalysisData;
+  analyzedAt?: string;
   [key: string]: unknown;
 }
 
 export interface MonitorInsight {
   id: string;
   monitorId: string;
-  type: "ANOMALY" | "ADVICE" | "PREDICTION";
-  severity: "INFO" | "WARNING" | "CRITICAL";
+  type: "ANOMALY" | "ADVICE" | "PREDICTION" | (string & {});
+  severity: "INFO" | "WARNING" | "CRITICAL" | (string & {});
   message: string;
-  metadata?: InsightMetadata;
+  metadata?: InsightMetadata | Record<string, any> | any;
   createdAt: Date;
+  dismissed?: boolean;
   monitor: {
     name: string;
   };
@@ -114,7 +132,8 @@ export function AIInsights({ insights: initialInsights }: AIInsightsProps) {
 
   if (insights.length === 0) return null;
 
-  const currentAnalysis = selectedInsight?.metadata?.aiAnalysis;
+  const metadata = (selectedInsight?.metadata as InsightMetadata | undefined);
+  const currentAnalysis = metadata?.aiAnalysis;
 
   return (
     <div className="flex flex-col gap-4 mb-6">
@@ -266,26 +285,26 @@ export function AIInsights({ insights: initialInsights }: AIInsightsProps) {
                   </div>
                   <div className="space-y-3 font-sans">
                     {(currentAnalysis?.technicalMetrics?.zScore ||
-                      selectedInsight.metadata?.zScore ||
-                      selectedInsight.metadata?.score) && (
+                      metadata?.zScore ||
+                      metadata?.score) && (
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-muted-foreground">Significance Z-Score:</span>
                         <span className="font-bold text-amber-500">
                           {Number(
                             currentAnalysis?.technicalMetrics?.zScore ||
-                              selectedInsight.metadata?.zScore ||
-                              selectedInsight.metadata?.score,
+                              metadata?.zScore ||
+                              metadata?.score,
                           ).toFixed(2)}
                         </span>
                       </div>
                     )}
                     {(currentAnalysis?.technicalMetrics?.latency ||
-                      selectedInsight.metadata?.latency) && (
+                      metadata?.latency) && (
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-muted-foreground">Observed Latency:</span>
                         <span className="font-bold text-primary">
                           {currentAnalysis?.technicalMetrics?.latency ||
-                            selectedInsight.metadata?.latency}
+                            metadata?.latency}
                           ms
                         </span>
                       </div>
