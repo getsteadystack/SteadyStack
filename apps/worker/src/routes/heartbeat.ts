@@ -21,7 +21,7 @@ export const heartbeatRoute: RouteHandler = withErrorHandling(async ({ request, 
   const prisma = getPrisma(env.DATABASE_URL);
 
   // Look up monitor by heartbeat token
-  const monitor = await (prisma.monitor as any).findFirst({
+  const monitor = await prisma.monitor.findFirst({
     where: { heartbeatToken: token, type: "HEARTBEAT" },
     select: { id: true, name: true },
   });

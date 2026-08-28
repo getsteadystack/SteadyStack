@@ -168,16 +168,6 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
 
   if (!key) {
     if (isDevOrTest) {
-      const recipient = Array.isArray(to) ? to.join(", ") : to;
-      console.info(`\n==================================================`);
-      console.info(`📧 [DEV EMAIL FALLBACK] Email Simulation`);
-      console.info(`📬 From:    ${from}`);
-      console.info(`👤 To:      ${recipient}`);
-      console.info(`📝 Subject: ${subject}`);
-      if (attachments && attachments.length > 0) {
-        console.info(`📎 Attachments: ${attachments.map((a) => a.filename).join(", ")}`);
-      }
-      console.info(`==================================================\n`);
       return { id: "dev-mock-email-id" };
     }
     throw new Error("[SteadyStack Email] RESEND_API_KEY is not configured. Email cannot be sent.");
