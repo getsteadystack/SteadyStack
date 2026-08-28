@@ -4,7 +4,10 @@ import { auth } from "@steadystack/auth";
 import { headers } from "next/headers";
 import prisma from "@steadystack/db";
 import { revalidatePath } from "next/cache";
-import { assertMonitorLimits, checkAndNotifyUsageLimits } from "@/lib/billing-server";
+import {
+  assertMonitorLimits,
+  checkAndNotifyUsageLimits,
+} from "@/lib/billing-server";
 import { getActiveWorkspace } from "@/actions/team";
 
 export interface UptimeRobotMonitorItem {
@@ -82,25 +85,27 @@ export async function fetchUptimeRobotMonitors(apiKey: string): Promise<{
 
     const rawMonitors: UptimeRobotMonitorItem[] = data.monitors || [];
 
-    const normalizedMonitors: NormalizedImportMonitor[] = rawMonitors.map((m) => {
-      let mappedType: "HTTP" | "PING" | "PORT" = "HTTP";
-      if (m.type === 3) mappedType = "PING";
-      else if (m.type === 4) mappedType = "PORT";
+    const normalizedMonitors: NormalizedImportMonitor[] = rawMonitors.map(
+      (m) => {
+        let mappedType: "HTTP" | "PING" | "PORT" = "HTTP";
+        if (m.type === 3) mappedType = "PING";
+        else if (m.type === 4) mappedType = "PORT";
 
-      let parsedPort: number | undefined = undefined;
-      if (m.port && !isNaN(parseInt(m.port, 10))) {
-        parsedPort = parseInt(m.port, 10);
-      }
+        let parsedPort: number | undefined = undefined;
+        if (m.port && !isNaN(parseInt(m.port, 10))) {
+          parsedPort = parseInt(m.port, 10);
+        }
 
-      return {
-        name: m.friendly_name || m.url || `Monitor ${m.id}`,
-        url: m.url || "",
-        type: mappedType,
-        interval: 60, // Upgrade to SteadyStack standard 60-second polling!
-        port: parsedPort,
-        selected: true,
-      };
-    });
+        return {
+          name: m.friendly_name || m.url || `Monitor ${m.id}`,
+          url: m.url || "",
+          type: mappedType,
+          interval: 60, // Upgrade to SteadyStack standard 60-second polling!
+          port: parsedPort,
+          selected: true,
+        };
+      },
+    );
 
     return {
       success: true,
@@ -151,7 +156,7 @@ export async function importUptimeRobotMonitors(
 
     const active = await getActiveWorkspace();
 
-    const mappedData = monitorsToImport.map((item) => {
+    const recordsToInsert = monitorsToImport.map(item => {
       let targetUrl = item.url || "https://example.com";
       if (item.type === "PING" && targetUrl) {
         targetUrl = targetUrl.startsWith("ping://")
@@ -159,9 +164,14 @@ export async function importUptimeRobotMonitors(
           : `ping://${targetUrl.replace(/^ping:\/\//, "")}`;
       } else if (item.type === "PORT" && targetUrl) {
         const portNum = item.port || 80;
-        targetUrl = targetUrl.startsWith("tcp://") ? targetUrl : `tcp://${targetUrl}:${portNum}`;
+        targetUrl = targetUrl.startsWith("tcp://")
+          ? targetUrl
+          : `tcp://${targetUrl}:${portNum}`;
       } else if (item.type === "HTTP" && targetUrl) {
-        if (!targetUrl.startsWith("http://") && !targetUrl.startsWith("https://")) {
+        if (
+          !targetUrl.startsWith("http://") &&
+          !targetUrl.startsWith("https://")
+        ) {
           targetUrl = `https://${targetUrl}`;
         }
       }
@@ -172,7 +182,7 @@ export async function importUptimeRobotMonitors(
         type: item.type as any,
         interval: item.interval || 60,
         timeout: 10,
-        status: "UP" as any,
+        status: "UP" as const,
         checkRegions: JSON.stringify(["us-east", "eu-central", "ap-tokyo"]),
         userId: session.user.id,
         organizationId: active?.id,
@@ -180,8 +190,9 @@ export async function importUptimeRobotMonitors(
     });
 
     const result = await prisma.monitor.createMany({
-      data: mappedData,
+      data: recordsToInsert,
     });
+
     const createdCount = result.count;
 
     checkAndNotifyUsageLimits(session.user.id).catch(() => {});

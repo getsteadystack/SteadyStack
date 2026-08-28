@@ -59,16 +59,20 @@ export async function importThirdPartyMonitors(projects: IntegrationProject[]) {
       };
     }
 
-    // 3. Bulk create monitors
-    const createdMonitors = [];
-    for (const project of projects) {
-      // Ensure the URL is valid HTTP/S if not ping
+    // 3. Fetch user channels once
+    const userChannels = await prisma.notificationChannel.findMany({
+      where: { userId },
+      take: 5,
+    });
+
+    // 4. Bulk create monitors using a transaction to avoid N+1 network roundtrips
+    const monitorPromises = projects.map((project) => {
       let finalUrl = project.url;
       if (!finalUrl.includes("://")) {
         finalUrl = project.type === "PING" ? `ping://${finalUrl}` : `https://${finalUrl}`;
       }
 
-      const monitor = await prisma.monitor.create({
+      return prisma.monitor.create({
         data: {
           name: project.name,
           url: finalUrl,
@@ -83,16 +87,15 @@ export async function importThirdPartyMonitors(projects: IntegrationProject[]) {
           method: "GET",
         },
       });
+    });
 
-      // Auto-create default alert rule
+    const createdMonitors = await prisma.$transaction(monitorPromises);
+
+    // 5. Bulk create alert rules using a transaction
+    if (userChannels.length > 0) {
       try {
-        const userChannels = await prisma.notificationChannel.findMany({
-          where: { userId },
-          take: 5,
-        });
-
-        if (userChannels.length > 0) {
-          await prisma.alertRule.create({
+        const alertRulePromises = createdMonitors.map((monitor) =>
+          prisma.alertRule.create({
             data: {
               monitorId: monitor.id,
               trigger: "STATUS_CHANGE",
@@ -102,13 +105,12 @@ export async function importThirdPartyMonitors(projects: IntegrationProject[]) {
                 connect: userChannels.map((ch) => ({ id: ch.id })),
               },
             },
-          });
-        }
+          })
+        );
+        await prisma.$transaction(alertRulePromises);
       } catch (err) {
-        console.error("Failed to auto-create alert rule during import:", err);
+        console.error("Failed to auto-create alert rules during import:", err);
       }
-
-      createdMonitors.push(monitor);
     }
 
     revalidatePath("/dashboard");
@@ -292,7 +294,7 @@ export async function fetchVercelProjects(
       scope: { type: "personal" | "team"; slug: string; name: string };
     }> = [];
 
-    for (const integration of integrations) {
+    const fetchPromises = integrations.map(async (integration) => {
       const authHeaders = {
         Authorization: `Bearer ${integration.accessToken}`,
       };
@@ -309,27 +311,32 @@ export async function fetchVercelProjects(
           console.error(
             `Failed to fetch projects for Vercel integration ${integration.id} (${res.status}): ${text}`,
           );
-          continue;
+          return [];
         }
         const data = (await res.json()) as any;
         const scopeSlug = isPersonal ? "personal" : integration.teamSlug || "team";
         const scopeName = isPersonal ? "Personal" : integration.teamName || "Team";
 
         if (data.projects) {
-          for (const p of data.projects) {
-            allProjects.push({
-              project: p,
-              scope: {
-                type: isPersonal ? "personal" : "team",
-                slug: scopeSlug,
-                name: scopeName,
-              },
-            });
-          }
+          return data.projects.map((p: any) => ({
+            project: p,
+            scope: {
+              type: isPersonal ? "personal" : "team",
+              slug: scopeSlug,
+              name: scopeName,
+            },
+          }));
         }
+        return [];
       } catch (err) {
         console.error(`Error fetching projects for integration ${integration.id}:`, err);
+        return [];
       }
+    });
+
+    const results = await Promise.all(fetchPromises);
+    for (const projects of results) {
+      allProjects.push(...projects);
     }
 
     const data: ExternalResource[] = [];
