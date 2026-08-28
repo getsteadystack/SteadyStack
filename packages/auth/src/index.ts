@@ -18,11 +18,15 @@ const safeAuthUrl = env.BETTER_AUTH_URL || "http://localhost:3000";
 
 const prisma = getPrisma(safeDbUrl);
 
+if (!env.BETTER_AUTH_SECRET) {
+  throw new Error("BETTER_AUTH_SECRET is required");
+}
+
 export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  secret: env.BETTER_AUTH_SECRET || "dummy-secret-for-build-123456789",
+  secret: env.BETTER_AUTH_SECRET,
   baseURL: safeAuthUrl,
   advanced: {
     useSecureCookies: safeAuthUrl.startsWith("https"),
