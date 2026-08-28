@@ -472,7 +472,8 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
         })}
       </div>
 
-      {/* AppSumo Lifetime License Redemption Box */}
+      {/* AppSumo Lifetime License Redemption Box (Commented out) */}
+      {/*
       <div className="relative overflow-hidden rounded-xl border border-emerald-500/30 bg-[#0E1512]/60 p-5 backdrop-blur-md">
         <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="space-y-1">
@@ -514,6 +515,7 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
           </form>
         </div>
       </div>
+      */}
 
       {/* Stripe Tax & VAT/GST Compliance Footer Badge */}
       <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-slate-400 font-mono text-[11px] pt-4 border-t border-slate-800/60">
