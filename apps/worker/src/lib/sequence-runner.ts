@@ -19,8 +19,8 @@ export interface SequenceStep {
 /**
  * Traverses an object by a dot-path notation (e.g. "user.profile.id").
  */
-function getValueByPath(obj: any, path: string): any {
-  return path.split(".").reduce((acc, part) => acc && acc[part], obj);
+function getValueByPath<T = unknown>(obj: unknown, path: string): T | undefined {
+  return path.split(".").reduce((acc: any, part) => acc && acc[part], obj) as T | undefined;
 }
 
 /**
