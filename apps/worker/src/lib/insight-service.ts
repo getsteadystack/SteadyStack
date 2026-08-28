@@ -24,7 +24,7 @@ export class InsightService {
     type: InsightType;
     severity: InsightSeverity;
     message: string;
-    metadata?: any;
+    metadata?: Record<string, unknown>;
   }) {
     // Limit spam: Only create if no active insight of same type in last 5 minutes
     // unless severity is CRITICAL.
@@ -46,7 +46,7 @@ export class InsightService {
         data: {
           message: data.message,
           createdAt: new Date(), // Push to top
-          metadata: data.metadata,
+          ...(data.metadata !== undefined ? { metadata: data.metadata as any } : {}),
         },
       });
     }
@@ -57,7 +57,7 @@ export class InsightService {
         type: data.type as any,
         severity: data.severity as any,
         message: data.message,
-        metadata: data.metadata,
+        ...(data.metadata !== undefined ? { metadata: data.metadata as any } : {}),
       },
     });
 
