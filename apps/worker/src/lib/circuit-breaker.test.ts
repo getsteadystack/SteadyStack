@@ -1,19 +1,19 @@
-import { describe, expect, it, mock, beforeEach } from "bun:test";
+import { describe, expect, it, mock, beforeEach, spyOn, afterEach } from "bun:test";
 
-const mockGet = mock();
-const mockSet = mock();
-const mockIncr = mock();
-const mockDel = mock();
-const mockExpire = mock();
+const getMock = mock();
+const setMock = mock();
+const delMock = mock();
+const incrMock = mock();
+const expireMock = mock();
 
 mock.module("@upstash/redis/cloudflare", () => {
   return {
     Redis: class {
-      get = mockGet;
-      set = mockSet;
-      incr = mockIncr;
-      del = mockDel;
-      expire = mockExpire;
+      get = getMock;
+      set = setMock;
+      del = delMock;
+      incr = incrMock;
+      expire = expireMock;
     }
   };
 });
@@ -22,101 +22,132 @@ import { DatabaseCircuitBreaker } from "./circuit-breaker";
 
 describe("DatabaseCircuitBreaker", () => {
   let cb: DatabaseCircuitBreaker;
+  const originalDateNow = Date.now;
 
   beforeEach(() => {
-    mockGet.mockClear();
-    mockSet.mockClear();
-    mockIncr.mockClear();
-    mockDel.mockClear();
-    mockExpire.mockClear();
+    getMock.mockReset();
+    setMock.mockReset();
+    delMock.mockReset();
+    incrMock.mockReset();
+    expireMock.mockReset();
+    cb = new DatabaseCircuitBreaker("http://localhost", "token");
+  });
 
-    cb = new DatabaseCircuitBreaker("mock-url", "mock-token");
+  afterEach(() => {
+    Date.now = originalDateNow;
   });
 
   describe("getState", () => {
-    it("should return CLOSED if no trip state is found", async () => {
-      mockGet.mockResolvedValueOnce(null);
+    it("should return CLOSED if trippedAt is not set", async () => {
+      getMock.mockResolvedValue(null);
       const state = await cb.getState();
       expect(state).toBe("CLOSED");
+      expect(getMock).toHaveBeenCalledWith("steadystack:cb:tripped_at");
     });
 
-    it("should return OPEN if recently tripped", async () => {
-      // Tripped 10 seconds ago
-      const trippedAt = Date.now() - 10 * 1000;
-      mockGet.mockResolvedValueOnce(trippedAt);
+    it("should return OPEN if tripped within recovery time", async () => {
+      const now = 1000000000000;
+      Date.now = () => now;
+      // 30 seconds ago
+      getMock.mockResolvedValue(now - 30000);
       const state = await cb.getState();
       expect(state).toBe("OPEN");
     });
 
-    it("should return HALF_OPEN if RECOVERY_TIME has elapsed", async () => {
-      // Tripped 65 seconds ago (> 60s RECOVERY_TIME)
-      const trippedAt = Date.now() - 65 * 1000;
-      mockGet.mockResolvedValueOnce(trippedAt);
+    it("should return HALF_OPEN if tripped before recovery time", async () => {
+      const now = 1000000000000;
+      Date.now = () => now;
+      // 61 seconds ago
+      getMock.mockResolvedValue(now - 61000);
       const state = await cb.getState();
       expect(state).toBe("HALF_OPEN");
     });
 
-    it("should fallback to CLOSED and handle Redis errors gracefully", async () => {
-      mockGet.mockRejectedValueOnce(new Error("Redis connection failed"));
+    it("should return CLOSED on Redis error and log it", async () => {
+      getMock.mockRejectedValue(new Error("Redis offline"));
+      const consoleErrorSpy = spyOn(console, "error").mockImplementation(() => {});
       const state = await cb.getState();
       expect(state).toBe("CLOSED");
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("should ignore local proxy errors in log", async () => {
+      getMock.mockRejectedValue(new Error("1016 proxy error"));
+      const consoleErrorSpy = spyOn(console, "error").mockImplementation(() => {});
+      const state = await cb.getState();
+      expect(state).toBe("CLOSED");
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
     });
   });
 
   describe("recordFailure", () => {
-    it("should ignore non-connection related errors", async () => {
-      await cb.recordFailure(new Error("Some random error"));
-      expect(mockIncr).not.toHaveBeenCalled();
+    it("should ignore non-connection errors", async () => {
+      await cb.recordFailure(new Error("Some other error"));
+      expect(incrMock).not.toHaveBeenCalled();
     });
 
-    it("should increment failure count for connection pool errors", async () => {
-      mockIncr.mockResolvedValueOnce(2);
+    it("should process connection errors and not trip if below threshold", async () => {
+      incrMock.mockResolvedValue(1);
+      await cb.recordFailure(new Error("ECONNREFUSED"));
+      expect(incrMock).toHaveBeenCalledWith("steadystack:cb:fail_count");
+      expect(expireMock).toHaveBeenCalledWith("steadystack:cb:fail_count", 300);
+      expect(setMock).not.toHaveBeenCalled();
+    });
+
+    it("should not set expiry if fails > 1 but < threshold", async () => {
+      incrMock.mockResolvedValue(2);
       await cb.recordFailure(new Error("connection pool exhausted"));
-      expect(mockIncr).toHaveBeenCalledWith("steadystack:cb:fail_count");
-      expect(mockSet).not.toHaveBeenCalled(); // Shouldn't trip yet
+      expect(incrMock).toHaveBeenCalled();
+      expect(expireMock).not.toHaveBeenCalled();
+      expect(setMock).not.toHaveBeenCalled();
     });
 
-    it("should set expiration on the first failure", async () => {
-      mockIncr.mockResolvedValueOnce(1);
-      await cb.recordFailure(new Error("ECONNREFUSED"));
-      expect(mockIncr).toHaveBeenCalled();
-      expect(mockExpire).toHaveBeenCalledWith("steadystack:cb:fail_count", 300);
-    });
+    it("should trip circuit if failures reach threshold", async () => {
+      incrMock.mockResolvedValue(5);
+      const now = 1000000000000;
+      Date.now = () => now;
 
-    it("should trip the circuit when THRESHOLD is reached", async () => {
-      mockIncr.mockResolvedValueOnce(5);
+      const consoleWarnSpy = spyOn(console, "warn").mockImplementation(() => {});
       await cb.recordFailure(new Error("MaxClientsInSessionMode"));
-      expect(mockIncr).toHaveBeenCalled();
-      expect(mockSet).toHaveBeenCalledWith("steadystack:cb:tripped_at", expect.any(Number));
+
+      expect(setMock).toHaveBeenCalledWith("steadystack:cb:tripped_at", now);
+      expect(consoleWarnSpy).toHaveBeenCalled();
+      consoleWarnSpy.mockRestore();
     });
 
-    it("should handle Redis errors gracefully during recordFailure", async () => {
-      mockIncr.mockRejectedValueOnce(new Error("Redis connection failed"));
+    it("should handle redis errors gracefully", async () => {
+      incrMock.mockRejectedValue(new Error("Redis dead"));
+      const consoleErrorSpy = spyOn(console, "error").mockImplementation(() => {});
       await cb.recordFailure(new Error("ECONNREFUSED"));
-      expect(mockIncr).toHaveBeenCalled();
-      // Test passes if no unhandled promise rejection occurs
+      expect(consoleErrorSpy).toHaveBeenCalled();
+      consoleErrorSpy.mockRestore();
     });
   });
 
   describe("recordSuccess", () => {
-    it("should do nothing if circuit is not currently tripped", async () => {
-      mockGet.mockResolvedValueOnce(null);
+    it("should do nothing if circuit is already closed", async () => {
+      getMock.mockResolvedValue(null);
       await cb.recordSuccess();
-      expect(mockDel).not.toHaveBeenCalled();
+      expect(getMock).toHaveBeenCalledWith("steadystack:cb:tripped_at");
+      expect(delMock).not.toHaveBeenCalled();
     });
 
-    it("should clear Redis state if circuit was previously tripped", async () => {
-      mockGet.mockResolvedValueOnce(Date.now() - 10000);
+    it("should close circuit if it was open", async () => {
+      getMock.mockResolvedValue(Date.now() - 10000); // was open
+      const consoleLogSpy = spyOn(console, "log").mockImplementation(() => {});
+
       await cb.recordSuccess();
-      expect(mockDel).toHaveBeenCalledWith("steadystack:cb:tripped_at");
-      expect(mockDel).toHaveBeenCalledWith("steadystack:cb:fail_count");
+
+      expect(delMock).toHaveBeenCalledTimes(2);
+      expect(consoleLogSpy).toHaveBeenCalled();
+      consoleLogSpy.mockRestore();
     });
 
-    it("should handle Redis errors gracefully during recordSuccess", async () => {
-      mockGet.mockRejectedValueOnce(new Error("Redis connection failed"));
-      await cb.recordSuccess();
-      expect(mockGet).toHaveBeenCalled();
-      // Test passes if no unhandled promise rejection occurs
+    it("should handle redis errors gracefully", async () => {
+      getMock.mockRejectedValue(new Error("Redis dead"));
+      await expect(cb.recordSuccess()).resolves.toBeUndefined();
     });
   });
 });
