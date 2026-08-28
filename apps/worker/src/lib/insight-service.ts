@@ -58,7 +58,7 @@ export class InsightService {
         data: {
           message: data.message,
           createdAt: new Date(), // Push to top
-          metadata: data.metadata,
+          metadata: data.metadata ? (data.metadata as any) : undefined,
         },
       });
     }
@@ -69,7 +69,7 @@ export class InsightService {
         type: data.type as any,
         severity: data.severity as any,
         message: data.message,
-        metadata: data.metadata,
+        metadata: data.metadata ? (data.metadata as any) : undefined,
       },
     });
 
