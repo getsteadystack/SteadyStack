@@ -8,7 +8,7 @@ import {
   ProxyError,
   SSL_ALERT_MILESTONES,
 } from "./constants";
-import { ProxyMesh, QuantumAnomalyDetector } from "./services/mesh";
+import { ProxyMesh, QuantumAnomalyDetector, isProxyInfrastructureError } from "./services/mesh";
 import { InsightService, InsightType, InsightSeverity } from "./lib/insight-service";
 import { performRegionalChecks, getAverageLatency } from "./services/regional-monitor";
 import {
@@ -341,14 +341,10 @@ export async function processBatch(
                 retryResult.status = Status.UP;
                 delete retryResult.errorReason;
               } else {
-                // KEY FIX: If the PROXY itself failed (not the target), don't use this as
+                // ARCHITECTURE DECISION: If the PROXY itself failed (not the target), we do not use this as
                 // confirmation of DOWN. Proxy failures (CORS blocks, scraper bans, etc.) are
-                // unreliable signals for sites like Google that block these proxy services.
-                const isProxyFailure =
-                  proxyResult.error &&
-                  !proxyResult.error.startsWith("TARGET_HTTP_") &&
-                  !proxyResult.error.startsWith("HTTP_") &&
-                  !proxyResult.error.startsWith("CLUSTER_HTTP_");
+                // unreliable signals for sites that block these proxy services.
+                const isProxyFailure = isProxyInfrastructureError(proxyResult.error);
 
                 if (isProxyFailure) {
                   console.warn(
@@ -370,11 +366,7 @@ export async function processBatch(
                   delete retryResult.errorReason;
                 } else {
                   // Check if secondary proxy also just failed at the proxy level
-                  const isSecondaryProxyFailure =
-                    secondaryProxy.error &&
-                    !secondaryProxy.error.startsWith("TARGET_HTTP_") &&
-                    !secondaryProxy.error.startsWith("HTTP_") &&
-                    !secondaryProxy.error.startsWith("CLUSTER_HTTP_");
+                  const isSecondaryProxyFailure = isProxyInfrastructureError(secondaryProxy.error);
 
                   if (isProxyFailure && isSecondaryProxyFailure) {
                     // BOTH proxies failed at the infrastructure level — this is a proxy network
