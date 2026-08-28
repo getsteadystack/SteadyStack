@@ -1725,21 +1725,21 @@ export async function generateLiveAIInsights() {
     const aiClient = getAIProviderClient();
     let generatedCount = 0;
 
-    const topMonitors = userMonitors.slice(0, 5);
-    const monitorIds = topMonitors.map((m) => m.id);
+    const monitorsToProcess = userMonitors.slice(0, 5);
 
-    // Batch query recent insights to avoid N+1 inside the loop
+    // Pre-fetch insights for these monitors in a single query to avoid N+1 inside the loop
     const existingInsights = await prisma.monitorInsight.findMany({
       where: {
-        monitorId: { in: monitorIds },
+        monitorId: { in: monitorsToProcess.map((m) => m.id) },
         dismissed: false,
         createdAt: { gt: new Date(Date.now() - 10 * 60 * 1000) },
       },
     });
 
-    const recentInsightMonitorIds = new Set(existingInsights.map((insight) => insight.monitorId));
+    // Store monitorIds that already have a recent un-dismissed insight
+    const insightExistsByMonitorId = new Set(existingInsights.map((i) => i.monitorId));
 
-    for (const monitor of topMonitors) {
+    for (const monitor of monitorsToProcess) {
       const recent = monitor.events;
       if (recent.length === 0) continue;
 
@@ -1754,7 +1754,7 @@ export async function generateLiveAIInsights() {
             ? `Elevated Outage Rate: ${monitor.name} encountered ${failures} failure(s) in recent telemetry window.`
             : `High Latency Drift: Average response time (${avgLatency}ms) exceeds target performance tier.`;
 
-        if (!recentInsightMonitorIds.has(monitor.id)) {
+        if (!insightExistsByMonitorId.has(monitor.id)) {
           const analysisResult = await generateDeepInsightAnalysis({
             monitorName: monitor.name,
             monitorUrl: monitor.url,

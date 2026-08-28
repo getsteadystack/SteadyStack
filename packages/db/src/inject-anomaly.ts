@@ -5,11 +5,8 @@ async function main() {
   const monitor = await (prisma as any).monitor.findFirst();
 
   if (!monitor) {
-    console.log("No monitors found. Please create one on the dashboard first!");
     return;
   }
-
-  console.log(`Injecting Simulated Anomaly for: ${monitor.name}`);
 
   await (prisma as any).monitorInsight.create({
     data: {
@@ -25,9 +22,6 @@ async function main() {
       },
     },
   });
-
-  console.log("✅ Anomaly Insight Injected!");
-  console.log("👉 Refresh your dashboard to see the 'Invisible AI' layer in action.");
 }
 
 main()
