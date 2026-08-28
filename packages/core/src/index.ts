@@ -681,6 +681,11 @@ export async function checkHttpUniversal(
   };
 }
 
+declare global {
+  var ENCRYPTION_SECRET: string | undefined;
+  var BETTER_AUTH_SECRET: string | undefined;
+}
+
 /**
  * AES-256-GCM Field-Level Encryption Utilities for credentials at rest
  */
@@ -721,7 +726,7 @@ export async function encryptSecret(plainText: string, secretKey?: string): Prom
     secretKey ||
     (typeof process !== "undefined"
       ? process.env?.ENCRYPTION_SECRET || process.env?.BETTER_AUTH_SECRET
-      : (globalThis as any).ENCRYPTION_SECRET);
+      : globalThis.ENCRYPTION_SECRET);
 
   if (!secret) return plainText; // Fallback if no encryption key is configured
   if (isEncrypted(plainText)) return plainText;
@@ -755,7 +760,7 @@ export async function decryptSecret(
     secretKey ||
     (typeof process !== "undefined"
       ? process.env?.ENCRYPTION_SECRET || process.env?.BETTER_AUTH_SECRET
-      : (globalThis as any).ENCRYPTION_SECRET);
+      : globalThis.ENCRYPTION_SECRET);
 
   if (!secret) return cipherText;
 
@@ -882,7 +887,7 @@ export async function signAuthToken(
       ? secretKey
       : typeof process !== "undefined"
         ? process.env?.BETTER_AUTH_SECRET || process.env?.ENCRYPTION_SECRET
-        : (globalThis as any).BETTER_AUTH_SECRET;
+        : globalThis.BETTER_AUTH_SECRET;
 
   if (!secret) {
     throw new Error(
@@ -925,7 +930,7 @@ export async function verifyAuthToken(
       ? secretKey
       : typeof process !== "undefined"
         ? process.env?.BETTER_AUTH_SECRET || process.env?.ENCRYPTION_SECRET
-        : (globalThis as any).BETTER_AUTH_SECRET;
+        : globalThis.BETTER_AUTH_SECRET;
 
   if (!secret) return false;
 

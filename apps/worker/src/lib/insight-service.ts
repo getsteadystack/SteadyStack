@@ -12,12 +12,16 @@ export enum InsightSeverity {
   CRITICAL = "CRITICAL",
 }
 
-export interface InsightPayload {
-  monitorId: string;
-  type: InsightType;
-  severity: InsightSeverity;
-  message: string;
-  metadata?: Record<string, unknown>;
+export interface InsightMetadata {
+  zScore?: number;
+  score?: number;
+  latency?: number;
+  region?: string;
+  diff?: number;
+  avg?: number;
+  baselineMean?: number;
+  impactedRegions?: string[];
+  [key: string]: unknown;
 }
 
 export class InsightService {
@@ -27,7 +31,13 @@ export class InsightService {
    * Component: Intelligent Insight Generator
    * Responsible for creating or updating actionable hints and performance anomalies.
    */
-  async createInsight(data: InsightPayload) {
+  async createInsight(data: {
+    monitorId: string;
+    type: InsightType;
+    severity: InsightSeverity;
+    message: string;
+    metadata?: InsightMetadata;
+  }) {
     // Limit spam: Only create if no active insight of same type in last 5 minutes
     // unless severity is CRITICAL.
     const windowMs = data.severity === InsightSeverity.CRITICAL ? 60 * 1000 : 5 * 60 * 1000;
