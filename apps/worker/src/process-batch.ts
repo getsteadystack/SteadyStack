@@ -79,6 +79,9 @@ export async function processBatch(
     }
   }
 
+  // 1.5 Preload active insights for all monitors to avoid N+1 queries during creation
+  const preloadedInsightsMap = await insightService.preloadActiveInsights(monitorIds);
+
   // 2. Fetch Event Counts (for flapping detection)
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
   const eventCounts = await prisma.monitorEvent.groupBy({
@@ -472,7 +475,7 @@ export async function processBatch(
             severity: anomaly.score > 5 ? InsightSeverity.CRITICAL : InsightSeverity.WARNING,
             message: `Latency Anomaly Detected: ${monitor.name} is performing significantly outside expected baseline (Z-Score: ${anomaly.score}).`,
             metadata: { score: anomaly.score, latency },
-          });
+          }, preloadedInsightsMap);
         }
 
         // Periodically run heuristic advice (every ~10 checks)
@@ -483,7 +486,7 @@ export async function processBatch(
               orderBy: { timestamp: "desc" },
               take: 20,
             });
-            await insightService.analyzeAndProvideAdvice(monitor.id, monitor.name, recentEvents);
+            await insightService.analyzeAndProvideAdvice(monitor.id, monitor.name, recentEvents, preloadedInsightsMap);
           } catch (e) {
             console.error(`[InsightAdvice] Failed for ${monitor.name}:`, e);
           }
