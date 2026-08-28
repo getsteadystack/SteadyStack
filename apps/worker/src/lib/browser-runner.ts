@@ -75,9 +75,11 @@ async function performLocalSyntheticCheck(
       status: "DOWN",
       latency,
       errorReason:
-        error.name === "AbortError"
-          ? "TIMEOUT"
-          : error.message?.substring(0, 100) || "LOCAL_CHECK_FAILED",
+        err instanceof Error
+          ? err.name === "AbortError"
+            ? "TIMEOUT"
+            : err.message.substring(0, 100) || "LOCAL_CHECK_FAILED"
+          : "LOCAL_CHECK_FAILED",
     };
   }
 }
@@ -199,7 +201,10 @@ export async function performBrowserCheck(
     return {
       status: "DOWN",
       latency,
-      errorReason,
+      errorReason:
+        err instanceof Error && err.message
+          ? err.message.substring(0, 100)
+          : "BROWSER_RUN_FAILED",
     };
   } finally {
     if (browser) {
