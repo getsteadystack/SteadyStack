@@ -68,15 +68,17 @@ async function performLocalSyntheticCheck(
 
     const latency = Math.round(performance.now() - start);
     return { status: "UP", latency };
-  } catch (err: any) {
+  } catch (err: unknown) {
     const latency = Math.round(performance.now() - start);
     return {
       status: "DOWN",
       latency,
       errorReason:
-        err.name === "AbortError"
-          ? "TIMEOUT"
-          : err.message?.substring(0, 100) || "LOCAL_CHECK_FAILED",
+        err instanceof Error
+          ? err.name === "AbortError"
+            ? "TIMEOUT"
+            : err.message.substring(0, 100) || "LOCAL_CHECK_FAILED"
+          : "LOCAL_CHECK_FAILED",
     };
   }
 }
@@ -181,7 +183,7 @@ export async function performBrowserCheck(
     const latency = Math.round(performance.now() - start);
     console.log(`[BrowserRunner] Success! Total latency: ${latency}ms`);
     return { status: "UP", latency };
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("[BrowserRunner] Execution error:", err);
     // If browser execution failed on network/timeout, try synthetic HTTP fallback before marking DOWN
     if (firstGoto) {
@@ -194,7 +196,10 @@ export async function performBrowserCheck(
     return {
       status: "DOWN",
       latency,
-      errorReason: err.message ? err.message.substring(0, 100) : "BROWSER_RUN_FAILED",
+      errorReason:
+        err instanceof Error && err.message
+          ? err.message.substring(0, 100)
+          : "BROWSER_RUN_FAILED",
     };
   } finally {
     if (browser) {
