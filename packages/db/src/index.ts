@@ -3,10 +3,15 @@ import { PrismaClient } from "./generated/client/index.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
+declare global {
+  var DATABASE_URL: string | undefined;
+  var DATABASE_POOL_URL: string | undefined;
+}
+
 export function createPrisma(databaseUrl?: string, poolUrlOverride?: string) {
   const url =
     databaseUrl ||
-    (typeof process !== "undefined" ? process.env.DATABASE_URL : (globalThis as any).DATABASE_URL);
+    (typeof process !== "undefined" ? process.env.DATABASE_URL : globalThis.DATABASE_URL);
 
   if (!url) {
     throw new Error("DATABASE_URL is not set. Ensure it's provided in your environment variables.");
@@ -19,7 +24,7 @@ export function createPrisma(databaseUrl?: string, poolUrlOverride?: string) {
   const poolUrl =
     poolUrlOverride ||
     (typeof process !== "undefined" ? process.env?.DATABASE_POOL_URL : undefined) ||
-    (typeof globalThis !== "undefined" ? (globalThis as any).DATABASE_POOL_URL : undefined) ||
+    (typeof globalThis !== "undefined" ? globalThis.DATABASE_POOL_URL : undefined) ||
     url;
 
   // Determine if SSL is needed but strip params that pg doesn't understand from the URL.
@@ -92,8 +97,8 @@ function getUrl() {
   if (typeof process !== "undefined" && process.env?.DATABASE_URL) {
     return process.env.DATABASE_URL;
   }
-  if (typeof globalThis !== "undefined" && (globalThis as any).DATABASE_URL) {
-    return (globalThis as any).DATABASE_URL;
+  if (typeof globalThis !== "undefined" && globalThis.DATABASE_URL) {
+    return globalThis.DATABASE_URL;
   }
   return undefined;
 }
