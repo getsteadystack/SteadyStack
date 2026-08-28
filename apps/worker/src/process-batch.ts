@@ -67,6 +67,7 @@ export async function processBatch(
   const monitorIds = monitors.map((m) => m.id);
   const activeIncidentsMap = new Map<string, any>();
   const eventCountsMap = new Map<string, number>();
+  const recentLatenciesMap = new Map<string, number[]>();
 
   // 1. Fetch Active Incidents
   const activeIncidents = await incidentService.findActiveIncidentsForMonitors(monitorIds);
@@ -93,6 +94,32 @@ export async function processBatch(
   for (const count of eventCounts) {
     eventCountsMap.set(count.monitorId, count._count);
   }
+
+  // 3. Fetch Recent Events for Dynamic Thresholding
+  const dynamicIds = monitors.filter((m) => m.dynamicThresholding).map((m) => m.id);
+  if (dynamicIds.length > 0) {
+    // Note: To properly fetch max 50 events PER monitorId and avoid global limit domination,
+    // we use Promise.all to issue parallel queries. In Prisma without raw SQL, this is the most
+    // efficient way to handle "Top N per Group" without complex joins or missing older events.
+    const dynamicQueries = dynamicIds.map((id) =>
+      prisma.monitorEvent.findMany({
+        where: { monitorId: id, status: Status.UP },
+        orderBy: { timestamp: "desc" },
+        take: 50,
+        select: { monitorId: true, latency: true },
+      })
+    );
+
+    const queryResults = await Promise.all(dynamicQueries);
+    for (const events of queryResults) {
+      if (events.length > 0) {
+        recentLatenciesMap.set(
+          events[0].monitorId,
+          events.map((e: any) => e.latency)
+        );
+      }
+    }
+  }
   // --- BULK FETCH DATA END ---
 
   for (let i = 0; i < monitors.length; i++) {
@@ -104,20 +131,15 @@ export async function processBatch(
 
     if (monitor.dynamicThresholding) {
       try {
-        const lastEvents = await prisma.monitorEvent.findMany({
-          where: { monitorId: monitor.id, status: Status.UP },
-          orderBy: { timestamp: "desc" },
-          take: 50, // Get recent events to compute p95
-          select: { latency: true },
-        });
+        const latencies = recentLatenciesMap.get(monitor.id) || [];
 
-        if (lastEvents.length >= 10) {
-          const latencies = lastEvents.map((e: any) => e.latency);
+        if (latencies.length >= 10) {
           capturedLatencies = latencies;
           // Sort ascending to find p95
           const sorted = [...latencies].sort((a: number, b: number) => a - b);
           const p95Index = Math.floor(sorted.length * 0.95);
           const p95Latency = sorted[p95Index];
+          if (p95Latency === undefined) continue;
 
           // Calc dynamic (p95 + 30% buffer, convert ms to seconds)
           let calcTimeout = (p95Latency * 1.3) / 1000;
