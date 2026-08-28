@@ -5,10 +5,15 @@ import { Pool } from "pg";
 import { PrismaNeon } from "@prisma/adapter-neon";
 import { Pool as NeonPool } from "@neondatabase/serverless";
 
+declare global {
+  var DATABASE_URL: string | undefined;
+  var DATABASE_POOL_URL: string | undefined;
+}
+
 export function createPrisma(databaseUrl?: string) {
   const url =
     databaseUrl ||
-    (typeof process !== "undefined" ? process.env.DATABASE_URL : (globalThis as any).DATABASE_URL);
+    (typeof process !== "undefined" ? process.env.DATABASE_URL : globalThis.DATABASE_URL);
 
   if (!url) {
     throw new Error("DATABASE_URL is not set. Ensure it's provided in your environment variables.");
@@ -21,7 +26,7 @@ export function createPrisma(databaseUrl?: string) {
   const poolUrl =
     (typeof process !== "undefined"
       ? process.env.DATABASE_POOL_URL
-      : (globalThis as any).DATABASE_POOL_URL) || url;
+      : globalThis.DATABASE_POOL_URL) || url;
 
   // Determine if SSL is needed but remove sslmode from URL to avoid conflict with explicit ssl config
   const isSsl = poolUrl.includes("sslmode=require") || poolUrl.includes("sslmode=verify");
@@ -102,8 +107,8 @@ function getUrl() {
   if (typeof process !== "undefined" && process.env?.DATABASE_URL) {
     return process.env.DATABASE_URL;
   }
-  if (typeof globalThis !== "undefined" && (globalThis as any).DATABASE_URL) {
-    return (globalThis as any).DATABASE_URL;
+  if (typeof globalThis !== "undefined" && globalThis.DATABASE_URL) {
+    return globalThis.DATABASE_URL;
   }
   return undefined;
 }

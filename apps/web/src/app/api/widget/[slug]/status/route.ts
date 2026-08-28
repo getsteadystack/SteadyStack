@@ -24,8 +24,8 @@ function validateOrigin(origin: string | null, allowedDomains: string | null): b
     return allowed.some((domain) => {
       if (domain.startsWith("*.")) {
         // Wildcard domain match (*.example.com matches sub.example.com)
-        const baseDomain = domain.slice(2);
-        return originHost.endsWith(baseDomain) && originHost !== baseDomain;
+        const baseDomain = domain.slice(1);
+        return originHost.endsWith(baseDomain);
       }
       // Exact domain match
       return originHost === domain;
