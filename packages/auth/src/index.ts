@@ -19,7 +19,7 @@ const safeAuthUrl = env.BETTER_AUTH_URL || "http://localhost:3000";
 const prisma = getPrisma(safeDbUrl);
 
 if (!env.BETTER_AUTH_SECRET) {
-  throw new Error("BETTER_AUTH_SECRET environment variable is required.");
+  throw new Error("BETTER_AUTH_SECRET is required");
 }
 
 export const auth = betterAuth({
