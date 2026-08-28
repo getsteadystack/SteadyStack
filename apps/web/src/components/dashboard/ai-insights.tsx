@@ -27,13 +27,25 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 
+export interface InsightMetadata {
+  zScore?: number;
+  score?: number;
+  latency?: number;
+  region?: string;
+  diff?: number;
+  avg?: number;
+  baselineMean?: number;
+  impactedRegions?: string[];
+  [key: string]: unknown;
+}
+
 export interface MonitorInsight {
   id: string;
   monitorId: string;
   type: "ANOMALY" | "ADVICE" | "PREDICTION";
   severity: "INFO" | "WARNING" | "CRITICAL";
   message: string;
-  metadata?: any;
+  metadata?: InsightMetadata;
   createdAt: Date;
   monitor: {
     name: string;

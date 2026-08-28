@@ -18,6 +18,18 @@ export interface AIProviderConfig {
   isHeliconeProxied?: boolean;
 }
 
+export interface InsightMetadata {
+  zScore?: number;
+  score?: number;
+  latency?: number;
+  region?: string;
+  diff?: number;
+  avg?: number;
+  baselineMean?: number;
+  impactedRegions?: string[];
+  [key: string]: unknown;
+}
+
 export interface InsightAnalysisResult {
   analysis: string;
   guidance: string;
@@ -137,7 +149,7 @@ export async function generateDeepInsightAnalysis(params: {
   insightType: "ANOMALY" | "ADVICE" | "PREDICTION";
   severity: "INFO" | "WARNING" | "CRITICAL";
   message: string;
-  metadata?: any;
+  metadata?: InsightMetadata;
   tenantContext?: {
     workspaceId?: string;
     userId?: string;
@@ -258,7 +270,7 @@ function generateHeuristicAnalysis(params: {
   insightType: "ANOMALY" | "ADVICE" | "PREDICTION";
   severity: "INFO" | "WARNING" | "CRITICAL";
   message: string;
-  metadata?: any;
+  metadata?: InsightMetadata;
 }): InsightAnalysisResult {
   const { monitorName, monitorType, insightType, severity, metadata } = params;
 

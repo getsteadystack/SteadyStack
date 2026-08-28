@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@steadystack/db";
+import type { PrismaClient, MonitorEvent } from "@steadystack/db";
 
 export enum InsightType {
   ANOMALY = "ANOMALY",
@@ -10,6 +10,18 @@ export enum InsightSeverity {
   INFO = "INFO",
   WARNING = "WARNING",
   CRITICAL = "CRITICAL",
+}
+
+export interface InsightMetadata {
+  zScore?: number;
+  score?: number;
+  latency?: number;
+  region?: string;
+  diff?: number;
+  avg?: number;
+  baselineMean?: number;
+  impactedRegions?: string[];
+  [key: string]: unknown;
 }
 
 export class InsightService {
@@ -24,7 +36,7 @@ export class InsightService {
     type: InsightType;
     severity: InsightSeverity;
     message: string;
-    metadata?: any;
+    metadata?: InsightMetadata;
   }) {
     // Limit spam: Only create if no active insight of same type in last 5 minutes
     // unless severity is CRITICAL.
@@ -46,7 +58,7 @@ export class InsightService {
         data: {
           message: data.message,
           createdAt: new Date(), // Push to top
-          metadata: data.metadata,
+          metadata: data.metadata ? (data.metadata as any) : undefined,
         },
       });
     }
@@ -57,7 +69,7 @@ export class InsightService {
         type: data.type as any,
         severity: data.severity as any,
         message: data.message,
-        metadata: data.metadata,
+        metadata: data.metadata ? (data.metadata as any) : undefined,
       },
     });
 
@@ -69,7 +81,7 @@ export class InsightService {
    * Phase 2: Heuristic Analysis
    * Analyze recent events to provide contextual advice.
    */
-  async analyzeAndProvideAdvice(monitorId: string, monitorName: string, recentEvents: any[]) {
+  async analyzeAndProvideAdvice(monitorId: string, monitorName: string, recentEvents: MonitorEvent[]) {
     if (recentEvents.length < 5) return;
 
     const latencies = recentEvents.map((e) => e.latency);
