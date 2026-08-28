@@ -118,7 +118,6 @@ export const auth = betterAuth({
                   },
                 },
               });
-              console.log(`[Auth] Created single personal workspace for ${user.email}`);
             }
           } catch (orgErr) {
             console.error("[Auth] Failed to create initial personal workspace:", orgErr);
@@ -167,9 +166,6 @@ export const auth = betterAuth({
                       rewardAmount: 10.0,
                     },
                   });
-                  console.log(
-                    `[Auth] Automatically attributed referral for user ${user.email} (code: ${referralCode})`,
-                  );
                 }
               }
             }
@@ -190,7 +186,6 @@ export const auth = betterAuth({
                   code,
                 },
               });
-              console.log(`[Auth] Generated referral code ${code} for ${user.email}`);
             }
           } catch (codeErr) {
             console.error("[Auth] Failed to create initial referral code:", codeErr);
@@ -203,7 +198,6 @@ export const auth = betterAuth({
                 userName: user.name || user.email,
                 dashboardUrl: `${appUrl}/dashboard`,
               });
-              console.log(`[Auth] Welcome email sent to ${user.email}`);
             } catch (err) {
               // This is intentionally fire-and-forget, but we want visibility.
               // A missing RESEND_API_KEY will throw here — check your .env.
