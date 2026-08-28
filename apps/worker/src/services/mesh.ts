@@ -11,6 +11,23 @@ export interface ProxyResponse {
   source: string;
 }
 
+/**
+ * Determines if a proxy error indicates an infrastructure/mesh failure (CORS, bans, timeouts)
+ * rather than a definitive target failure. This ensures we don't mark targets as DOWN
+ * just because the proxy itself was blocked.
+ */
+export function isProxyInfrastructureError(error?: string): boolean {
+  if (!error) return false;
+
+  // These prefixes indicate a definitive target failure, captured by the proxy.
+  // Any OTHER error is an infrastructure/proxy-level failure.
+  return (
+    !error.startsWith("TARGET_HTTP_") &&
+    !error.startsWith("HTTP_") &&
+    !error.startsWith("CLUSTER_HTTP_")
+  );
+}
+
 export class ProxyMesh {
   private static iopsCount = 0;
   private static lastIopsReset = Date.now();
