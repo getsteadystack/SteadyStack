@@ -12,6 +12,18 @@ export enum InsightSeverity {
   CRITICAL = "CRITICAL",
 }
 
+export interface InsightMetadata {
+  zScore?: number;
+  score?: number;
+  latency?: number;
+  region?: string;
+  diff?: number;
+  avg?: number;
+  baselineMean?: number;
+  impactedRegions?: string[];
+  [key: string]: unknown;
+}
+
 export class InsightService {
   constructor(private prisma: PrismaClient) {}
 
@@ -24,7 +36,7 @@ export class InsightService {
     type: InsightType;
     severity: InsightSeverity;
     message: string;
-    metadata?: Record<string, unknown>;
+    metadata?: InsightMetadata;
   }) {
     // Limit spam: Only create if no active insight of same type in last 5 minutes
     // unless severity is CRITICAL.
@@ -46,7 +58,7 @@ export class InsightService {
         data: {
           message: data.message,
           createdAt: new Date(), // Push to top
-          ...(data.metadata !== undefined ? { metadata: data.metadata as any } : {}),
+          metadata: data.metadata ? (data.metadata as any) : undefined,
         },
       });
     }
@@ -57,7 +69,7 @@ export class InsightService {
         type: data.type as any,
         severity: data.severity as any,
         message: data.message,
-        ...(data.metadata !== undefined ? { metadata: data.metadata as any } : {}),
+        metadata: data.metadata ? (data.metadata as any) : undefined,
       },
     });
 
