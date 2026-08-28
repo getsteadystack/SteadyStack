@@ -353,9 +353,9 @@ export function SleepModeClient() {
             <Moon className="size-3" />
             The Sleep Plan
           </div>
-          <h3 className="text-2xl sm:text-3xl font-extrabold text-foreground mb-3">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mb-3">
             Upgrade to Netrunner — <span className="text-primary">$19/mo</span>
-          </h3>
+          </h2>
           <p className="text-muted-foreground text-sm leading-relaxed max-w-lg mx-auto mb-6">
             The Sleep Plan isn&apos;t a gimmick — it&apos;s our Netrunner tier with 30-second
             checks, 5-vector verification, anomaly detection, and flapping suppression. You get

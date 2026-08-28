@@ -15,6 +15,29 @@ const COMPETITOR_MAP: Record<string, string> = {
   kuma: "vs-uptime-kuma",
 };
 
+const COMPETITOR_DESCRIPTIONS: Record<string, string> = {
+  uptimerobot:
+    "Compare SteadyStack vs UptimeRobot. See why 60-second multi-region edge consensus eliminates false positives and outperforms legacy 5-minute polling.",
+  "better-stack":
+    "Compare SteadyStack vs Better Stack. See how edge consensus monitoring, check frequency, alert latency, and transparent pricing compare head-to-head.",
+  betteruptime:
+    "Compare SteadyStack vs Better Stack. See how edge consensus monitoring, check frequency, alert latency, and transparent pricing compare head-to-head.",
+  checkly:
+    "Compare SteadyStack vs Checkly. Explore lightweight edge synthetic monitoring vs heavy browser checks, global quorum consensus, and pricing.",
+  "uptime-kuma":
+    "Compare SteadyStack vs Uptime Kuma. Discover the differences between single-VPS self-hosting and global edge quorum checks for zero false alarms.",
+  kuma: "Compare SteadyStack vs Uptime Kuma. Discover the differences between single-VPS self-hosting and global edge quorum checks for zero false alarms.",
+};
+
+const COMPETITOR_TITLES: Record<string, string> = {
+  uptimerobot: "SteadyStack vs UptimeRobot (2026 Comparison)",
+  "better-stack": "SteadyStack vs Better Stack Comparison",
+  betteruptime: "SteadyStack vs Better Stack Comparison",
+  checkly: "SteadyStack vs Checkly Comparison",
+  "uptime-kuma": "SteadyStack vs Uptime Kuma Comparison",
+  kuma: "SteadyStack vs Uptime Kuma Comparison",
+};
+
 export function generateStaticParams() {
   return [
     { competitor: "uptimerobot" },
@@ -34,11 +57,15 @@ export async function generateMetadata({
   const post = await getPostBySlug(targetSlug);
   if (!post) return {};
 
-  const { title, description, date, tags } = post.meta;
+  const { date, tags } = post.meta;
+  const title = COMPETITOR_TITLES[competitor] || `SteadyStack vs ${competitor} Comparison`;
+  const description =
+    COMPETITOR_DESCRIPTIONS[competitor] ||
+    `Compare SteadyStack vs ${competitor}. Discover key architecture differences, check frequencies, and edge consensus reliability.`;
   const url = `https://steadystack.dev/vs/${competitor}`;
 
   return {
-    title: `${title} | SteadyStack Architecture`,
+    title,
     description,
     keywords: tags,
     alternates: { canonical: url },
@@ -70,7 +97,10 @@ export default async function VsCompetitorPage({
 
   if (!post) notFound();
 
-  const { title, description, date, category, readTime, author, tags } = post.meta;
+  const { title, date, category, readTime, author, tags } = post.meta;
+  const description =
+    COMPETITOR_DESCRIPTIONS[competitor] ||
+    `Compare SteadyStack vs ${competitor}. Discover key architecture differences, check frequencies, and edge consensus reliability.`;
   const tocItems = extractHeadings(post.content);
 
   const jsonLd = {

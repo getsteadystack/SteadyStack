@@ -41,7 +41,13 @@ export default function PostLayout({
   relatedPosts = [],
   children,
 }: PostLayoutProps) {
-  const currentUrl = slug ? `https://steadystack.dev/blog/${slug}` : undefined;
+  const currentUrl = slug
+    ? slug.startsWith("http")
+      ? slug
+      : slug.startsWith("vs/") || slug.startsWith("alternatives/")
+        ? `https://steadystack.dev/${slug}`
+        : `https://steadystack.dev/blog/${slug}`
+    : undefined;
 
   const categoryColor =
     category === "Engineering"

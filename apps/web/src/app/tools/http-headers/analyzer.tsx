@@ -201,9 +201,9 @@ export function HeaderAnalyzer() {
 
               <Card className="col-span-2 border-primary/20 bg-card/40 backdrop-blur-sm p-6 space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="font-mono text-sm uppercase tracking-widest text-primary/80">
+                  <h2 className="font-mono text-sm uppercase tracking-widest text-primary/80">
                     Audit Executive Summary
-                  </h3>
+                  </h2>
                   <Badge className="bg-primary/20 text-primary border-primary/30 uppercase text-[10px] italic">
                     {auditData.url}
                   </Badge>
@@ -356,9 +356,9 @@ export function HeaderAnalyzer() {
             {/* CTA Panel */}
             <Card className="border-primary/20 bg-linear-to-br from-primary/10 to-transparent p-8 text-center space-y-6">
               <div className="max-w-xl mx-auto space-y-2">
-                <h3 className="text-xl font-bold font-mono uppercase italic tracking-tighter">
+                <h2 className="text-xl font-bold font-mono uppercase italic tracking-tighter">
                   Automate Design Integrity
-                </h3>
+                </h2>
                 <p className="text-sm text-muted-foreground font-mono">
                   Continuous security auditing for your production stack. Get alerted the
                   microsecond a header is misconfigured or a CSP is breached.

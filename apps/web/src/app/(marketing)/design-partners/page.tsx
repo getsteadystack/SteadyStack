@@ -5,18 +5,21 @@ import { getDesignPartnerSpots } from "@/actions/design-partners";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Design Partner Program — 1-Year Free Netrunner Pro ($228 Value) | SteadyStack",
+  title: "Design Partner Program: 1-Year Free Pro | SteadyStack",
   description:
-    "Join the exclusive SteadyStack Design Partner Program. Get 1 year of unrestricted Netrunner Pro ($228 value) free with 250 monitors, 30s checks across 7 sovereign Cloudflare edge regions, multi-channel alerts, and direct founder channel access.",
+    "Join the SteadyStack Design Partner Program. Get 1 year of free Netrunner Pro ($228 value) with 250 monitors, 30s checks, and founder support.",
+  alternates: {
+    canonical: "/design-partners",
+  },
   openGraph: {
-    title: "Design Partner Program — 1-Year Free Netrunner Pro ($228 Value) | SteadyStack",
+    title: "Design Partner Program: 1-Year Free Pro | SteadyStack",
     description:
-      "Join the exclusive SteadyStack Design Partner Program. 250 monitors, 30s multi-region edge verification, custom status pages, and private founder access for 15 engineering teams.",
+      "Join the SteadyStack Design Partner Program. Get 1 year of free Netrunner Pro ($228 value) with 250 monitors, 30s checks, and founder support.",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SteadyStack Design Partner Program — 1-Year Free Netrunner Pro",
+    title: "Design Partner Program: 1-Year Free Pro | SteadyStack",
     description:
       "Claim 1 year of free Netrunner Pro ($228 value) for your engineering team. 15 spots available.",
   },

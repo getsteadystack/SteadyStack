@@ -15,6 +15,9 @@ export const metadata: Metadata = {
   title: "Changelog — SteadyStack Platform Releases & Updates",
   description:
     "Explore the latest features, edge consensus engine improvements, CLI updates, and bug fixes shipped in SteadyStack.",
+  alternates: {
+    canonical: "/changelog",
+  },
   openGraph: {
     title: "SteadyStack Changelog — Edge-Native Monitoring Releases",
     description:

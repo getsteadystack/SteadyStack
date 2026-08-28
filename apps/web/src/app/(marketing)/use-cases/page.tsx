@@ -10,6 +10,9 @@ export const metadata = {
   title: "Use Cases & Solutions | SteadyStack",
   description:
     "Discover how SteadyStack provides tailormade monitoring solutions for DevOps, E-Commerce, SaaS, and API Developers.",
+  alternates: {
+    canonical: "/use-cases",
+  },
 };
 
 const iconMap: Record<string, any> = {

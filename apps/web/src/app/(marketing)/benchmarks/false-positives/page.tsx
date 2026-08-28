@@ -14,10 +14,9 @@ import { BENCHMARK_METADATA } from "@/content/benchmarks-data";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title:
-    "The False-Positive Benchmark Study (30 Days, 1.29M Probes) — SteadyStack vs UptimeRobot vs Pingdom",
+  title: "False-Positive Uptime Benchmark Study | SteadyStack",
   description:
-    "We ran SteadyStack, UptimeRobot, and Pingdom against 10 identical endpoints for 30 days. Measured 1,296,000 synthetic checks, counted spurious 3 AM alerts, published raw dataset and methodology — including where we lost.",
+    "30-day benchmark study measuring 1.29M probes across SteadyStack, UptimeRobot, and Pingdom. See real false positive rates and full raw datasets.",
   keywords: [
     "uptime monitoring benchmark",
     "false positive monitoring study",

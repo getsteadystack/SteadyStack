@@ -9,6 +9,9 @@ export const metadata: Metadata = {
   title: "About SteadyStack | Global Uptime Monitoring",
   description:
     "SteadyStack was built to make infrastructure monitoring fast, accurate, and beautiful. Learn our story and meet the team.",
+  alternates: {
+    canonical: "/about",
+  },
   openGraph: {
     title: "About SteadyStack",
     description: "Built to make infrastructure monitoring fast, accurate, and beautiful.",

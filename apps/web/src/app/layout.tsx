@@ -27,11 +27,8 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Know the second your stack breaks. Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification, live latency tracking, and zero false positives — free for commercial use.",
+    "Edge-native uptime monitoring with multi-region quorum verification. Eliminate false alarms and track latency globally across 50 regions. Free forever.",
   applicationName: "SteadyStack",
-  alternates: {
-    canonical: "/",
-  },
   keywords: [
     "website monitoring",
     "uptime tracker",

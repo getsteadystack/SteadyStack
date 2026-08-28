@@ -232,9 +232,9 @@ export function SSLChecker() {
               >
                 {/* Protocol Support */}
                 <div>
-                  <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">
+                  <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">
                     Supported Protocols
-                  </h4>
+                  </h3>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {Object.entries(result.details).map(([key, enabled]) => (
                       <Badge
@@ -255,9 +255,9 @@ export function SSLChecker() {
 
                 {/* Certificate Chain */}
                 <div>
-                  <h4 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">
+                  <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">
                     Trust Chain
-                  </h4>
+                  </h3>
                   <div className="space-y-2 border-l-2 border-primary/20 pl-4 py-2">
                     {result.chain.map((cert, i) => (
                       <div key={i} className="flex flex-col gap-1 relative">

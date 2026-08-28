@@ -20,6 +20,9 @@ export const metadata: Metadata = {
   title: "Terraform Provider Documentation | SteadyStack",
   description:
     "Official HashiCorp Terraform and OpenTofu provider documentation for SteadyStack — Manage synthetic surveillance, incident routing, and status pages as code.",
+  alternates: {
+    canonical: "/docs/terraform",
+  },
   openGraph: {
     title: "SteadyStack Terraform Provider",
     description:

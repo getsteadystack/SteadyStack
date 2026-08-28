@@ -6,7 +6,10 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "Automated Incident Alert Dispatching | SteadyStack Features",
   description:
-    "Zero delay integration pipeline. Automatically dispatch alerts, invoke custom webhooks, and page on-call engineering schedules the instant an outage is validated.",
+    "Zero delay dispatch pipeline. Automatically send alerts, invoke custom webhooks, and page on-call teams the instant an outage is confirmed.",
+  alternates: {
+    canonical: "/features/automated-dispatch",
+  },
   openGraph: {
     title: "Automated Incident Alert Dispatching | SteadyStack",
     description:

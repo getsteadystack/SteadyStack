@@ -300,30 +300,30 @@ export function VerificationClient() {
       {/* Grid attributes */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 border-t border-border/20">
         <div className="space-y-2">
-          <h3 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+          <h2 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-500" />
             Vantage Vantage Points
-          </h3>
+          </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Checks are executed from distinct networks and physical centers, preventing false
             failures caused by localized cloud provider drops.
           </p>
         </div>
         <div className="space-y-2">
-          <h3 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+          <h2 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-500" />
             Dynamic Voting Threshold
-          </h3>
+          </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Configure how many regions must report failure before confirming an incident. Set strict
             100% agreement or a simple majority vote.
           </p>
         </div>
         <div className="space-y-2">
-          <h3 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+          <h2 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-500" />
             Trace Routing
-          </h3>
+          </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
             During failures, nodes capture traceroutes to identify exactly where the connection
             broke, helping your team diagnose external ISP problems.
