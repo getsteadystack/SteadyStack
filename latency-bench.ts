@@ -12,7 +12,8 @@ const bench = async () => {
   }
 
   const startOld = performance.now();
-  for (let i = 0; i < 100; i++) { // run multiple times to get measurable time
+  for (let i = 0; i < 100; i++) {
+    // run multiple times to get measurable time
     const result: any[] = [];
     for (const [timestamp, lats] of groups.entries()) {
       const avg = lats.reduce((a, b) => a + b, 0) / lats.length;
@@ -70,6 +71,6 @@ const bench = async () => {
   const endNew = performance.now();
 
   console.log(`New time: ${endNew - startNew}ms`);
-}
+};
 
 bench();

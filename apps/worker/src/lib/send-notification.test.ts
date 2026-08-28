@@ -8,16 +8,20 @@ let redisLpushMock = mock(async () => {});
 mock.module("../notification-handler", () => {
   return {
     default: {
-      get queue() { return handlerQueueMock; }
-    }
+      get queue() {
+        return handlerQueueMock;
+      },
+    },
   };
 });
 
 mock.module("@upstash/redis/cloudflare", () => {
   return {
     Redis: class {
-      get lpush() { return redisLpushMock; }
-    }
+      get lpush() {
+        return redisLpushMock;
+      }
+    },
   };
 });
 
@@ -56,7 +60,9 @@ describe("queueNotification", () => {
   test("should use NOTIFICATION_QUEUE when available", async () => {
     let sent = false;
     env.NOTIFICATION_QUEUE = {
-      send: async (p: any) => { sent = true; }
+      send: async (p: any) => {
+        sent = true;
+      },
     } as any;
 
     await queueNotification(env, payload, ctx);

@@ -7,7 +7,7 @@ async function runBenchmarkMock() {
   let createCalls = 0;
   let findManyCalls = 0;
 
-  const dbDelay = (ms: number) => new Promise(res => setTimeout(res, ms));
+  const dbDelay = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
   const prismaMock = {
     monitorInsight: {
@@ -30,8 +30,8 @@ async function runBenchmarkMock() {
         createCalls++;
         await dbDelay(3);
         return { ...args.data, id: "new-id" };
-      }
-    }
+      },
+    },
   };
 
   const service = new InsightService(prismaMock as any);
@@ -69,17 +69,22 @@ async function runBenchmarkMock() {
   }
 
   for (const monitorId of monitorIds) {
-    await optimizedService.createInsight({
-      monitorId,
-      type: InsightType.ANOMALY,
-      severity: InsightSeverity.WARNING,
-      message: "Test insight",
-    }, activeInsightsCache);
+    await optimizedService.createInsight(
+      {
+        monitorId,
+        type: InsightType.ANOMALY,
+        severity: InsightSeverity.WARNING,
+        message: "Test insight",
+      },
+      activeInsightsCache,
+    );
   }
   const endPreload = performance.now();
 
   console.log(`Optimized time: ${(endPreload - startPreload).toFixed(2)}ms`);
-  console.log(`DB calls: findMany=${findManyCalls}, findFirst=${findFirstCalls}, create=${createCalls}`);
+  console.log(
+    `DB calls: findMany=${findManyCalls}, findFirst=${findFirstCalls}, create=${createCalls}`,
+  );
 
   const baselineDuration = endBaseline - startBaseline;
   const optimizedDuration = endPreload - startPreload;

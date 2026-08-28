@@ -10,8 +10,12 @@ describe("Core diagnoseError formatting", () => {
     expect(result).toContain("TIMEOUT: Request timed out.");
     expect(result).toContain(`• Target: ${target}`);
     expect(result).toContain("• Stage: Response Transmission");
-    expect(result).toContain("• Diagnostics: Connection was established, but the server failed to transmit a response within the timeout limit.");
-    expect(result).toContain("• Action: Inspect server capacity, slow database queries, or frozen process pools.");
+    expect(result).toContain(
+      "• Diagnostics: Connection was established, but the server failed to transmit a response within the timeout limit.",
+    );
+    expect(result).toContain(
+      "• Action: Inspect server capacity, slow database queries, or frozen process pools.",
+    );
 
     // Check alternate trigger condition
     const err2 = { message: "timeout exceeded" };
@@ -24,8 +28,12 @@ describe("Core diagnoseError formatting", () => {
     expect(result).toContain("DNS_FAILURE: DNS Lookup failed.");
     expect(result).toContain(`• Target: ${target}`);
     expect(result).toContain("• Stage: Domain Resolution");
-    expect(result).toContain("• Diagnostics: The hostname could not be resolved to any active IP address.");
-    expect(result).toContain("• Action: Verify domain registration status and check that valid A/AAAA DNS records are configured.");
+    expect(result).toContain(
+      "• Diagnostics: The hostname could not be resolved to any active IP address.",
+    );
+    expect(result).toContain(
+      "• Action: Verify domain registration status and check that valid A/AAAA DNS records are configured.",
+    );
 
     // Check alternate trigger condition
     const err2 = { message: "DNS resolution failed" };
@@ -38,8 +46,12 @@ describe("Core diagnoseError formatting", () => {
     expect(result).toContain("CONNECTION_REFUSED: TCP Handshake failed.");
     expect(result).toContain(`• Target: ${target}`);
     expect(result).toContain("• Stage: TCP Handshake");
-    expect(result).toContain("• Diagnostics: The target host is active, but actively rejected the connection request on this port.");
-    expect(result).toContain("• Action: Verify that the web server process (e.g. Node, Nginx) is running, listening, and that firewall policies permit traffic.");
+    expect(result).toContain(
+      "• Diagnostics: The target host is active, but actively rejected the connection request on this port.",
+    );
+    expect(result).toContain(
+      "• Action: Verify that the web server process (e.g. Node, Nginx) is running, listening, and that firewall policies permit traffic.",
+    );
 
     // Check alternate trigger condition
     const err2 = { message: "connection refused by target" };
@@ -52,8 +64,12 @@ describe("Core diagnoseError formatting", () => {
     expect(result).toContain("SSL_ERROR: TLS Handshake failed.");
     expect(result).toContain(`• Target: ${target}`);
     expect(result).toContain("• Stage: SSL/TLS Negotiation");
-    expect(result).toContain("• Diagnostics: Could not establish a secure, verified cryptographic channel.");
-    expect(result).toContain("• Action: Check if the SSL certificate has expired, has a hostname mismatch, or uses an untrusted Certificate Authority.");
+    expect(result).toContain(
+      "• Diagnostics: Could not establish a secure, verified cryptographic channel.",
+    );
+    expect(result).toContain(
+      "• Action: Check if the SSL certificate has expired, has a hostname mismatch, or uses an untrusted Certificate Authority.",
+    );
 
     // Check alternate trigger conditions
     const err2 = { message: "ssl handshake error" };
@@ -72,12 +88,18 @@ describe("Core diagnoseError formatting", () => {
     expect(result).toContain("CONNECTION_RESET: Connection terminated abruptly.");
     expect(result).toContain(`• Target: ${target}`);
     expect(result).toContain("• Stage: TCP Connection");
-    expect(result).toContain("• Diagnostics: The connection was closed mid-transmission by the target server or an intermediate proxy/firewall.");
-    expect(result).toContain("• Action: Check server-side proxy limits, rate limiters, or firewall settings.");
+    expect(result).toContain(
+      "• Diagnostics: The connection was closed mid-transmission by the target server or an intermediate proxy/firewall.",
+    );
+    expect(result).toContain(
+      "• Action: Check server-side proxy limits, rate limiters, or firewall settings.",
+    );
 
     // Check alternate trigger condition
     const err2 = { message: "connection reset by peer" };
-    expect(diagnoseError(err2, target)).toContain("CONNECTION_RESET: Connection terminated abruptly.");
+    expect(diagnoseError(err2, target)).toContain(
+      "CONNECTION_RESET: Connection terminated abruptly.",
+    );
   });
 
   test("formats Unknown/Generic errors with a fallback message", () => {
@@ -86,15 +108,21 @@ describe("Core diagnoseError formatting", () => {
     expect(result).toContain("CONNECTION_FAILED: Request failed (Something went wrong).");
     expect(result).toContain(`• Target: ${target}`);
     expect(result).toContain("• Stage: Request Dispatch");
-    expect(result).toContain("• Diagnostics: An error occurred before receiving the HTTP response headers.");
+    expect(result).toContain(
+      "• Diagnostics: An error occurred before receiving the HTTP response headers.",
+    );
     expect(result).toContain("• Action: Verify network route availability to the target server.");
 
     // Without message, uses code
     const err2 = { code: "ERR_CUSTOM" };
-    expect(diagnoseError(err2, target)).toContain("CONNECTION_FAILED: Request failed (ERR_CUSTOM).");
+    expect(diagnoseError(err2, target)).toContain(
+      "CONNECTION_FAILED: Request failed (ERR_CUSTOM).",
+    );
 
     // Without message or code, uses "Unknown error"
     const err3 = {};
-    expect(diagnoseError(err3, target)).toContain("CONNECTION_FAILED: Request failed (Unknown error).");
+    expect(diagnoseError(err3, target)).toContain(
+      "CONNECTION_FAILED: Request failed (Unknown error).",
+    );
   });
 });

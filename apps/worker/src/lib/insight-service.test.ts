@@ -6,13 +6,14 @@ mock.module("@steadystack/db", () => ({
 
 import { InsightService, InsightType, InsightSeverity } from "./insight-service";
 
-const getMockPrisma = () => ({
-  monitorInsight: {
-    findFirst: mock(async () => null),
-    create: mock(async (args: any) => ({ id: "insight-new", ...args.data })),
-    update: mock(async (args: any) => ({ id: args.where.id, ...args.data })),
-  },
-} as any);
+const getMockPrisma = () =>
+  ({
+    monitorInsight: {
+      findFirst: mock(async () => null),
+      create: mock(async (args: any) => ({ id: "insight-new", ...args.data })),
+      update: mock(async (args: any) => ({ id: args.where.id, ...args.data })),
+    },
+  }) as any;
 
 describe("InsightService", () => {
   let mockPrisma: any;
@@ -114,8 +115,12 @@ describe("InsightService", () => {
     it("should not create advice if recent latency is not significantly higher (> 1.5x)", async () => {
       // 6 events, first half avg: 100, recent half avg: 140 (1.4x, which is <= 1.5x)
       const events = [
-        { latency: 100 }, { latency: 100 }, { latency: 100 },
-        { latency: 140 }, { latency: 140 }, { latency: 140 }
+        { latency: 100 },
+        { latency: 100 },
+        { latency: 100 },
+        { latency: 140 },
+        { latency: 140 },
+        { latency: 140 },
       ];
 
       await service.analyzeAndProvideAdvice("mon-1", "Monitor 1", events as any);
@@ -128,8 +133,12 @@ describe("InsightService", () => {
     it("should create ADVICE insight if recent latency is > 1.5x of first half", async () => {
       // 6 events, first half avg: 100, recent half avg: 160 (1.6x, which is > 1.5x)
       const events = [
-        { latency: 100 }, { latency: 100 }, { latency: 100 },
-        { latency: 160 }, { latency: 160 }, { latency: 160 }
+        { latency: 100 },
+        { latency: 100 },
+        { latency: 100 },
+        { latency: 160 },
+        { latency: 160 },
+        { latency: 160 },
       ];
 
       await service.analyzeAndProvideAdvice("mon-1", "Monitor 1", events as any);

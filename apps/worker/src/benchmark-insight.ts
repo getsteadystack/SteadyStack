@@ -5,22 +5,25 @@ const prisma = {
   monitorEvent: {
     findMany: async () => {
       // Simulate DB delay
-      await new Promise(r => setTimeout(r, 20));
+      await new Promise((r) => setTimeout(r, 20));
       return [];
-    }
-  }
+    },
+  },
 };
 const insightService = {
   analyzeAndProvideAdvice: async () => {
     // Simulate insight delay
-    await new Promise(r => setTimeout(r, 10));
-  }
+    await new Promise((r) => setTimeout(r, 10));
+  },
 };
 
 async function runBenchmark() {
   console.log("Starting benchmark...");
   // Create some dummy monitors
-  const monitors = Array.from({ length: 100 }).map((_, i) => ({ id: `m_${i}`, name: `Monitor ${i}` }));
+  const monitors = Array.from({ length: 100 }).map((_, i) => ({
+    id: `m_${i}`,
+    name: `Monitor ${i}`,
+  }));
 
   // Predictably trigger the 10% chance
   const triggeredMonitors = monitors.filter((_, i) => i % 10 === 0);
@@ -31,8 +34,7 @@ async function runBenchmark() {
     try {
       const recentEvents = await prisma.monitorEvent.findMany();
       await insightService.analyzeAndProvideAdvice();
-    } catch (e) {
-    }
+    } catch (e) {}
   }
   const endSeq = performance.now();
 
@@ -43,19 +45,22 @@ async function runBenchmark() {
   const insightPromises: Promise<void>[] = [];
 
   for (const monitor of triggeredMonitors) {
-    insightPromises.push((async () => {
-      try {
-        const recentEvents = await prisma.monitorEvent.findMany();
-        await insightService.analyzeAndProvideAdvice();
-      } catch (e) {
-      }
-    })());
+    insightPromises.push(
+      (async () => {
+        try {
+          const recentEvents = await prisma.monitorEvent.findMany();
+          await insightService.analyzeAndProvideAdvice();
+        } catch (e) {}
+      })(),
+    );
   }
   await Promise.all(insightPromises);
   const endConc = performance.now();
 
   console.log(`Baseline (Sequential N+1 for insights): ${(endSeq - startSeq).toFixed(2)}ms`);
-  console.log(`Optimized (Concurrent Insights via Promise.all): ${(endConc - startConc).toFixed(2)}ms`);
+  console.log(
+    `Optimized (Concurrent Insights via Promise.all): ${(endConc - startConc).toFixed(2)}ms`,
+  );
 
   process.exit(0);
 }

@@ -235,7 +235,7 @@ async function runDueChecks() {
       }
 
       results.push({ id: monitor.id, name: monitor.name, status: currentStatus, latency });
-    })
+    }),
   );
 
   return results;

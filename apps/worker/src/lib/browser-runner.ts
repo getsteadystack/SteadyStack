@@ -195,16 +195,12 @@ export async function performBrowserCheck(
     }
     const latency = Math.round(performance.now() - start);
     const errorReason =
-      err instanceof Error && err.message
-        ? err.message.substring(0, 100)
-        : "BROWSER_RUN_FAILED";
+      err instanceof Error && err.message ? err.message.substring(0, 100) : "BROWSER_RUN_FAILED";
     return {
       status: "DOWN",
       latency,
       errorReason:
-        err instanceof Error && err.message
-          ? err.message.substring(0, 100)
-          : "BROWSER_RUN_FAILED",
+        err instanceof Error && err.message ? err.message.substring(0, 100) : "BROWSER_RUN_FAILED",
     };
   } finally {
     if (browser) {

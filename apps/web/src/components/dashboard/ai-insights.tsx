@@ -132,7 +132,7 @@ export function AIInsights({ insights: initialInsights }: AIInsightsProps) {
 
   if (insights.length === 0) return null;
 
-  const metadata = (selectedInsight?.metadata as InsightMetadata | undefined);
+  const metadata = selectedInsight?.metadata as InsightMetadata | undefined;
   const currentAnalysis = metadata?.aiAnalysis;
 
   return (
@@ -298,13 +298,11 @@ export function AIInsights({ insights: initialInsights }: AIInsightsProps) {
                         </span>
                       </div>
                     )}
-                    {(currentAnalysis?.technicalMetrics?.latency ||
-                      metadata?.latency) && (
+                    {(currentAnalysis?.technicalMetrics?.latency || metadata?.latency) && (
                       <div className="flex justify-between items-center text-xs">
                         <span className="text-muted-foreground">Observed Latency:</span>
                         <span className="font-bold text-primary">
-                          {currentAnalysis?.technicalMetrics?.latency ||
-                            metadata?.latency}
+                          {currentAnalysis?.technicalMetrics?.latency || metadata?.latency}
                           ms
                         </span>
                       </div>

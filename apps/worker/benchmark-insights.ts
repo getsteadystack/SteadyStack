@@ -11,18 +11,20 @@ async function runBenchmark() {
   const monitorIds: string[] = [];
   try {
     for (let i = 0; i < 50; i++) {
-      const m = await prisma.monitor.create({
-        data: {
-          name: `Bench Monitor ${i}`,
-          url: "https://example.com",
-          userId: "bench-user",
-          workspaceId: "bench-workspace",
-        }
-      }).catch(e => {
-          return prisma.monitor.findFirst({ where: { name: `Bench Monitor ${i}` }});
-      });
+      const m = await prisma.monitor
+        .create({
+          data: {
+            name: `Bench Monitor ${i}`,
+            url: "https://example.com",
+            userId: "bench-user",
+            workspaceId: "bench-workspace",
+          },
+        })
+        .catch((e) => {
+          return prisma.monitor.findFirst({ where: { name: `Bench Monitor ${i}` } });
+        });
       if (m) {
-          monitorIds.push(m.id);
+        monitorIds.push(m.id);
       }
     }
 
@@ -44,12 +46,11 @@ async function runBenchmark() {
 
     // Cleanup insights
     await prisma.monitorInsight.deleteMany({
-      where: { monitorId: { in: monitorIds } }
+      where: { monitorId: { in: monitorIds } },
     });
-
   } finally {
     await prisma.monitor.deleteMany({
-      where: { id: { in: monitorIds } }
+      where: { id: { in: monitorIds } },
     });
   }
 }

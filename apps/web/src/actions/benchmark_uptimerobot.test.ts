@@ -19,24 +19,24 @@ mock.module("@steadystack/db", () => {
     default: {
       monitor: {
         create: async (args: any) => {
-          await new Promise(r => setTimeout(r, 2)); // simulate network delay
+          await new Promise((r) => setTimeout(r, 2)); // simulate network delay
           return { id: "test" };
         },
         createMany: async (args: any) => {
-          await new Promise(r => setTimeout(r, 2)); // simulate network delay
+          await new Promise((r) => setTimeout(r, 2)); // simulate network delay
           return { count: args.data.length };
-        }
-      }
-    }
-  }
+        },
+      },
+    },
+  };
 });
 
 mock.module("@steadystack/auth", () => ({
   auth: {
     api: {
       getSession: async () => ({ user: { id: "user_1" } }),
-    }
-  }
+    },
+  },
 }));
 
 import { importUptimeRobotMonitors, type NormalizedImportMonitor } from "./uptimerobot";

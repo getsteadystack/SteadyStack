@@ -1,11 +1,11 @@
 import { describe, test, expect, beforeAll, afterAll, mock } from "bun:test";
 
 const items = Array.from({ length: 50 }).map((_, i) => ({
-    monitorId: `monitor-${i}`,
-    status: "UP",
-    latency: 100,
-    errorReason: null,
-    timestamp: new Date().toISOString(),
+  monitorId: `monitor-${i}`,
+  status: "UP",
+  latency: 100,
+  errorReason: null,
+  timestamp: new Date().toISOString(),
 }));
 
 mock.module("../lib/fallback-queue", () => {
@@ -13,7 +13,9 @@ mock.module("../lib/fallback-queue", () => {
   return {
     FallbackQueue: class {
       constructor() {}
-      async getQueueLength() { return 50; }
+      async getQueueLength() {
+        return 50;
+      }
       async popBatch() {
         if (!popBatchCalled) {
           popBatchCalled = true;
@@ -21,7 +23,7 @@ mock.module("../lib/fallback-queue", () => {
         }
         return [];
       }
-    }
+    },
   };
 });
 
@@ -33,7 +35,7 @@ describe("db-sync benchmark", () => {
 
     const mockEnv = {
       UPSTASH_REDIS_REST_URL: "http://localhost",
-      UPSTASH_REDIS_REST_TOKEN: "token"
+      UPSTASH_REDIS_REST_TOKEN: "token",
     };
 
     let transactionCount = 0;
@@ -44,23 +46,23 @@ describe("db-sync benchmark", () => {
         transactionCount++;
         opsCount += ops.length;
         if (ops[0]?.type === "createMany") {
-            createdEvents += ops[0].data.length;
+          createdEvents += ops[0].data.length;
         } else if (ops[0]?.type === "create") {
-            createdEvents += 1;
+          createdEvents += 1;
         } else if (ops.length > 0 && ops[0].data && Array.isArray(ops[0].data)) {
-            // for raw array updates maybe
+          // for raw array updates maybe
         }
 
         // Simulate DB latency
-        await new Promise(r => setTimeout(r, 2));
+        await new Promise((r) => setTimeout(r, 2));
       },
       monitorEvent: {
         create: (args) => ({ type: "create", ...args }),
-        createMany: (args) => ({ type: "createMany", ...args })
+        createMany: (args) => ({ type: "createMany", ...args }),
       },
       monitor: {
-        update: (args) => ({ type: "update", ...args })
-      }
+        update: (args) => ({ type: "update", ...args }),
+      },
     };
 
     const start = performance.now();

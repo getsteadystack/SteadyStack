@@ -113,11 +113,12 @@ export async function performSequenceCheck(
       } catch (err: unknown) {
         const stepLatency = Math.round(performance.now() - startStep);
         totalLatency += stepLatency;
-        const isTimeout = (err instanceof Error && err.name === "AbortError") || controller.signal.aborted;
+        const isTimeout =
+          (err instanceof Error && err.name === "AbortError") || controller.signal.aborted;
         return {
           status: "DOWN",
           latency: totalLatency,
-          errorReason: `${stepLabel} failed: ${isTimeout ? "TIMEOUT" : (err instanceof Error && err.message ? err.message : "FETCH_FAILED")}`,
+          errorReason: `${stepLabel} failed: ${isTimeout ? "TIMEOUT" : err instanceof Error && err.message ? err.message : "FETCH_FAILED"}`,
         };
       }
 
@@ -218,7 +219,10 @@ export async function performSequenceCheck(
     return {
       status: "DOWN",
       latency: totalLatency,
-      errorReason: err instanceof Error && err.message ? err.message.substring(0, 100) : "SEQUENCE_CHECK_FAILED",
+      errorReason:
+        err instanceof Error && err.message
+          ? err.message.substring(0, 100)
+          : "SEQUENCE_CHECK_FAILED",
     };
   } finally {
     clearTimeout(globalTimeout);

@@ -10,14 +10,14 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "re2js": "^1.2.14",
     "@cloudflare/puppeteer": "^0.0.9",
     "@steadystack/core": "workspace:*",
     "@steadystack/db": "workspace:*",
     "@steadystack/email": "workspace:*",
     "@steadystack/shared": "workspace:*",
     "@steadystack/types": "workspace:*",
-    "@upstash/redis": "^1.37.0"
+    "@upstash/redis": "^1.37.0",
+    "re2js": "^1.2.14"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",

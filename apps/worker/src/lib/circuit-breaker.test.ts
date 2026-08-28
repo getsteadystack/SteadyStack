@@ -14,7 +14,7 @@ mock.module("@upstash/redis/cloudflare", () => {
       del = delMock;
       incr = incrMock;
       expire = expireMock;
-    }
+    },
   };
 });
 

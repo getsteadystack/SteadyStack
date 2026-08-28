@@ -105,7 +105,7 @@ export async function importThirdPartyMonitors(projects: IntegrationProject[]) {
                 connect: userChannels.map((ch) => ({ id: ch.id })),
               },
             },
-          })
+          }),
         );
         await prisma.$transaction(alertRulePromises);
       } catch (err) {

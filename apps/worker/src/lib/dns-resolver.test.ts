@@ -9,13 +9,19 @@ describe("resolveDNS", () => {
   });
 
   it("should return the IP address when a valid A record is found", async () => {
-    globalThis.fetch = mock(async () => new Response(JSON.stringify({
-      Status: 0,
-      Answer: [
-        { type: 5, data: "cname.example.com" },
-        { type: 1, data: "192.168.1.1" }
-      ]
-    }), { status: 200 }));
+    globalThis.fetch = mock(
+      async () =>
+        new Response(
+          JSON.stringify({
+            Status: 0,
+            Answer: [
+              { type: 5, data: "cname.example.com" },
+              { type: 1, data: "192.168.1.1" },
+            ],
+          }),
+          { status: 200 },
+        ),
+    );
 
     const ip = await resolveDNS("example.com");
     expect(ip).toBe("192.168.1.1");
@@ -29,32 +35,50 @@ describe("resolveDNS", () => {
   });
 
   it("should return null if DNS Status is not 0", async () => {
-    globalThis.fetch = mock(async () => new Response(JSON.stringify({
-      Status: 3, // NXDOMAIN
-      Answer: []
-    }), { status: 200 }));
+    globalThis.fetch = mock(
+      async () =>
+        new Response(
+          JSON.stringify({
+            Status: 3, // NXDOMAIN
+            Answer: [],
+          }),
+          { status: 200 },
+        ),
+    );
 
     const ip = await resolveDNS("invalid.example.com");
     expect(ip).toBeNull();
   });
 
   it("should return null if there is no Answer array in the response", async () => {
-    globalThis.fetch = mock(async () => new Response(JSON.stringify({
-      Status: 0
-    }), { status: 200 }));
+    globalThis.fetch = mock(
+      async () =>
+        new Response(
+          JSON.stringify({
+            Status: 0,
+          }),
+          { status: 200 },
+        ),
+    );
 
     const ip = await resolveDNS("example.com");
     expect(ip).toBeNull();
   });
 
   it("should return null if no A record (type 1) is found in the Answer array", async () => {
-    globalThis.fetch = mock(async () => new Response(JSON.stringify({
-      Status: 0,
-      Answer: [
-        { type: 5, data: "cname.example.com" },
-        { type: 28, data: "2001:0db8:85a3:0000:0000:8a2e:0370:7334" } // AAAA record
-      ]
-    }), { status: 200 }));
+    globalThis.fetch = mock(
+      async () =>
+        new Response(
+          JSON.stringify({
+            Status: 0,
+            Answer: [
+              { type: 5, data: "cname.example.com" },
+              { type: 28, data: "2001:0db8:85a3:0000:0000:8a2e:0370:7334" }, // AAAA record
+            ],
+          }),
+          { status: 200 },
+        ),
+    );
 
     const ip = await resolveDNS("example.com");
     expect(ip).toBeNull();

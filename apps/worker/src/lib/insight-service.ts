@@ -50,8 +50,11 @@ export class InsightService {
       const cacheKey = `${insight.monitorId}_${insight.type}`;
       // In case of multiple, just keep the most recent one
       const existing = cache.get(cacheKey);
-      if (!existing || new Date(insight.createdAt).getTime() > new Date(existing.createdAt).getTime()) {
-         cache.set(cacheKey, insight);
+      if (
+        !existing ||
+        new Date(insight.createdAt).getTime() > new Date(existing.createdAt).getTime()
+      ) {
+        cache.set(cacheKey, insight);
       }
     }
     return cache;
@@ -61,13 +64,16 @@ export class InsightService {
    * Component: Intelligent Insight Generator
    * Responsible for creating or updating actionable hints and performance anomalies.
    */
-  async createInsight(data: {
-    monitorId: string;
-    type: InsightType;
-    severity: InsightSeverity;
-    message: string;
-    metadata?: InsightMetadata;
-  }, activeInsightsCache?: Map<string, any>) {
+  async createInsight(
+    data: {
+      monitorId: string;
+      type: InsightType;
+      severity: InsightSeverity;
+      message: string;
+      metadata?: InsightMetadata;
+    },
+    activeInsightsCache?: Map<string, any>,
+  ) {
     // Limit spam: Only create if no active insight of same type in last 5 minutes
     // unless severity is CRITICAL.
     const windowMs = data.severity === InsightSeverity.CRITICAL ? 60 * 1000 : 5 * 60 * 1000;
@@ -134,7 +140,12 @@ export class InsightService {
    * Phase 2: Heuristic Analysis
    * Analyze recent events to provide contextual advice.
    */
-  async analyzeAndProvideAdvice(monitorId: string, monitorName: string, recentEvents: MonitorEvent[], activeInsightsCache?: Map<string, any>) {
+  async analyzeAndProvideAdvice(
+    monitorId: string,
+    monitorName: string,
+    recentEvents: MonitorEvent[],
+    activeInsightsCache?: Map<string, any>,
+  ) {
     if (recentEvents.length < 5) return;
 
     const latencies = recentEvents.map((e) => e.latency);
@@ -147,13 +158,16 @@ export class InsightService {
     const recentAvg = recentHalf.reduce((a, b) => a + b, 0) / recentHalf.length;
 
     if (recentAvg > firstAvg * 1.5) {
-      await this.createInsight({
-        monitorId,
-        type: InsightType.ADVICE,
-        severity: InsightSeverity.WARNING,
-        message: `Performance Degradation: ${monitorName} is 50% slower than its 24h baseline. Check for server-side resource exhaustion.`,
-        metadata: { diff: recentAvg - firstAvg, avg },
-      }, activeInsightsCache);
+      await this.createInsight(
+        {
+          monitorId,
+          type: InsightType.ADVICE,
+          severity: InsightSeverity.WARNING,
+          message: `Performance Degradation: ${monitorName} is 50% slower than its 24h baseline. Check for server-side resource exhaustion.`,
+          metadata: { diff: recentAvg - firstAvg, avg },
+        },
+        activeInsightsCache,
+      );
     }
 
     // 2. Detect High Failure Rate in specific region if possible (Handled in index.ts for efficiency)

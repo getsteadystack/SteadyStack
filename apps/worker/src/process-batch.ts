@@ -110,7 +110,7 @@ export async function processBatch(
         orderBy: { timestamp: "desc" },
         take: 50,
         select: { monitorId: true, latency: true },
-      })
+      }),
     );
 
     const queryResults = await Promise.all(dynamicQueries);
@@ -118,7 +118,7 @@ export async function processBatch(
       if (events.length > 0) {
         recentLatenciesMap.set(
           events[0].monitorId,
-          events.map((e: any) => e.latency)
+          events.map((e: any) => e.latency),
         );
       }
     }
@@ -471,13 +471,16 @@ export async function processBatch(
           );
 
           // Store insight
-          await insightService.createInsight({
-            monitorId: monitor.id,
-            type: InsightType.ANOMALY,
-            severity: anomaly.score > 5 ? InsightSeverity.CRITICAL : InsightSeverity.WARNING,
-            message: `Latency Anomaly Detected: ${monitor.name} is performing significantly outside expected baseline (Z-Score: ${anomaly.score}).`,
-            metadata: { score: anomaly.score, latency },
-          }, preloadedInsightsMap);
+          await insightService.createInsight(
+            {
+              monitorId: monitor.id,
+              type: InsightType.ANOMALY,
+              severity: anomaly.score > 5 ? InsightSeverity.CRITICAL : InsightSeverity.WARNING,
+              message: `Latency Anomaly Detected: ${monitor.name} is performing significantly outside expected baseline (Z-Score: ${anomaly.score}).`,
+              metadata: { score: anomaly.score, latency },
+            },
+            preloadedInsightsMap,
+          );
         }
 
         // Periodically run heuristic advice (every ~10 checks)
@@ -488,7 +491,12 @@ export async function processBatch(
               orderBy: { timestamp: "desc" },
               take: 20,
             });
-            await insightService.analyzeAndProvideAdvice(monitor.id, monitor.name, recentEvents, preloadedInsightsMap);
+            await insightService.analyzeAndProvideAdvice(
+              monitor.id,
+              monitor.name,
+              recentEvents,
+              preloadedInsightsMap,
+            );
           } catch (e) {
             console.error(`[InsightAdvice] Failed for ${monitor.name}:`, e);
           }
