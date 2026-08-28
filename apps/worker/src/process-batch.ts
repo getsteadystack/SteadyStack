@@ -142,7 +142,7 @@ export async function processBatch(
           if (p95Latency === undefined) continue;
 
           // Calc dynamic (p95 + 30% buffer, convert ms to seconds)
-          let calcTimeout = (p95Latency * 1.3) / 1000;
+          let calcTimeout = ((p95Latency ?? 0) * 1.3) / 1000;
 
           // Enforce bounds min 2, max 30
           if (calcTimeout < 2) calcTimeout = 2;
