@@ -151,7 +151,8 @@ export async function importUptimeRobotMonitors(
 
     const active = await getActiveWorkspace();
     let createdCount = 0;
-    for (const item of monitorsToImport) {
+
+    const newMonitorsData = monitorsToImport.map((item) => {
       let targetUrl = item.url || "https://example.com";
       if (item.type === "PING" && targetUrl) {
         targetUrl = targetUrl.startsWith("ping://")
@@ -166,20 +167,24 @@ export async function importUptimeRobotMonitors(
         }
       }
 
-      await prisma.monitor.create({
-        data: {
-          name: item.name,
-          url: targetUrl,
-          type: item.type as any,
-          interval: item.interval || 60,
-          timeout: 10,
-          status: "UP",
-          checkRegions: JSON.stringify(["us-east", "eu-central", "ap-tokyo"]),
-          userId: session.user.id,
-          organizationId: active?.id,
-        },
+      return {
+        name: item.name,
+        url: targetUrl,
+        type: item.type as any,
+        interval: item.interval || 60,
+        timeout: 10,
+        status: "UP",
+        checkRegions: JSON.stringify(["us-east", "eu-central", "ap-tokyo"]),
+        userId: session.user.id,
+        organizationId: active?.id,
+      };
+    });
+
+    if (newMonitorsData.length > 0) {
+      const result = await prisma.monitor.createMany({
+        data: newMonitorsData,
       });
-      createdCount++;
+      createdCount = result.count;
     }
 
     checkAndNotifyUsageLimits(session.user.id).catch(() => {});
