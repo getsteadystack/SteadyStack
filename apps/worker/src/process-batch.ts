@@ -93,6 +93,31 @@ export async function processBatch(
   for (const count of eventCounts) {
     eventCountsMap.set(count.monitorId, count._count);
   }
+
+  // 3. Pre-fetch Dynamic Thresholding Latencies (to avoid N+1 queries)
+  const dynamicMonitors = monitors.filter((m) => m.dynamicThresholding);
+  const dynamicLatenciesMap = new Map<string, number[]>();
+
+  if (dynamicMonitors.length > 0) {
+    try {
+      // Fetch top 50 recent events per dynamic monitor concurrently
+      const fetchPromises = dynamicMonitors.map(async (m) => {
+        const events = await prisma.monitorEvent.findMany({
+          where: { monitorId: m.id, status: Status.UP },
+          orderBy: { timestamp: "desc" },
+          take: 50,
+          select: { latency: true },
+        });
+        dynamicLatenciesMap.set(
+          m.id,
+          events.map((e: any) => e.latency),
+        );
+      });
+      await Promise.all(fetchPromises);
+    } catch (fetchErr) {
+      console.error("[DynamicThreshold] Bulk fetch failed:", fetchErr);
+    }
+  }
   // --- BULK FETCH DATA END ---
 
   for (let i = 0; i < monitors.length; i++) {
@@ -104,20 +129,14 @@ export async function processBatch(
 
     if (monitor.dynamicThresholding) {
       try {
-        const lastEvents = await prisma.monitorEvent.findMany({
-          where: { monitorId: monitor.id, status: Status.UP },
-          orderBy: { timestamp: "desc" },
-          take: 50, // Get recent events to compute p95
-          select: { latency: true },
-        });
+        const latencies = dynamicLatenciesMap.get(monitor.id) || [];
 
-        if (lastEvents.length >= 10) {
-          const latencies = lastEvents.map((e: any) => e.latency);
+        if (latencies.length >= 10) {
           capturedLatencies = latencies;
           // Sort ascending to find p95
           const sorted = [...latencies].sort((a: number, b: number) => a - b);
           const p95Index = Math.floor(sorted.length * 0.95);
-          const p95Latency = sorted[p95Index];
+          const p95Latency = sorted[p95Index] ?? 1000;
 
           // Calc dynamic (p95 + 30% buffer, convert ms to seconds)
           let calcTimeout = (p95Latency * 1.3) / 1000;
