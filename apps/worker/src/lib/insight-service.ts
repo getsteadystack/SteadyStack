@@ -1,4 +1,4 @@
-import type { PrismaClient } from "@steadystack/db";
+import type { PrismaClient, MonitorEvent } from "@steadystack/db";
 
 export enum InsightType {
   ANOMALY = "ANOMALY",
@@ -69,7 +69,7 @@ export class InsightService {
    * Phase 2: Heuristic Analysis
    * Analyze recent events to provide contextual advice.
    */
-  async analyzeAndProvideAdvice(monitorId: string, monitorName: string, recentEvents: any[]) {
+  async analyzeAndProvideAdvice(monitorId: string, monitorName: string, recentEvents: MonitorEvent[]) {
     if (recentEvents.length < 5) return;
 
     const latencies = recentEvents.map((e) => e.latency);
