@@ -78,7 +78,6 @@ export async function middleware(request: NextRequest) {
     } else if (isCustomDomain) {
       rewriteTarget = `/${locale}/status-page/domain/${hostname}${pathWithoutLocale === "/" ? "" : pathWithoutLocale}`;
 
-      console.log(`[Middleware] rewrite custom domain ${hostname} to ${rewriteTarget}`);
       url.pathname = rewriteTarget;
       return NextResponse.rewrite(url);
     }

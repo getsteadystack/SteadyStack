@@ -25,7 +25,7 @@ export async function seedDatabase(options: SeedOptions = {}) {
   const { userEmail, cleanExisting = false, resetDb = false, verbose = true } = options;
 
   const log = (...args: any[]) => {
-    if (verbose) console.log(...args);
+    if (verbose) console.info(...args);
   };
 
   log(
