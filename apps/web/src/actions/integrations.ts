@@ -59,16 +59,20 @@ export async function importThirdPartyMonitors(projects: IntegrationProject[]) {
       };
     }
 
-    // 3. Bulk create monitors
-    const createdMonitors = [];
-    for (const project of projects) {
-      // Ensure the URL is valid HTTP/S if not ping
+    // 3. Fetch user channels once
+    const userChannels = await prisma.notificationChannel.findMany({
+      where: { userId },
+      take: 5,
+    });
+
+    // 4. Bulk create monitors using a transaction to avoid N+1 network roundtrips
+    const monitorPromises = projects.map((project) => {
       let finalUrl = project.url;
       if (!finalUrl.includes("://")) {
         finalUrl = project.type === "PING" ? `ping://${finalUrl}` : `https://${finalUrl}`;
       }
 
-      const monitor = await prisma.monitor.create({
+      return prisma.monitor.create({
         data: {
           name: project.name,
           url: finalUrl,
@@ -83,16 +87,15 @@ export async function importThirdPartyMonitors(projects: IntegrationProject[]) {
           method: "GET",
         },
       });
+    });
 
-      // Auto-create default alert rule
+    const createdMonitors = await prisma.$transaction(monitorPromises);
+
+    // 5. Bulk create alert rules using a transaction
+    if (userChannels.length > 0) {
       try {
-        const userChannels = await prisma.notificationChannel.findMany({
-          where: { userId },
-          take: 5,
-        });
-
-        if (userChannels.length > 0) {
-          await prisma.alertRule.create({
+        const alertRulePromises = createdMonitors.map((monitor) =>
+          prisma.alertRule.create({
             data: {
               monitorId: monitor.id,
               trigger: "STATUS_CHANGE",
@@ -102,13 +105,12 @@ export async function importThirdPartyMonitors(projects: IntegrationProject[]) {
                 connect: userChannels.map((ch) => ({ id: ch.id })),
               },
             },
-          });
-        }
+          })
+        );
+        await prisma.$transaction(alertRulePromises);
       } catch (err) {
-        console.error("Failed to auto-create alert rule during import:", err);
+        console.error("Failed to auto-create alert rules during import:", err);
       }
-
-      createdMonitors.push(monitor);
     }
 
     revalidatePath("/dashboard");

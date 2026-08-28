@@ -156,7 +156,7 @@ export async function importUptimeRobotMonitors(
 
     const active = await getActiveWorkspace();
 
-    const monitorsData = monitorsToImport.map((item) => {
+    const recordsToInsert = monitorsToImport.map(item => {
       let targetUrl = item.url || "https://example.com";
       if (item.type === "PING" && targetUrl) {
         targetUrl = targetUrl.startsWith("ping://")
@@ -190,7 +190,7 @@ export async function importUptimeRobotMonitors(
     });
 
     const result = await prisma.monitor.createMany({
-      data: monitorsData,
+      data: recordsToInsert,
     });
 
     const createdCount = result.count;
