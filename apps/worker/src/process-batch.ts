@@ -8,7 +8,7 @@ import {
   ProxyError,
   SSL_ALERT_MILESTONES,
 } from "./constants";
-import { ProxyMesh, QuantumAnomalyDetector } from "./services/mesh";
+import { ProxyMesh, QuantumAnomalyDetector, isProxyInfrastructureError } from "./services/mesh";
 import { InsightService, InsightType, InsightSeverity } from "./lib/insight-service";
 import { performRegionalChecks, getAverageLatency } from "./services/regional-monitor";
 import {
@@ -67,6 +67,7 @@ export async function processBatch(
   const monitorIds = monitors.map((m) => m.id);
   const activeIncidentsMap = new Map<string, any>();
   const eventCountsMap = new Map<string, number>();
+  const recentLatenciesMap = new Map<string, number[]>();
 
   // 1. Fetch Active Incidents
   const activeIncidents = await incidentService.findActiveIncidentsForMonitors(monitorIds);
@@ -96,6 +97,32 @@ export async function processBatch(
   for (const count of eventCounts) {
     eventCountsMap.set(count.monitorId, count._count);
   }
+
+  // 3. Fetch Recent Events for Dynamic Thresholding
+  const dynamicIds = monitors.filter((m) => m.dynamicThresholding).map((m) => m.id);
+  if (dynamicIds.length > 0) {
+    // Note: To properly fetch max 50 events PER monitorId and avoid global limit domination,
+    // we use Promise.all to issue parallel queries. In Prisma without raw SQL, this is the most
+    // efficient way to handle "Top N per Group" without complex joins or missing older events.
+    const dynamicQueries = dynamicIds.map((id) =>
+      prisma.monitorEvent.findMany({
+        where: { monitorId: id, status: Status.UP },
+        orderBy: { timestamp: "desc" },
+        take: 50,
+        select: { monitorId: true, latency: true },
+      })
+    );
+
+    const queryResults = await Promise.all(dynamicQueries);
+    for (const events of queryResults) {
+      if (events.length > 0) {
+        recentLatenciesMap.set(
+          events[0].monitorId,
+          events.map((e: any) => e.latency)
+        );
+      }
+    }
+  }
   // --- BULK FETCH DATA END ---
 
   for (let i = 0; i < monitors.length; i++) {
@@ -107,23 +134,18 @@ export async function processBatch(
 
     if (monitor.dynamicThresholding) {
       try {
-        const lastEvents = await prisma.monitorEvent.findMany({
-          where: { monitorId: monitor.id, status: Status.UP },
-          orderBy: { timestamp: "desc" },
-          take: 50, // Get recent events to compute p95
-          select: { latency: true },
-        });
+        const latencies = recentLatenciesMap.get(monitor.id) || [];
 
-        if (lastEvents.length >= 10) {
-          const latencies = lastEvents.map((e: any) => e.latency);
+        if (latencies.length >= 10) {
           capturedLatencies = latencies;
           // Sort ascending to find p95
           const sorted = [...latencies].sort((a: number, b: number) => a - b);
           const p95Index = Math.floor(sorted.length * 0.95);
           const p95Latency = sorted[p95Index];
+          if (p95Latency === undefined) continue;
 
           // Calc dynamic (p95 + 30% buffer, convert ms to seconds)
-          let calcTimeout = (p95Latency * 1.3) / 1000;
+          let calcTimeout = ((p95Latency ?? 0) * 1.3) / 1000;
 
           // Enforce bounds min 2, max 30
           if (calcTimeout < 2) calcTimeout = 2;
@@ -344,20 +366,15 @@ export async function processBatch(
                 retryResult.status = Status.UP;
                 delete retryResult.errorReason;
               } else {
-                // KEY FIX: If the PROXY itself failed (not the target), don't use this as
+                // ARCHITECTURE DECISION: If the PROXY itself failed (not the target), we do not use this as
                 // confirmation of DOWN. Proxy failures (CORS blocks, scraper bans, etc.) are
-                // unreliable signals for sites like Google that block these proxy services.
-                const isProxyFailure =
-                  proxyResult.error &&
-                  !proxyResult.error.startsWith("TARGET_HTTP_") &&
-                  !proxyResult.error.startsWith("HTTP_") &&
-                  !proxyResult.error.startsWith("CLUSTER_HTTP_");
+                // unreliable signals for sites that block these proxy services.
+                const isProxyFailure = isProxyInfrastructureError(proxyResult.error);
 
                 if (isProxyFailure) {
                   console.warn(
                     `[MultiVector] Component 18-1-0 proxy itself failed (${proxyResult.error}), not a target failure. Skipping as inconclusive.`,
                   );
-                  // Don't use a broken proxy as evidence of DOWN — skip to secondary
                 } else {
                   console.log(
                     `[MultiVector] Component 18-1-0 target confirmed DOWN. Trying secondary vector Component 18-1-1...`,
@@ -373,11 +390,15 @@ export async function processBatch(
                   delete retryResult.errorReason;
                 } else {
                   // Check if secondary proxy also just failed at the proxy level
-                  const isSecondaryProxyFailure =
-                    secondaryProxy.error &&
-                    !secondaryProxy.error.startsWith("TARGET_HTTP_") &&
-                    !secondaryProxy.error.startsWith("HTTP_") &&
-                    !secondaryProxy.error.startsWith("CLUSTER_HTTP_");
+                  const isSecondaryProxyFailure = isProxyInfrastructureError(secondaryProxy.error);
+
+                  if (isSecondaryProxyFailure) {
+                    console.warn(
+                      `[MultiVector] Component 18-1-1 proxy itself failed (${secondaryProxy.error}), not a target failure. Skipping as inconclusive.`,
+                    );
+                  } else {
+                    console.log(`[MultiVector] Component 18-1-1 target confirmed DOWN.`);
+                  }
 
                   if (isProxyFailure && isSecondaryProxyFailure) {
                     // BOTH proxies failed at the infrastructure level — this is a proxy network
@@ -390,14 +411,15 @@ export async function processBatch(
                     delete retryResult.errorReason;
                   } else {
                     console.log(
-                      `[MultiVector] Component 18-1-1 also DOWN. Trying final High-Fidelity Vector 19-3-1...`,
+                      `[MultiVector] Proceeding to final High-Fidelity Vector 19-3-1 for ${monitor.name}...`,
                     );
-                    // Use captured latencies for quantum verification if available
+
                     const finalVector = await mesh.component_19_3_1(
                       monitor.url,
                       capturedLatencies || [],
                       2000,
                     );
+
                     if (finalVector.status === Status.UP) {
                       console.log(
                         `[MultiVector] Component 19-3-1 reported UP! False positive averted for ${monitor.name}. (Anomaly: ${finalVector.anomaly?.isAnomaly})`,
@@ -405,8 +427,20 @@ export async function processBatch(
                       retryResult.status = Status.UP;
                       delete retryResult.errorReason;
                     } else {
+                      const isFinalProxyFailure =
+                        finalVector.error &&
+                        !finalVector.error.startsWith("TARGET_HTTP_") &&
+                        !finalVector.error.startsWith("HTTP_") &&
+                        !finalVector.error.startsWith("CLUSTER_HTTP_");
+
+                      if (isFinalProxyFailure) {
+                        console.warn(
+                          `[MultiVector] Component 19-3-1 proxy itself failed (${finalVector.error}), skipping as inconclusive.`,
+                        );
+                      }
+
                       console.warn(
-                        `[MultiVector] ALL verification vectors (Local, Retry, 18-1-0, 18-1-1, 19-3-1) confirmed DOWN for ${monitor.name}.`,
+                        `[MultiVector] Verification vectors confirmed DOWN for ${monitor.name}.`,
                       );
                     }
                   }
