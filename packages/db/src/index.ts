@@ -4,9 +4,7 @@ import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
 declare global {
-  // eslint-disable-next-line no-var
   var DATABASE_URL: string | undefined;
-  // eslint-disable-next-line no-var
   var DATABASE_POOL_URL: string | undefined;
 }
 

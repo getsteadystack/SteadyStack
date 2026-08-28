@@ -6,9 +6,7 @@ import { PrismaNeon } from "@prisma/adapter-neon";
 import { Pool as NeonPool } from "@neondatabase/serverless";
 
 declare global {
-  // eslint-disable-next-line no-var
   var DATABASE_URL: string | undefined;
-  // eslint-disable-next-line no-var
   var DATABASE_POOL_URL: string | undefined;
 }
 
