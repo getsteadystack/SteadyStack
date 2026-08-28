@@ -17,6 +17,4 @@ export const web = await Nextjs("web", {
   },
 });
 
-console.log(`Web    -> ${web.url}`);
-
 await app.finalize();
