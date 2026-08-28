@@ -1725,7 +1725,21 @@ export async function generateLiveAIInsights() {
     const aiClient = getAIProviderClient();
     let generatedCount = 0;
 
-    for (const monitor of userMonitors.slice(0, 5)) {
+    const topMonitors = userMonitors.slice(0, 5);
+    const monitorIds = topMonitors.map((m) => m.id);
+
+    // Batch query recent insights to avoid N+1 inside the loop
+    const existingInsights = await prisma.monitorInsight.findMany({
+      where: {
+        monitorId: { in: monitorIds },
+        dismissed: false,
+        createdAt: { gt: new Date(Date.now() - 10 * 60 * 1000) },
+      },
+    });
+
+    const recentInsightMonitorIds = new Set(existingInsights.map((insight) => insight.monitorId));
+
+    for (const monitor of topMonitors) {
       const recent = monitor.events;
       if (recent.length === 0) continue;
 
@@ -1740,15 +1754,7 @@ export async function generateLiveAIInsights() {
             ? `Elevated Outage Rate: ${monitor.name} encountered ${failures} failure(s) in recent telemetry window.`
             : `High Latency Drift: Average response time (${avgLatency}ms) exceeds target performance tier.`;
 
-        const existing = await prisma.monitorInsight.findFirst({
-          where: {
-            monitorId: monitor.id,
-            dismissed: false,
-            createdAt: { gt: new Date(Date.now() - 10 * 60 * 1000) },
-          },
-        });
-
-        if (!existing) {
+        if (!recentInsightMonitorIds.has(monitor.id)) {
           const analysisResult = await generateDeepInsightAnalysis({
             monitorName: monitor.name,
             monitorUrl: monitor.url,
