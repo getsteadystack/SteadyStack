@@ -95,6 +95,8 @@ export async function processBatch(
   }
   // --- BULK FETCH DATA END ---
 
+  const insightPromises: Promise<void>[] = [];
+
   for (let i = 0; i < monitors.length; i++) {
     const monitor = monitors[i];
 
@@ -443,16 +445,24 @@ export async function processBatch(
 
         // Periodically run heuristic advice (every ~10 checks)
         if (Math.random() < 0.1) {
-          try {
-            const recentEvents = await prisma.monitorEvent.findMany({
-              where: { monitorId: monitor.id, status: Status.UP },
-              orderBy: { timestamp: "desc" },
-              take: 20,
-            });
-            await insightService.analyzeAndProvideAdvice(monitor.id, monitor.name, recentEvents);
-          } catch (e) {
-            console.error(`[InsightAdvice] Failed for ${monitor.name}:`, e);
-          }
+          insightPromises.push(
+            (async () => {
+              try {
+                const recentEvents = await prisma.monitorEvent.findMany({
+                  where: { monitorId: monitor.id, status: Status.UP },
+                  orderBy: { timestamp: "desc" },
+                  take: 20,
+                });
+                await insightService.analyzeAndProvideAdvice(
+                  monitor.id,
+                  monitor.name,
+                  recentEvents,
+                );
+              } catch (e) {
+                console.error(`[InsightAdvice] Failed for ${monitor.name}:`, e);
+              }
+            })(),
+          );
         }
       }
 
@@ -822,6 +832,15 @@ export async function processBatch(
       // We count it as processed (failed) to avoid infinite retry loops for bad data
       // Unless it's a timeout error, which might be retryable
       processedIds.push(monitor.id);
+    }
+  }
+
+  // Await all accumulated background insight advice checks concurrently
+  if (insightPromises.length > 0) {
+    try {
+      await Promise.allSettled(insightPromises);
+    } catch (err) {
+      console.error("[InsightAdvice] Batch evaluation failed:", err);
     }
   }
 
