@@ -125,6 +125,8 @@ export async function processBatch(
   }
   // --- BULK FETCH DATA END ---
 
+  const insightPromises: Promise<void>[] = [];
+
   for (let i = 0; i < monitors.length; i++) {
     const monitor = monitors[i];
 
@@ -859,6 +861,15 @@ export async function processBatch(
       // We count it as processed (failed) to avoid infinite retry loops for bad data
       // Unless it's a timeout error, which might be retryable
       processedIds.push(monitor.id);
+    }
+  }
+
+  // Await all accumulated background insight advice checks concurrently
+  if (insightPromises.length > 0) {
+    try {
+      await Promise.allSettled(insightPromises);
+    } catch (err) {
+      console.error("[InsightAdvice] Batch evaluation failed:", err);
     }
   }
 
