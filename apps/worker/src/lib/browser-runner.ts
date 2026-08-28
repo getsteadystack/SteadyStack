@@ -70,6 +70,7 @@ async function performLocalSyntheticCheck(
     return { status: "UP", latency };
   } catch (err: unknown) {
     const latency = Math.round(performance.now() - start);
+    const error = err instanceof Error ? err : new Error(String(err));
     return {
       status: "DOWN",
       latency,
@@ -193,6 +194,10 @@ export async function performBrowserCheck(
       }
     }
     const latency = Math.round(performance.now() - start);
+    const errorReason =
+      err instanceof Error && err.message
+        ? err.message.substring(0, 100)
+        : "BROWSER_RUN_FAILED";
     return {
       status: "DOWN",
       latency,
