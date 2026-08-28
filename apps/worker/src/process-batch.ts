@@ -372,7 +372,6 @@ export async function processBatch(
                   console.warn(
                     `[MultiVector] Component 18-1-0 proxy itself failed (${proxyResult.error}), not a target failure. Skipping as inconclusive.`,
                   );
-                  // Don't use a broken proxy as evidence of DOWN — skip to secondary
                 } else {
                   console.log(
                     `[MultiVector] Component 18-1-0 target confirmed DOWN. Trying secondary vector Component 18-1-1...`,
@@ -390,6 +389,14 @@ export async function processBatch(
                   // Check if secondary proxy also just failed at the proxy level
                   const isSecondaryProxyFailure = isProxyInfrastructureError(secondaryProxy.error);
 
+                  if (isSecondaryProxyFailure) {
+                    console.warn(
+                      `[MultiVector] Component 18-1-1 proxy itself failed (${secondaryProxy.error}), not a target failure. Skipping as inconclusive.`,
+                    );
+                  } else {
+                    console.log(`[MultiVector] Component 18-1-1 target confirmed DOWN.`);
+                  }
+
                   if (isProxyFailure && isSecondaryProxyFailure) {
                     // BOTH proxies failed at the infrastructure level — this is a proxy network
                     // problem, NOT a confirmed target outage. Treat as inconclusive → keep UP.
@@ -401,14 +408,15 @@ export async function processBatch(
                     delete retryResult.errorReason;
                   } else {
                     console.log(
-                      `[MultiVector] Component 18-1-1 also DOWN. Trying final High-Fidelity Vector 19-3-1...`,
+                      `[MultiVector] Proceeding to final High-Fidelity Vector 19-3-1 for ${monitor.name}...`,
                     );
-                    // Use captured latencies for quantum verification if available
+
                     const finalVector = await mesh.component_19_3_1(
                       monitor.url,
                       capturedLatencies || [],
                       2000,
                     );
+
                     if (finalVector.status === Status.UP) {
                       console.log(
                         `[MultiVector] Component 19-3-1 reported UP! False positive averted for ${monitor.name}. (Anomaly: ${finalVector.anomaly?.isAnomaly})`,
@@ -416,8 +424,20 @@ export async function processBatch(
                       retryResult.status = Status.UP;
                       delete retryResult.errorReason;
                     } else {
+                      const isFinalProxyFailure =
+                        finalVector.error &&
+                        !finalVector.error.startsWith("TARGET_HTTP_") &&
+                        !finalVector.error.startsWith("HTTP_") &&
+                        !finalVector.error.startsWith("CLUSTER_HTTP_");
+
+                      if (isFinalProxyFailure) {
+                        console.warn(
+                          `[MultiVector] Component 19-3-1 proxy itself failed (${finalVector.error}), skipping as inconclusive.`,
+                        );
+                      }
+
                       console.warn(
-                        `[MultiVector] ALL verification vectors (Local, Retry, 18-1-0, 18-1-1, 19-3-1) confirmed DOWN for ${monitor.name}.`,
+                        `[MultiVector] Verification vectors confirmed DOWN for ${monitor.name}.`,
                       );
                     }
                   }
