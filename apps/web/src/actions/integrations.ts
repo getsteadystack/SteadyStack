@@ -292,7 +292,7 @@ export async function fetchVercelProjects(
       scope: { type: "personal" | "team"; slug: string; name: string };
     }> = [];
 
-    for (const integration of integrations) {
+    const fetchPromises = integrations.map(async (integration) => {
       const authHeaders = {
         Authorization: `Bearer ${integration.accessToken}`,
       };
@@ -309,27 +309,32 @@ export async function fetchVercelProjects(
           console.error(
             `Failed to fetch projects for Vercel integration ${integration.id} (${res.status}): ${text}`,
           );
-          continue;
+          return [];
         }
         const data = (await res.json()) as any;
         const scopeSlug = isPersonal ? "personal" : integration.teamSlug || "team";
         const scopeName = isPersonal ? "Personal" : integration.teamName || "Team";
 
         if (data.projects) {
-          for (const p of data.projects) {
-            allProjects.push({
-              project: p,
-              scope: {
-                type: isPersonal ? "personal" : "team",
-                slug: scopeSlug,
-                name: scopeName,
-              },
-            });
-          }
+          return data.projects.map((p: any) => ({
+            project: p,
+            scope: {
+              type: isPersonal ? "personal" : "team",
+              slug: scopeSlug,
+              name: scopeName,
+            },
+          }));
         }
+        return [];
       } catch (err) {
         console.error(`Error fetching projects for integration ${integration.id}:`, err);
+        return [];
       }
+    });
+
+    const results = await Promise.all(fetchPromises);
+    for (const projects of results) {
+      allProjects.push(...projects);
     }
 
     const data: ExternalResource[] = [];
