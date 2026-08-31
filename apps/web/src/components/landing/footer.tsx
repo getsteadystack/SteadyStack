@@ -308,6 +308,23 @@ export default function LandingFooter() {
               className="block h-11 w-auto"
             />
           </a>
+          <a
+            href="https://startupfa.me/s/steadystack?utm_source=steadystack.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="SteadyStack - Featured on Startup Fame"
+            className="transition-opacity hover:opacity-85"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://startupfa.me/badges/featured-badge-small.webp"
+              alt="SteadyStack - Featured on Startup Fame"
+              width={224}
+              height={36}
+              loading="lazy"
+              className="block h-9 w-auto"
+            />
+          </a>
         </div>
 
         {/* Footer Bottom */}
