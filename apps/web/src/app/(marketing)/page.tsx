@@ -9,25 +9,25 @@ import ComparisonTable from "@/components/landing/comparison-table";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "SteadyStack — Know the second your stack breaks",
+  title: "SteadyStack - Uptime Monitoring With Zero False Positives",
   description:
-    "Know the second your stack breaks. Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification, live latency tracking, and zero false positives — free for commercial use.",
+    "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included.",
   alternates: {
     canonical: "https://steadystack.dev/",
   },
   openGraph: {
-    title: "SteadyStack — Know the second your stack breaks",
+    title: "SteadyStack - Uptime Monitoring With Zero False Positives",
     description:
-      "Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification and zero false positives.",
+      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included.",
     url: "https://steadystack.dev/",
     siteName: "SteadyStack",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "SteadyStack — Know the second your stack breaks",
+    title: "SteadyStack - Uptime Monitoring With Zero False Positives",
     description:
-      "Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification and zero false positives.",
+      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included.",
     creator: "@steadystack",
   },
 };

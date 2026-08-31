@@ -23,11 +23,11 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://steadystack.dev";
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "SteadyStack — Know the second your stack breaks",
+    default: "SteadyStack - Uptime Monitoring With Zero False Positives",
     template: "%s",
   },
   description:
-    "Edge-native uptime monitoring with multi-region quorum verification. Eliminate false alarms and track latency globally across 50 regions. Free forever.",
+    "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included.",
   applicationName: "SteadyStack",
   keywords: [
     "website monitoring",
@@ -51,23 +51,23 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: BASE_URL,
     siteName: "SteadyStack",
-    title: "SteadyStack — Know the second your stack breaks",
+    title: "SteadyStack - Uptime Monitoring With Zero False Positives",
     description:
-      "Know the second your stack breaks. Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification, live latency tracking, and zero false positives — free for commercial use.",
+      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SteadyStack — Know the second your stack breaks",
+        alt: "SteadyStack - Uptime Monitoring With Zero False Positives",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SteadyStack — Know the second your stack breaks",
+    title: "SteadyStack - Uptime Monitoring With Zero False Positives",
     description:
-      "Know the second your stack breaks. Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification, live latency tracking, and zero false positives — free for commercial use.",
+      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included.",
     creator: "@steadystack",
     images: ["/og-image.png"],
   },

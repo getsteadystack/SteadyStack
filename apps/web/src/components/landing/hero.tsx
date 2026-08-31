@@ -99,9 +99,8 @@ export default function Hero() {
 
         {/* Subhead */}
         <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-2xl mb-8 text-balance font-sans">
-          SteadyStack monitors your endpoints with multi-region edge consensus. 3 primary regions
-          (2-of-3 quorum) on the free tier, and full 7-region 4-of-7 quorum on paid tiers — zero
-          false positives, zero alert fatigue.
+          SteadyStack is an uptime monitoring service that confirms failures across multiple global
+          regions before alerting you - zero false positives, zero alert fatigue.
         </p>
 
         {/* Probe Input Form */}
