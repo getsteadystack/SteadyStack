@@ -53,8 +53,11 @@ export default function ComparisonTable() {
             Why Engineering Teams Choose <span className="text-primary">SteadyStack</span>
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed font-sans">
-            Compare SteadyStack head-to-head against legacy uptime tools. Faster checks, broader
-            global edge coverage, and native synthetic testing out of the box.
+            Compare SteadyStack head-to-head against legacy uptime monitoring tools. Our core
+            difference is the confirmation rule: four of seven independent global regions must agree
+            before you are paged. Faster check intervals, broader edge coverage, and native
+            synthetic testing are included - but the quorum model is what eliminates false positives
+            at the source.
           </p>
         </div>
 

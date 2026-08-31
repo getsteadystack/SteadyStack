@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     template: "%s",
   },
   description:
-    "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included.",
+    "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included. No credit card needed.",
   applicationName: "SteadyStack",
   keywords: [
     "website monitoring",
@@ -53,7 +53,7 @@ export const metadata: Metadata = {
     siteName: "SteadyStack",
     title: "SteadyStack - Uptime Monitoring With Zero False Positives",
     description:
-      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included.",
+      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included. No credit card needed.",
     images: [
       {
         url: "/og-image.png",
@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SteadyStack - Uptime Monitoring With Zero False Positives",
     description:
-      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included.",
+      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included. No credit card needed.",
     creator: "@steadystack",
     images: ["/og-image.png"],
   },

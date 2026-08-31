@@ -216,8 +216,10 @@ export default function HowItWorks() {
               <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
                 We&apos;d rather tell you that than pad a number. If your users are concentrated in
                 those regions, a global outage will still page you — but region-specific problems
-                there may not surface, and you should know that before you rely on us. Our live
-                coverage, including what&apos;s coming, is on the{" "}
+                there may not surface, and you should know that before you rely on us. If your
+                critical users are in those regions, pairing SteadyStack with a heartbeat or
+                cron-job monitor for those endpoints will catch region-specific failures until our
+                coverage expands. Our live coverage, including what&apos;s coming, is on the{" "}
                 <Link
                   href="/locations"
                   className="text-primary font-semibold hover:underline underline-offset-4"
