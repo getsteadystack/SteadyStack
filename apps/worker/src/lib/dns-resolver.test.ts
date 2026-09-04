@@ -21,14 +21,16 @@ describe("resolveDNS", () => {
           }),
           { status: 200 },
         ),
-    );
+    ) as any;
 
     const ip = await resolveDNS("example.com");
     expect(ip).toBe("192.168.1.1");
   });
 
   it("should return null if the HTTP response is not ok", async () => {
-    globalThis.fetch = mock(async () => new Response("Internal Server Error", { status: 500 }));
+    globalThis.fetch = mock(
+      async () => new Response("Internal Server Error", { status: 500 }),
+    ) as any;
 
     const ip = await resolveDNS("example.com");
     expect(ip).toBeNull();
@@ -44,7 +46,7 @@ describe("resolveDNS", () => {
           }),
           { status: 200 },
         ),
-    );
+    ) as any;
 
     const ip = await resolveDNS("invalid.example.com");
     expect(ip).toBeNull();
@@ -59,7 +61,7 @@ describe("resolveDNS", () => {
           }),
           { status: 200 },
         ),
-    );
+    ) as any;
 
     const ip = await resolveDNS("example.com");
     expect(ip).toBeNull();
@@ -78,7 +80,7 @@ describe("resolveDNS", () => {
           }),
           { status: 200 },
         ),
-    );
+    ) as any;
 
     const ip = await resolveDNS("example.com");
     expect(ip).toBeNull();
@@ -87,11 +89,11 @@ describe("resolveDNS", () => {
   it("should return null and catch the error if fetch throws a network error", async () => {
     // Suppress console.error during this test to keep output clean
     const originalConsoleError = console.error;
-    console.error = mock(() => {});
+    console.error = mock(() => {}) as any;
 
     globalThis.fetch = mock(async () => {
       throw new Error("Network connection failed");
-    });
+    }) as any;
 
     const ip = await resolveDNS("example.com");
     expect(ip).toBeNull();

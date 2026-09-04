@@ -2,8 +2,8 @@ import { describe, test, expect, mock, beforeEach, afterEach } from "bun:test";
 import { queueNotification, type NotificationPayload } from "./send-notification";
 import type { Env } from "../env";
 
-let handlerQueueMock = mock(async () => {});
-let redisLpushMock = mock(async () => {});
+let handlerQueueMock = mock(async (_batch?: any, _env?: any, _ctx?: any) => {});
+let redisLpushMock = mock(async (_key?: string, _val?: string) => {});
 
 mock.module("../notification-handler", () => {
   return {
@@ -35,16 +35,14 @@ describe("queueNotification", () => {
     env = {} as Env;
     ctx = { waitUntil: () => {} };
     payload = {
-      type: "DOWN",
+      type: "ALERT_DISPATCH" as any,
       monitorId: "mon-1",
       monitorName: "Test Monitor",
-      monitorUrl: "https://test.com",
-      workspaceId: "ws-1",
+      url: "https://test.com",
+      status: "DOWN",
       reason: "Timeout",
-      timestamp: Date.now(),
-      environment: "production",
-      retryCount: 0,
-    } as NotificationPayload;
+      timestamp: new Date().toISOString(),
+    };
 
     handlerQueueMock.mockClear();
     redisLpushMock.mockClear();
@@ -60,7 +58,7 @@ describe("queueNotification", () => {
   test("should use NOTIFICATION_QUEUE when available", async () => {
     let sent = false;
     env.NOTIFICATION_QUEUE = {
-      send: async (p: any) => {
+      send: async () => {
         sent = true;
       },
     } as any;
@@ -71,7 +69,7 @@ describe("queueNotification", () => {
   });
 
   test("fallback direct delivery success", async () => {
-    handlerQueueMock.mockImplementation(async (batch) => {
+    handlerQueueMock.mockImplementation(async () => {
       // simulate success
     });
 
@@ -82,7 +80,7 @@ describe("queueNotification", () => {
 
   test("fallback direct delivery retry on failure and eventually succeed", async () => {
     let callCount = 0;
-    handlerQueueMock.mockImplementation(async (batch) => {
+    handlerQueueMock.mockImplementation(async (batch: any) => {
       callCount++;
       if (callCount < 3) {
         batch.retryAll(); // simulate failure
@@ -98,20 +96,20 @@ describe("queueNotification", () => {
     env.UPSTASH_REDIS_REST_URL = "redis://localhost";
     env.UPSTASH_REDIS_REST_TOKEN = "token";
 
-    handlerQueueMock.mockImplementation(async (batch) => {
+    handlerQueueMock.mockImplementation(async (batch: any) => {
       batch.retryAll(); // simulate failure
     });
 
     await queueNotification(env, payload, ctx);
     expect(handlerQueueMock).toHaveBeenCalledTimes(3);
     expect(redisLpushMock).toHaveBeenCalledTimes(1);
-    const dlqCall = redisLpushMock.mock.calls[0];
-    expect(dlqCall[0]).toBe("steadystack:dlq:notifications");
-    expect(JSON.parse(dlqCall[1]).payload.monitorId).toBe("mon-1");
+    const dlqCall = (redisLpushMock.mock.calls as any[])[0];
+    expect(dlqCall?.[0]).toBe("steadystack:dlq:notifications");
+    expect(JSON.parse(dlqCall?.[1]).payload.monitorId).toBe("mon-1");
   });
 
   test("fallback exhaust all attempts but Redis is not configured", async () => {
-    handlerQueueMock.mockImplementation(async (batch) => {
+    handlerQueueMock.mockImplementation(async (batch: any) => {
       batch.retryAll(); // simulate failure
     });
 

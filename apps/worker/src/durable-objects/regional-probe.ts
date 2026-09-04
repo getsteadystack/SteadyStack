@@ -247,7 +247,7 @@ export class RegionalProbe extends DurableObject<Env> {
         }
 
         return {
-          status: errorClass === "TIMEOUT" ? "DEGRADED" : "DOWN",
+          status: "DOWN",
           latency,
           errorReason,
           errorClass,

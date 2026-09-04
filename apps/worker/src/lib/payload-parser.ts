@@ -5,8 +5,6 @@
  * against complex expectations (regex, JSON paths).
  */
 
-import { RE2JS } from "re2js";
-
 export interface ValidationResult {
   success: boolean;
   errorMessage?: string;
@@ -60,9 +58,8 @@ export function validatePayload(
     // 3. Regex Matcher
     if (expectations.body_regex) {
       try {
-        const regex = RE2JS.compile(expectations.body_regex);
-        const matcher = regex.matcher(body);
-        if (!matcher.find()) {
+        const regex = new RegExp(expectations.body_regex);
+        if (!regex.test(body)) {
           return { success: false, errorMessage: "REGEX_MISMATCH" };
         }
       } catch (e) {

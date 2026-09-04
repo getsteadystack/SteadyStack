@@ -16,8 +16,7 @@
     "@steadystack/email": "workspace:*",
     "@steadystack/shared": "workspace:*",
     "@steadystack/types": "workspace:*",
-    "@upstash/redis": "^1.37.0",
-    "re2js": "^1.2.14"
+    "@upstash/redis": "^1.37.0"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "catalog:",
