@@ -13,6 +13,7 @@ import {
   PrimaryButton,
 } from "../primitives";
 import { emailTheme } from "../styles/theme";
+import { isRtlEmailLocale, t, type EmailLocale } from "../i18n";
 
 export interface StatusUpdateData {
   pageTitle: string;
@@ -31,7 +32,15 @@ export interface StatusUpdateData {
   pageUrl: string;
 }
 
-export function StatusUpdate({ data }: { data: StatusUpdateData }) {
+export function StatusUpdate({
+  data,
+  locale = "en",
+}: {
+  data: StatusUpdateData;
+  locale?: EmailLocale;
+}) {
+  const tr = (key: string, params?: Record<string, string | number>) => t(locale, key, params);
+  const dir = isRtlEmailLocale(locale) ? "rtl" : "ltr";
   const isResolved = data.incidentStatus === "RESOLVED" || data.incidentStatus === "COMPLETED";
   const isMaintenance =
     data.incidentStatus === "SCHEDULED" || data.incidentStatus === "IN_PROGRESS";
@@ -48,7 +57,7 @@ export function StatusUpdate({ data }: { data: StatusUpdateData }) {
   }
 
   return (
-    <Html>
+    <Html lang={locale} dir={dir}>
       <Head>
         <title>
           [{data.incidentStatus}] {data.incidentTitle} - {data.pageTitle}
@@ -80,7 +89,7 @@ export function StatusUpdate({ data }: { data: StatusUpdateData }) {
           }}
         >
           {/* Header */}
-          <EmailHeader badge={statusBadge} badgeColor={statusColor} />
+          <EmailHeader badge={statusBadge} badgeColor={statusColor} locale={locale} />
 
           {/* Incident Content */}
           <Section style={{ padding: "32px 32px 24px" }}>
@@ -94,7 +103,7 @@ export function StatusUpdate({ data }: { data: StatusUpdateData }) {
                   letterSpacing: "0.5px",
                 }}
               >
-                {data.pageTitle} Status Update
+                {data.pageTitle} {tr("status.statusUpdateSuffix")}
               </span>
             </div>
 
@@ -128,8 +137,8 @@ export function StatusUpdate({ data }: { data: StatusUpdateData }) {
                   letterSpacing: "0.5px",
                 }}
               >
-                <span style={{ marginRight: "6px", fontSize: "10px" }}>●</span>
-                STATUS: {data.incidentStatus}
+                <span style={{ marginInlineEnd: "6px", fontSize: "10px" }}>●</span>
+                {tr("status.statusLabel")} {data.incidentStatus}
               </div>
             </div>
 
@@ -169,7 +178,7 @@ export function StatusUpdate({ data }: { data: StatusUpdateData }) {
                     letterSpacing: "0.5px",
                   }}
                 >
-                  Affected Components:
+                  {tr("status.affectedComponents")}
                 </Text>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                   {data.affectedMonitors.map((monitor, i) => (
@@ -184,7 +193,7 @@ export function StatusUpdate({ data }: { data: StatusUpdateData }) {
                         border: "1px solid #27272a",
                         padding: "4px 10px",
                         borderRadius: "6px",
-                        marginRight: "6px",
+                        marginInlineEnd: "6px",
                         marginBottom: "4px",
                       }}
                     >
@@ -196,12 +205,13 @@ export function StatusUpdate({ data }: { data: StatusUpdateData }) {
             )}
 
             {/* Action CTA */}
-            <PrimaryButton href={data.pageUrl}>View Live Status Page</PrimaryButton>
+            <PrimaryButton href={data.pageUrl}>{tr("status.viewLiveStatus")}</PrimaryButton>
           </Section>
 
           {/* Footer */}
           <EmailFooter
-            customMessage={`You are receiving this because you subscribed to status updates for ${data.pageTitle}.`}
+            locale={locale}
+            customMessage={tr("status.subscribedMessage", { page: data.pageTitle })}
             unsubscribeUrl={data.manageUrl}
           />
         </Container>
@@ -210,6 +220,9 @@ export function StatusUpdate({ data }: { data: StatusUpdateData }) {
   );
 }
 
-export async function renderStatusUpdate(data: StatusUpdateData): Promise<string> {
-  return await render(<StatusUpdate data={data} />);
+export async function renderStatusUpdate(
+  data: StatusUpdateData,
+  locale: EmailLocale = "en",
+): Promise<string> {
+  return await render(<StatusUpdate data={data} locale={locale} />);
 }

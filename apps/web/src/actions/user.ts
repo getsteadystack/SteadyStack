@@ -13,6 +13,7 @@ export async function getUserPreferences() {
       timezone: "UTC",
       dateFormat: "MM/DD/YYYY",
       timeFormat: "HH:mm",
+      locale: "en",
     };
   }
 
@@ -20,6 +21,7 @@ export async function getUserPreferences() {
     timezone: session.user.timezone || "UTC",
     dateFormat: session.user.dateFormat || "MM/DD/YYYY",
     timeFormat: session.user.timeFormat || "HH:mm",
+    locale: session.user.locale || "en",
   };
 }
 
@@ -27,6 +29,7 @@ export async function updateUserPreferences(data: {
   timezone?: string;
   dateFormat?: string;
   timeFormat?: string;
+  locale?: string;
 }) {
   const session = await auth.api.getSession({
     headers: await headers(),
@@ -44,6 +47,7 @@ export async function updateUserPreferences(data: {
         timezone: data.timezone,
         dateFormat: data.dateFormat,
         timeFormat: data.timeFormat,
+        locale: data.locale,
       },
     });
     return { success: true };

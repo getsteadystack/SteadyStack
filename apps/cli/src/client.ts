@@ -1,5 +1,6 @@
 import chalk from "chalk";
 import { getApiKey, getBaseUrl } from "./config.js";
+import { t } from "./i18n.js";
 
 export class ApiError extends Error {
   constructor(
@@ -17,9 +18,9 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
 
   if (!apiKey) {
     console.error(
-      chalk.red("✖ Not logged in. Run: ") +
+      chalk.red(t("client.notLoggedIn") + " ") +
         chalk.bold("pulse auth login --key <API_KEY>") +
-        chalk.dim(" or export STEADYSTACK_API_KEY=<API_KEY>"),
+        chalk.dim(" " + t("client.orExport")),
     );
     process.exit(1);
   }

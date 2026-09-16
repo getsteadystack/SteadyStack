@@ -2,6 +2,7 @@ import { Resend } from "resend";
 import * as React from "react";
 import { env } from "@steadystack/env/server";
 import type { PasswordResetEmailData } from "./templates/password-reset";
+import { normalizeEmailLocale, t } from "./i18n";
 
 // ============================================================================
 // Types & Interfaces
@@ -240,21 +241,23 @@ export async function sendMonitorAlert(
   to: string,
   data: MonitorAlertData,
   apiKey?: string,
+  locale?: string,
 ): Promise<SendEmailResult> {
   const { renderMonitorAlert } = await import("./templates/monitor-alert");
+  const loc = normalizeEmailLocale(locale);
 
   let subject =
     data.status === "DOWN"
-      ? `🔴 [CRITICAL] ${data.monitorName} is DOWN`
+      ? `🔴 ${t(loc, "alert.critical")} — ${data.monitorName}`
       : data.status === "DEGRADED"
-        ? `🟡 [DEGRADED] ${data.monitorName} Partial Regional Failure`
-        : `✅ [RESOLVED] ${data.monitorName} is UP`;
+        ? `🟡 ${t(loc, "alert.degraded")} — ${data.monitorName}`
+        : `✅ ${t(loc, "alert.resolved")} — ${data.monitorName}`;
 
   if (data.reason?.includes("expires in") || data.reason?.includes("SSL certificate expires")) {
-    subject = `⚠️ [EXPIRY WARNING] ${data.monitorName} SSL Certificate Expires Soon`;
+    subject = `⚠️ ${t(loc, "alert.sslWarning")} — ${data.monitorName}`;
   }
 
-  const html = await renderMonitorAlert(data);
+  const html = await renderMonitorAlert(data, loc);
 
   return sendEmail({
     to,
@@ -357,8 +360,10 @@ export async function sendStatusUpdate(
   to: string,
   data: import("./templates/status-update").StatusUpdateData,
   apiKey?: string,
+  locale?: string,
 ): Promise<SendEmailResult> {
   const { renderStatusUpdate } = await import("./templates/status-update");
+  const loc = normalizeEmailLocale(locale);
 
   let subjectPrefix = "";
   switch (data.incidentStatus) {
@@ -385,7 +390,7 @@ export async function sendStatusUpdate(
       break;
   }
 
-  const html = await renderStatusUpdate(data);
+  const html = await renderStatusUpdate(data, loc);
 
   return sendEmail({
     to,

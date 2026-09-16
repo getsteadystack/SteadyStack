@@ -1,0 +1,49 @@
+#
+# Crowdin configuration for SteadyStack community translations.
+#
+# Setup (one-time, maintainer only):
+#   1. Create a project at https://crowdin.com (free for open source)
+#   2. Add target languages: es-ES, fr-FR, de-DE, pt-BR, ja-JP, ko-KR, zh-CN, ar (source: en)
+#   3. Set CROWDIN_API_TOKEN in GitHub repo secrets
+#   4. Push sources:  bunx crowdin upload sources
+#   5. Pull translations:  bunx crowdin download
+#
+# Sources map repo files to Crowdin. Translations are written back next to the
+# mapping rules below. `languages_mapping` maps Crowdin language codes to our
+# locale file names.
+#
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_API_TOKEN
+base_path: "."
+base_url: "https://api.crowdin.com"
+preserve_hierarchy: true
+
+files:
+  # ─── Status-page UI messages (apps/web/messages/*.json) ─────────────────
+  - source: /apps/web/messages/en.json
+    translation: /apps/web/messages/%locale%.json
+    languages_mapping:
+      locale:
+        es-ES: es
+        fr-FR: fr
+        de-DE: de
+        pt-BR: pt-BR
+        ja-JP: ja
+        ko-KR: ko
+        zh-CN: zh-CN
+        ar: ar
+    # Two-letter and full-locale codes handled by the mapping above.
+    update_option: update_as_unapproved
+
+  # ─── Email i18n catalog (packages/email/src/i18n.ts) ──────────────────────
+  # The catalog is TS, so we translate a JSON twin and regenerate.
+  # Translators work on /i18n/email-crowdin/en.json; CI validates the
+  # generated i18n.ts stays in sync (see scripts/check-i18n.js).
+
+  # ─── CLI i18n catalog (apps/cli/src/i18n.ts) ─────────────────────────────
+  # Same JSON-twin approach as the email catalog.
+
+  # Flat-file notes:
+  # - Nested JSON keys are flattened automatically by Crowdin ("common.loading").
+  # - Placeholders like {monitorName} are protected by Crowdin's ICU/`%s`
+  #   detectors; contributors see them as untranslatable tokens.

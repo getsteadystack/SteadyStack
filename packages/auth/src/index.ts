@@ -51,6 +51,11 @@ export const auth = betterAuth({
         required: false,
         defaultValue: "HH:mm",
       },
+      locale: {
+        type: "string",
+        required: false,
+        defaultValue: "en",
+      },
       tier: {
         type: "string",
         required: false,

@@ -7,6 +7,7 @@ import { triggerCmd } from "./commands/trigger.js";
 import { logsCmd } from "./commands/logs.js";
 import { waitCmd } from "./commands/wait.js";
 import { importCmd } from "./commands/import-kuma.js";
+import { initLocale } from "./i18n.js";
 
 const program = new Command();
 
@@ -17,7 +18,17 @@ program
       " — Monitoring as Code, live debugging, and CI/CD integration\n" +
       chalk.dim("  https://steadystack.dev/docs/cli"),
   )
-  .version("0.1.0");
+  .version("0.1.0")
+  .option(
+    "--locale <locale>",
+    "Output language (en, es, fr, de, pt-BR, ja, ko, zh-CN, ar). Defaults to STEADYSTACK_LOCALE or the system locale.",
+  );
+
+// Resolve the locale before any command runs so t() is bound early.
+program.hook("preAction", (thisCommand) => {
+  const opts = thisCommand.opts() as { locale?: string };
+  initLocale(opts.locale);
+});
 
 program.addCommand(authCmd);
 program.addCommand(monitorsCmd);

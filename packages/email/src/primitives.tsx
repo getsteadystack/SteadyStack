@@ -1,5 +1,6 @@
 import * as React from "react";
 import { emailTheme } from "./styles/theme";
+import { t, type EmailLocale } from "./i18n";
 
 export interface BaseProps {
   children?: React.ReactNode;
@@ -148,6 +149,8 @@ export function EmailHeader({
 }: {
   badge?: string;
   badgeColor?: string;
+  /** Reserved for localized header chrome; accepted for API stability. */
+  locale?: EmailLocale;
 }) {
   return (
     <Section
@@ -233,10 +236,13 @@ export function EmailHeader({
 export function EmailFooter({
   customMessage,
   unsubscribeUrl,
+  locale = "en",
 }: {
   customMessage?: string;
   unsubscribeUrl?: string;
+  locale?: EmailLocale;
 }) {
+  const tr = (key: string) => t(locale, key);
   const baseUrl = (
     process.env.NEXT_PUBLIC_APP_URL ||
     process.env.BETTER_AUTH_URL ||
@@ -286,7 +292,7 @@ export function EmailFooter({
                     fontWeight: "500",
                   }}
                 >
-                  Dashboard
+                  {tr("footer.dashboard")}
                 </Link>
                 <span style={{ color: "#3f3f46", fontSize: "12px" }}>•</span>
                 <Link
@@ -299,7 +305,7 @@ export function EmailFooter({
                     fontWeight: "500",
                   }}
                 >
-                  Status
+                  {tr("footer.status")}
                 </Link>
                 <span style={{ color: "#3f3f46", fontSize: "12px" }}>•</span>
                 <Link
@@ -312,7 +318,7 @@ export function EmailFooter({
                     fontWeight: "500",
                   }}
                 >
-                  Docs
+                  {tr("footer.docs")}
                 </Link>
                 <span style={{ color: "#3f3f46", fontSize: "12px" }}>•</span>
                 <Link
@@ -324,7 +330,7 @@ export function EmailFooter({
                     margin: "0 8px",
                   }}
                 >
-                  Preferences
+                  {tr("footer.preferences")}
                 </Link>
               </div>
               <Text
@@ -335,9 +341,9 @@ export function EmailFooter({
                   lineHeight: 1.5,
                 }}
               >
-                SteadyStack Edge Telemetry & Real-Time Observability Engine
+                {tr("footer.tagline")}
                 <br />
-                Secured with 256-bit distributed consensus •{" "}
+                {tr("footer.secured")} •{" "}
                 <Link
                   href={baseUrl}
                   style={{

@@ -7,7 +7,9 @@
     "maintenance": "En mantenimiento",
     "issue_detected": "Problemas detectados",
     "system_integrity_100": "Integridad del sistema 100%",
-    "critical_failures": "Fallas críticas detectadas"
+    "critical_failures": "Fallas críticas detectadas",
+    "monitor_operational": "Operativo",
+    "monitor_outage": "Interrumpido"
   },
   "headings": {
     "status": "Estado",
@@ -31,6 +33,21 @@
     "back_to_home": "Volver al inicio",
     "powered_by": "Con tecnología de SteadyStack",
     "no_monitors": "No hay monitores activos configurados.",
-    "system_status": "Estado del sistema"
+    "system_status": "Estado del sistema",
+    "checks_ago": "Hace 60 comprobaciones",
+    "now": "Ahora",
+    "down": "Caído"
+  },
+  "subscribe": {
+    "title": "Suscribirse a actualizaciones",
+    "email_tab": "Notificaciones por correo",
+    "feed_tab": "Feeds RSS / Atom",
+    "email_label": "Dirección de correo",
+    "email_placeholder": "tu@ejemplo.com",
+    "monitors_label": "Suscribirse a monitores",
+    "info_text": "Recibirás notificaciones solo de incidentes mayores y mantenimientos programados. Nunca compartimos tu correo.",
+    "subscribing": "Suscribiendo...",
+    "button": "Suscribirse",
+    "feed_info": "Suscríbete a las actualizaciones de estado con tu lector RSS favorito. Elige entre feeds de solo incidentes o de todos los eventos."
   }
 }

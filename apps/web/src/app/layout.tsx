@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { getLocale } from "next-intl/server";
+import { isRtlLocale } from "@/i18n/locales";
 
 import "../index.css";
 import Providers from "@/components/providers";
@@ -137,13 +139,17 @@ const jsonLd = {
 /**
  * Renders the root layout of the application with children components.
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Locale-aware <html> attributes: lang for SEO/AT, dir for RTL locales (ar).
+  const locale = await getLocale();
+  const dir = isRtlLocale(locale) ? "rtl" : "ltr";
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

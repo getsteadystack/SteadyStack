@@ -2,6 +2,7 @@ import { Command } from "commander";
 import chalk from "chalk";
 import { setConfig, getConfig, clearConfig } from "../config.js";
 import { api } from "../client.js";
+import { t } from "../i18n.js";
 
 export const authCmd = new Command("auth").description("Manage authentication");
 
@@ -16,10 +17,10 @@ authCmd
 
     if (!apiKey) {
       console.log(
-        chalk.dim("Generate an API key at: ") +
+        chalk.dim(t("auth.login.generateHint") + " ") +
           chalk.cyan("https://steadystack.dev/dashboard/settings?tab=api-keys"),
       );
-      console.error(chalk.red("✖ --key is required"));
+      console.error(chalk.red(t("auth.login.keyRequired")));
       process.exit(1);
     }
 
@@ -28,11 +29,11 @@ authCmd
 
     try {
       const res = await api.get<{ monitors: any[] }>("/api/cli/monitors");
-      console.log(chalk.green("✔ Authenticated successfully!"));
-      console.log(chalk.dim(`  Found ${res.monitors.length} monitors`));
+      console.log(chalk.green(t("auth.login.success")));
+      console.log(chalk.dim(`  ${t("auth.login.foundMonitors", { count: res.monitors.length })}`));
     } catch (_) {
       clearConfig();
-      console.error(chalk.red("✖ Invalid API key or connection failed"));
+      console.error(chalk.red(t("auth.login.failed")));
       process.exit(1);
     }
   });
@@ -42,7 +43,7 @@ authCmd
   .description("Clear stored credentials")
   .action(() => {
     clearConfig();
-    console.log(chalk.green("✔ Logged out. Credentials cleared."));
+    console.log(chalk.green(t("auth.logout.done")));
   });
 
 authCmd
@@ -52,11 +53,12 @@ authCmd
     const config = getConfig();
     if (!config.apiKey) {
       console.log(
-        chalk.yellow("Not logged in. Run: ") + chalk.bold("pulse auth login --key <API_KEY>"),
+        chalk.yellow(t("auth.status.notLoggedIn") + " ") +
+          chalk.bold("pulse auth login --key <API_KEY>"),
       );
       return;
     }
-    console.log(chalk.green("✔ Logged in"));
-    console.log(chalk.dim(`  Key prefix : ${config.apiKey.slice(0, 15)}…`));
-    console.log(chalk.dim(`  Base URL   : ${config.baseUrl}`));
+    console.log(chalk.green(t("auth.status.loggedIn")));
+    console.log(chalk.dim(`  ${t("auth.status.keyPrefix")} ${config.apiKey.slice(0, 15)}…`));
+    console.log(chalk.dim(`  ${t("auth.status.baseUrl")} ${config.baseUrl}`));
   });

@@ -1,0 +1,53 @@
+{
+  "status": {
+    "operational": "모든 시스템이 정상 작동 중입니다",
+    "major_outage": "주요 장애 발생",
+    "partial_outage": "일부 시스템 장애 발생",
+    "degraded_performance": "성능 저하 발생",
+    "maintenance": "점검 중",
+    "issue_detected": "시스템 문제가 감지되었습니다",
+    "system_integrity_100": "시스템 무결성 100%",
+    "critical_failures": "치명적인 장애가 감지되었습니다",
+    "monitor_operational": "정상",
+    "monitor_outage": "장애"
+  },
+  "headings": {
+    "status": "상태",
+    "events": "이벤트",
+    "monitors": "모니터",
+    "past_incidents": "이전 장애 기록",
+    "current_status": "현재 상태",
+    "subscribe": "업데이트 구독하기",
+    "uptime": "가동 시간",
+    "system_modules": "시스템 모듈",
+    "real_time_status": "실시간 상태"
+  },
+  "actions": {
+    "subscribe": "구독",
+    "get_updates": "업데이트 받기",
+    "view_incident": "장애 보기"
+  },
+  "common": {
+    "loading": "불러오는 중...",
+    "error": "문제가 발생했습니다",
+    "back_to_home": "홈으로 돌아가기",
+    "powered_by": "Powered by SteadyStack",
+    "no_monitors": "구성된 활성 모니터가 없습니다.",
+    "system_status": "시스템 상태",
+    "checks_ago": "60번째 확인 이전",
+    "now": "방금",
+    "down": "다운"
+  },
+  "subscribe": {
+    "title": "업데이트 구독하기",
+    "email_tab": "이메일 알림",
+    "feed_tab": "RSS / Atom 피드",
+    "email_label": "이메일 주소",
+    "email_placeholder": "you@example.com",
+    "monitors_label": "모니터 구독하기",
+    "info_text": "주요 장애와 예정된 점검에 대해서만 알림을 보내드립니다. 이메일은 절대 공유하지 않습니다.",
+    "subscribing": "구독 중...",
+    "button": "구독",
+    "feed_info": "선호하는 RSS 리더로 상태 업데이트를 구독하세요. 장애 전용 피드 또는 전체 이벤트 피드 중 선택할 수 있습니다."
+  }
+}

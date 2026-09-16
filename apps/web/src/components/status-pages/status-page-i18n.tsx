@@ -5,13 +5,9 @@ import { updateLanguageSettings } from "@/actions/i18n";
 import { toast } from "@/components/ui/sonner";
 import { Globe, Edit, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { LOCALES } from "@/i18n/locales";
 
-const SUPPORTED_LOCALES = [
-  { code: "en", label: "English" },
-  { code: "es", label: "Spanish" },
-  { code: "fr", label: "French" },
-  { code: "de", label: "German" },
-];
+const SUPPORTED_LOCALES = LOCALES.map(({ code, label }) => ({ code, label }));
 
 export function StatusPageI18n({ page }: { page: any }) {
   const router = useRouter();

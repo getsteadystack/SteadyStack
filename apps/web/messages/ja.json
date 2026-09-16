@@ -1,0 +1,53 @@
+{
+  "status": {
+    "operational": "すべてのシステムが正常に動作しています",
+    "major_outage": "重大な障害が発生しています",
+    "partial_outage": "一部のシステムに障害が発生しています",
+    "degraded_performance": "パフォーマンスが低下しています",
+    "maintenance": "メンテナンス中です",
+    "issue_detected": "システムの問題を検出しました",
+    "system_integrity_100": "システム整合性 100%",
+    "critical_failures": "重大な障害を検出しました",
+    "monitor_operational": "正常",
+    "monitor_outage": "障害"
+  },
+  "headings": {
+    "status": "ステータス",
+    "events": "イベント",
+    "monitors": "モニター",
+    "past_incidents": "過去のインシデント",
+    "current_status": "現在のステータス",
+    "subscribe": "更新を購読する",
+    "uptime": "稼働率",
+    "system_modules": "システムモジュール",
+    "real_time_status": "リアルタイムステータス"
+  },
+  "actions": {
+    "subscribe": "購読する",
+    "get_updates": "最新情報を受け取る",
+    "view_incident": "インシデントを見る"
+  },
+  "common": {
+    "loading": "読み込み中...",
+    "error": "問題が発生しました",
+    "back_to_home": "ホームに戻る",
+    "powered_by": "Powered by SteadyStack",
+    "no_monitors": "稼働中のモニターが設定されていません。",
+    "system_status": "システムステータス",
+    "checks_ago": "60回前のチェック",
+    "now": "たった今",
+    "down": "ダウン"
+  },
+  "subscribe": {
+    "title": "更新を購読する",
+    "email_tab": "メール通知",
+    "feed_tab": "RSS / Atom フィード",
+    "email_label": "メールアドレス",
+    "email_placeholder": "you@example.com",
+    "monitors_label": "モニターを購読する",
+    "info_text": "重大なインシデントと予定されたメンテナンスのみ通知をお送りします。メールアドレスを第三者に共有することはありません。",
+    "subscribing": "購読中...",
+    "button": "購読する",
+    "feed_info": "お好みのRSSリーダーでステータス更新を購読できます。インシデントのみまたはすべてのイベントのフィードをお選びいただけます。"
+  }
+}

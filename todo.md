@@ -572,16 +572,16 @@
 
 ## 🌍 P11 — Internationalization (i18n)
 
-- [ ] Complete missing translation keys in all 4 locales (en, es, fr, de)
-- [ ] Add Portuguese (pt-BR) locale
-- [ ] Add Japanese (ja) locale
-- [ ] Add Korean (ko) locale
-- [ ] Add Chinese Simplified (zh-CN) locale
-- [ ] Add Arabic (ar) locale with RTL layout support
-- [ ] Translate all email notification templates to all supported locales
-- [ ] Translate CLI output messages (auto-detect locale or `--locale` flag)
-- [ ] Add locale-aware date/time formatting throughout the dashboard
-- [ ] Add locale-aware number formatting (uptime%, latency ms)
+- [x] Complete missing translation keys in all 4 locales (en, es, fr, de)
+- [x] Add Portuguese (pt-BR) locale
+- [x] Add Japanese (ja) locale
+- [x] Add Korean (ko) locale
+- [x] Add Chinese Simplified (zh-CN) locale
+- [x] Add Arabic (ar) locale with RTL layout support
+- [x] Translate all email notification templates to all supported locales
+- [x] Translate CLI output messages (auto-detect locale or `--locale` flag)
+- [x] Add locale-aware date/time formatting throughout the dashboard
+- [x] Add locale-aware number formatting (uptime%, latency ms)
 - [ ] Implement per-user locale preference (override browser detection)
 - [ ] Add locale switcher to the landing page footer
 - [ ] Set up Crowdin or Weblate for community translation contributions
