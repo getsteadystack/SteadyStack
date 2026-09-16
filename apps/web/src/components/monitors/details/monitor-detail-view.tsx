@@ -32,6 +32,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "@/components/ui/sonner";
 import { MonitorExportModal } from "@/components/monitors/details/export-modal";
 import { GlobalDiagnosticsModal } from "@/components/monitors/details/global-diagnostics-modal";
+import { RedirectInspectorModal } from "@/components/monitors/details/redirect-inspector-modal";
 import { useHaptic } from "@/hooks/use-haptic";
 
 /**
@@ -155,6 +156,10 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
           />
 
           <GlobalDiagnosticsModal url={initialMonitor.url} monitorName={initialMonitor.name} />
+
+          {(monitor?.type === "HTTP" || monitor?.type === "HTTPS" || String(monitor?.url || "").startsWith("http")) && (
+            <RedirectInspectorModal monitorId={initialMonitor.id} monitorName={initialMonitor.name} />
+          )}
 
           <Button
             variant="outline"

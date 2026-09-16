@@ -64,7 +64,22 @@ export async function applyTemplate(
 
   const allowedTypes: Record<string, string[]> = {
     INITIATE: ["HTTP", "SSL", "DNS", "HEARTBEAT"],
-    NETRUNNER: ["HTTP", "PING", "PORT", "SEQUENCE", "SSL", "DNS", "HEARTBEAT", "MCP", "DATABASE"],
+    NETRUNNER: [
+      "HTTP",
+      "PING",
+      "PORT",
+      "SEQUENCE",
+      "SSL",
+      "DNS",
+      "HEARTBEAT",
+      "MCP",
+      "DATABASE",
+      "GRPC",
+      "SMTP",
+      "FTP",
+      "ICMP",
+      "MAIL",
+    ],
     CONSTRUCT: [
       "HTTP",
       "PING",
@@ -79,6 +94,11 @@ export async function applyTemplate(
       "WEBSOCKET",
       "DATABASE",
       "BGP",
+      "GRPC",
+      "SMTP",
+      "FTP",
+      "ICMP",
+      "MAIL",
     ],
   };
 

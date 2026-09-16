@@ -9,7 +9,14 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@steadystack/auth";
 import { headers, cookies } from "next/headers";
 import { sendMonitorAlert, type MonitorAlertData } from "@steadystack/email";
-import { isPrivateOrInternalUrlAsync, encryptSecret, decryptSecret } from "@steadystack/core";
+import {
+  isPrivateOrInternalUrlAsync,
+  encryptSecret,
+  decryptSecret,
+  isEncrypted,
+  inspectRedirectChain,
+  createMtlsDispatcher,
+} from "@steadystack/core";
 import { STEADYSTACK_CANONICAL_USER_AGENT } from "@steadystack/shared";
 import {
   assertMonitorLimits,
@@ -19,6 +26,28 @@ import {
 import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 import { generateDeepInsightAnalysis, getAIProviderClient } from "@/lib/ai";
 import { getActiveWorkspace } from "@/actions/team";
+
+/**
+ * Normalizes a host input into the canonical URL scheme stored for protocol
+ * monitors. Accepts bare host, host:port, or full scheme URLs.
+ */
+function normalizeProtocolUrl(type: string, rawUrl?: string): string {
+  const input = (rawUrl || "").trim();
+  if (!input) return input;
+  if (/^\w+:\/\//.test(input)) return input; // already has a scheme
+
+  const defaults: Record<string, { scheme: string; port: number }> = {
+    GRPC: { scheme: "grpc", port: 80 },
+    SMTP: { scheme: "smtp", port: 25 },
+    FTP: { scheme: "ftp", port: 21 },
+    MAIL: { scheme: "imap", port: 143 },
+  };
+  const conf = defaults[type];
+  if (!conf) return input;
+
+  // Append the default port only when the host has no explicit port
+  return input.includes(":") ? `${conf.scheme}://${input}` : `${conf.scheme}://${input}:${conf.port}`;
+}
 
 // Helper Types for Incident Management
 enum IncidentEventType {
@@ -55,6 +84,11 @@ const baseSchema = z.object({
     "MCP",
     "DATABASE",
     "HEARTBEAT",
+    "GRPC",
+    "SMTP",
+    "FTP",
+    "ICMP",
+    "MAIL",
   ]),
   interval: z.coerce.number().min(10),
   url: z.string().optional(), // For HTTP/Ping
@@ -72,7 +106,78 @@ const baseSchema = z.object({
   script: z.string().optional(),
   expectation: z.string().optional(),
   tags: z.array(z.string()).optional(),
+  // mTLS client certificate (PEM) and key (PEM) — encrypted together at rest
+  clientCertPem: z.string().optional(),
+  clientKeyPem: z.string().optional(),
+  // Update-only: "1" removes the stored certificate
+  removeClientCert: z.string().optional(),
+  // Update-only: "1" removes the stored protocol credentials (SMTP/FTP/MAIL)
+  removeProtocolCredentials: z.string().optional(),
 });
+
+/**
+ * Resolves the clientCert write for a monitor create/update from the raw
+ * form fields. Contract: cert+key posted together → replace; removeClientCert
+ * flag → delete; fields absent/empty → keep whatever is stored (undefined =
+ * don't touch the column).
+ */
+export async function resolveClientCertWrite(fields: {
+  clientCertPem?: string;
+  clientKeyPem?: string;
+  removeClientCert?: string;
+}): Promise<string | null | undefined> {
+  if (fields.clientCertPem && fields.clientKeyPem) {
+    return encryptSecret(JSON.stringify({ cert: fields.clientCertPem, key: fields.clientKeyPem }));
+  }
+  if (fields.removeClientCert === "1") return null;
+  return undefined;
+}
+
+/**
+ * Resolves the headers write for a monitor create/update. Contract:
+ * credentials posted → encrypt (an already-encrypted envelope passes through
+ * untouched); removeProtocolCredentials flag → delete; nothing posted → keep
+ * whatever is stored (undefined = don't touch the column).
+ *
+ * `storedHeaders` is the current column value (envelope or legacy plaintext).
+ * Because the browser never sees the stored password, a posted username with
+ * a blank password keeps the stored one — blank means "unchanged", not
+ * "cleared" (the explicit remove flag clears credentials).
+ */
+export async function resolveProtocolHeadersWrite(
+  fields: {
+    headers?: string;
+    removeProtocolCredentials?: string;
+  },
+  storedHeaders?: string | null,
+): Promise<string | null | undefined> {
+  if (fields.headers) {
+    if (isEncrypted(fields.headers)) return fields.headers;
+    let value: unknown = null;
+    try {
+      value = JSON.parse(fields.headers);
+    } catch {
+      return encryptSecret(fields.headers);
+    }
+    const postedCreds =
+      value && typeof value === "object" && !Array.isArray(value)
+        ? (value as Record<string, unknown>)
+        : null;
+    if (postedCreds && !postedCreds.password && storedHeaders) {
+      try {
+        const stored = JSON.parse(await decryptSecret(storedHeaders));
+        if (stored && typeof stored === "object" && !Array.isArray(stored) && stored.password) {
+          postedCreds.password = stored.password;
+        }
+      } catch {
+        // Unreadable stored value — post the new credentials as-is
+      }
+    }
+    return encryptSecret(JSON.stringify(value));
+  }
+  if (fields.removeProtocolCredentials === "1") return null;
+  return undefined;
+}
 
 const monitorSchema = baseSchema.superRefine((data, ctx) => {
   try {
@@ -206,6 +311,31 @@ const monitorSchema = baseSchema.superRefine((data, ctx) => {
           path: ["url"],
         });
       }
+    } else if (data.type === "ICMP") {
+      if (!data.url) {
+        // Reuses the 'url' input field for Hostname in the form
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Hostname is required for ICMP monitors",
+          path: ["url"],
+        });
+        return;
+      }
+      if (data.url.includes("://")) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: "Enter hostname only (no protocol prefix)",
+          path: ["url"],
+        });
+      }
+    } else if (data.type === "GRPC" || data.type === "SMTP" || data.type === "FTP" || data.type === "MAIL") {
+      if (!data.url) {
+        ctx.addIssue({
+          code: z.ZodIssueCode.custom,
+          message: `Host is required for ${data.type} monitors`,
+          path: ["url"],
+        });
+      }
     }
   } catch (e) {
     console.error("Schema validation crashed:", e);
@@ -250,7 +380,12 @@ export async function createMonitor(prevState: any, formData: FormData) {
           | "DNS"
           | "MCP"
           | "DATABASE"
-          | "HEARTBEAT") || "HTTP",
+          | "HEARTBEAT"
+          | "GRPC"
+          | "SMTP"
+          | "FTP"
+          | "ICMP"
+          | "MAIL") || "HTTP",
       interval: Number(formData.get("interval") || 60),
       port: formData.get("port") ? Number(formData.get("port")) : undefined,
       checkRegions: (formData.get("checkRegions") as string) || undefined,
@@ -267,6 +402,8 @@ export async function createMonitor(prevState: any, formData: FormData) {
             .map((t) => t.trim())
             .filter(Boolean)
         : [],
+      clientCertPem: (formData.get("clientCertPem") as string) || "",
+      clientKeyPem: (formData.get("clientKeyPem") as string) || "",
     };
 
     console.log("Creating monitor with data:", rawData);
@@ -308,8 +445,12 @@ export async function createMonitor(prevState: any, formData: FormData) {
 
     if (data.type === "PING") {
       finalUrl = `ping://${data.url}`;
+    } else if (data.type === "ICMP") {
+      finalUrl = `icmp://${data.url}`;
     } else if (data.type === "PORT") {
       finalUrl = `tcp://${data.url}:${data.port}`;
+    } else if (data.type === "GRPC" || data.type === "SMTP" || data.type === "FTP" || data.type === "MAIL") {
+      finalUrl = normalizeProtocolUrl(data.type, data.url);
     } else if (data.type === "HEARTBEAT") {
       const crypto = await import("crypto");
       heartbeatToken = crypto.randomBytes(24).toString("hex");
@@ -317,6 +458,14 @@ export async function createMonitor(prevState: any, formData: FormData) {
     }
 
     const active = await getActiveWorkspace();
+
+    // mTLS: encrypt cert+key PEM bundle at rest
+    let clientCert: string | null = null;
+    if (data.clientCertPem && data.clientKeyPem) {
+      clientCert = await encryptSecret(
+        JSON.stringify({ cert: data.clientCertPem, key: data.clientKeyPem }),
+      );
+    }
 
     // Create monitor
     const monitor = await prisma.monitor.create({
@@ -332,12 +481,15 @@ export async function createMonitor(prevState: any, formData: FormData) {
         alertThreshold: data.alertThreshold,
         runbookUrl: data.runbookUrl,
         method: data.method,
-        headers: data.headers ? await encryptSecret(data.headers) : null,
+        // Headers arrive decrypted-or-plaintext from the form; skip a
+        // pointless double-encrypt when the value is already an envelope.
+        headers: data.headers && !isEncrypted(data.headers) ? await encryptSecret(data.headers) : data.headers || null,
         body: data.body,
         script: data.script,
-        expectation: data.expectation,
+        expectation: data.expectation || null,
         heartbeatToken: heartbeatToken,
         tags: data.tags,
+        clientCert,
       },
     });
 
@@ -511,6 +663,9 @@ export async function updateMonitor(id: string, prevState: any, formData: FormDa
           .map((t) => t.trim())
           .filter(Boolean)
       : [],
+    clientCertPem: (formData.get("clientCertPem") as string) || undefined,
+    clientKeyPem: (formData.get("clientKeyPem") as string) || undefined,
+    removeClientCert: (formData.get("removeClientCert") as string) || undefined,
   };
 
   console.log("Updating monitor with data:", rawData);
@@ -548,8 +703,12 @@ export async function updateMonitor(id: string, prevState: any, formData: FormDa
 
   if (data.type === "PING") {
     finalUrl = `ping://${data.url}`;
+  } else if (data.type === "ICMP") {
+    finalUrl = `icmp://${data.url}`;
   } else if (data.type === "PORT") {
     finalUrl = `tcp://${data.url}:${data.port}`;
+  } else if (data.type === "GRPC" || data.type === "SMTP" || data.type === "FTP" || data.type === "MAIL") {
+    finalUrl = normalizeProtocolUrl(data.type, data.url);
   } else if (data.type === "HEARTBEAT") {
     // Find current monitor to see if it already has a token
     const current = await prisma.monitor.findUnique({
@@ -566,6 +725,17 @@ export async function updateMonitor(id: string, prevState: any, formData: FormDa
   }
 
   try {
+    // mTLS: cert+key posted together means "replace"; the removal flag means
+    // "delete"; absent/empty fields mean "keep the stored certificate".
+    // Protocol credentials (headers) follow the same keep-on-empty contract.
+    const clientCert = await resolveClientCertWrite(data);
+    // The stored envelope is needed so a posted username with a blank
+    // password can keep the stored password (the browser never sees it).
+    const storedMonitor = await prisma.monitor.findUnique({
+      where: { id, userId: session.user.id },
+      select: { headers: true },
+    });
+
     await prisma.monitor.update({
       where: {
         id,
@@ -581,12 +751,16 @@ export async function updateMonitor(id: string, prevState: any, formData: FormDa
         alertThreshold: data.alertThreshold,
         runbookUrl: data.runbookUrl,
         method: data.method,
-        headers: data.headers,
+        // Protocol credentials (headers) follow the cert contract: posted
+        // credentials encrypt, the removal flag deletes, nothing posted keeps
+        // the stored value.
+        headers: await resolveProtocolHeadersWrite(data, storedMonitor?.headers),
         body: data.body,
         script: data.script,
-        expectation: data.expectation,
+        expectation: data.expectation || null,
         heartbeatToken: heartbeatToken,
         tags: data.tags,
+        ...(clientCert !== undefined ? { clientCert } : {}),
       },
     });
 
@@ -774,7 +948,16 @@ export async function checkMonitor(
   let errorReason: string | undefined = undefined;
 
   try {
-    if (monitor.type === "BROWSER" || monitor.type === "SEQUENCE" || monitor.type === "SSL") {
+    if (
+      monitor.type === "BROWSER" ||
+      monitor.type === "SEQUENCE" ||
+      monitor.type === "SSL" ||
+      monitor.type === "GRPC" ||
+      monitor.type === "SMTP" ||
+      monitor.type === "FTP" ||
+      monitor.type === "ICMP" ||
+      monitor.type === "MAIL"
+    ) {
       const workerUrl = env.STEADYSTACK_WORKER_URL;
       const cookieHeader = (await headers()).get("Cookie");
 
@@ -868,6 +1051,20 @@ export async function checkMonitor(
             }
           }
 
+          // mTLS: decrypt the client certificate bundle when present
+          let clientCert: string | undefined;
+          let clientKey: string | undefined;
+          if (monitor.clientCert) {
+            try {
+              const raw = await decryptSecret(monitor.clientCert);
+              const parsed = JSON.parse(raw) as { cert?: string; key?: string };
+              clientCert = parsed.cert;
+              clientKey = parsed.key;
+            } catch {
+              console.error("[MTLS] Failed to parse client certificate bundle");
+            }
+          }
+
           const response = await fetch(monitor.url, {
             method,
             redirect: "follow",
@@ -888,6 +1085,11 @@ export async function checkMonitor(
             },
             body: ["POST", "PUT", "PATCH"].includes(method) ? monitor.body : undefined,
             signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
+              // @ts-ignore — Node dispatcher for mTLS; ignored on non-Node runtimes
+            dispatcher:
+              clientCert && clientKey
+                ? await createMtlsDispatcher(clientCert, clientKey)
+                : undefined,
           });
 
           const body = await response.text();
@@ -901,11 +1103,17 @@ export async function checkMonitor(
           currentStatus = isHealthyStatus ? "UP" : "DOWN";
 
           if (currentStatus === "UP" && monitor.expectation) {
-            const { validatePayload } = await import("@/lib/payload-parser");
-            const validation = validatePayload(body, response.status, monitor.expectation);
-            if (!validation.success) {
+            const { validatePayload, validateBodySize } = await import("@/lib/payload-parser");              // Body size thresholds first (byte-exact), then content validation
+              const sizeValidation = validateBodySize(new Blob([body]).size, monitor.expectation);
+            if (!sizeValidation.success) {
               currentStatus = "DOWN";
-              errorReason = validation.errorMessage || "Payload validation failed";
+              errorReason = sizeValidation.errorMessage;
+            } else {
+              const validation = validatePayload(body, response.status, monitor.expectation);
+              if (!validation.success) {
+                currentStatus = "DOWN";
+                errorReason = validation.errorMessage || "Payload validation failed";
+              }
             }
           } else if (currentStatus === "DOWN") {
             errorReason = `HTTP_${response.status}`;
@@ -1501,6 +1709,57 @@ export async function getDashboardStats() {
  * @param monitorId Optional ID of a specific monitor to filter insights.
  * @returns Array of monitor insights with associated monitor details.
  */
+/**
+ * Follows a URL's full redirect chain and reports every hop (status, target).
+ * Read-only diagnostic for HTTP monitors — no monitor state is modified.
+ */
+export async function inspectRedirects(
+  monitorId: string,
+): Promise<
+  | {
+      success: true;
+      hops: { url: string; status: number; location: string }[];
+      finalUrl: string;
+      finalStatus: number | null;
+      errorReason?: string;
+    }
+  | { success: false; error: string }
+> {
+  const session = await getSafeSession();
+  if (!session?.user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const monitor = await prisma.monitor.findFirst({
+      where: {
+        id: monitorId,
+        OR: [
+          { organization: { members: { some: { userId: session.user.id } } } },
+          { userId: session.user.id },
+        ],
+      },
+      select: { url: true },
+    });
+
+    if (!monitor) {
+      return { success: false, error: "Monitor not found" };
+    }
+    if (!monitor.url.startsWith("http://") && !monitor.url.startsWith("https://")) {
+      return { success: false, error: "Redirect inspection is only available for HTTP(S) monitors" };
+    }
+
+    const result = await inspectRedirectChain(monitor.url, {
+      timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+    });
+
+    return { success: true, ...result };
+  } catch (error: any) {
+    console.error("Failed to inspect redirect chain:", error);
+    return { success: false, error: error?.message || "Inspection failed" };
+  }
+}
+
 export async function getMonitorInsights(monitorId?: string) {
   const session = await auth.api.getSession({
     headers: await headers(),

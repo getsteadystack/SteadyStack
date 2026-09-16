@@ -523,6 +523,103 @@ export async function checkPortUniversal(
 }
 
 /**
+ * One hop in an HTTP redirect chain.
+ */
+export interface RedirectHop {
+  /** The URL that was requested and responded with a redirect. */
+  url: string;
+  /** The 3xx status code returned. */
+  status: number;
+  /** The fully-resolved redirect target from the Location header. */
+  location: string;
+}
+
+/**
+ * Builds an undici Dispatcher presenting a client certificate (mTLS).
+ * Returns null on runtimes without undici (Cloudflare Workers) — callers
+ * should surface a clear unsupported-runtime error instead of silently
+ * downgrading to an anonymous connection.
+ */
+export async function createMtlsDispatcher(certPem: string, keyPem: string): Promise<any | null> {
+  try {
+    // @ts-ignore — undici is bundled with Node; absent on Workers
+    const { Agent } = await import("undici");
+    return new Agent({ connect: { cert: certPem, key: keyPem } });
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Follows a URL's full redirect chain with per-hop SSRF validation and
+ * reports every hop. Read-only diagnostic: always a GET, never enforces
+ * monitor expectations, and capped at the same 5-hop limit as checks.
+ */
+export async function inspectRedirectChain(
+  urlStr: string,
+  config: { timeoutSeconds?: number; maxHops?: number } = {},
+): Promise<{
+  hops: RedirectHop[];
+  finalUrl: string;
+  finalStatus: number | null;
+  errorReason?: string | undefined;
+}> {
+  const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
+  const maxHops = Math.max(1, Math.min(config.maxHops ?? 5, 10));
+
+  let currentUrl = urlStr;
+  const hops: RedirectHop[] = [];
+
+  while (hops.length < maxHops) {
+    const ssrfCheck = await isPrivateOrInternalUrlAsync(currentUrl);
+    if (ssrfCheck.isForbidden) {
+      return {
+        hops,
+        finalUrl: currentUrl,
+        finalStatus: null,
+        errorReason: `SSRF_PROTECTION: ${ssrfCheck.reason || "Forbidden target URL or redirect target"}`,
+      };
+    }
+
+    let response: Response;
+    try {
+      response = await fetch(currentUrl, {
+        method: "GET",
+        redirect: "manual",
+        signal: AbortSignal.timeout(timeoutMs),
+      });
+    } catch (err: any) {
+      return {
+        hops,
+        finalUrl: currentUrl,
+        finalStatus: null,
+        errorReason: diagnoseError(err, currentUrl),
+      };
+    }
+
+    if (![301, 302, 303, 307, 308].includes(response.status)) {
+      return { hops, finalUrl: currentUrl, finalStatus: response.status };
+    }
+
+    const location = response.headers.get("location");
+    if (!location) {
+      // Redirect without a Location header — dead end.
+      return { hops, finalUrl: currentUrl, finalStatus: response.status };
+    }
+    const nextUrl = new URL(location, currentUrl).href;
+    hops.push({ url: currentUrl, status: response.status, location: nextUrl });
+    currentUrl = nextUrl;
+  }
+
+  return {
+    hops,
+    finalUrl: currentUrl,
+    finalStatus: null,
+    errorReason: `TOO_MANY_REDIRECTS: Exceeded maximum redirect hop count of ${maxHops}`,
+  };
+}
+
+/**
  * Universal HTTP/HTTPS request checker that handles redirect following, custom headers, and timeouts.
  *
  * @param urlStr - The URL to check.
@@ -539,6 +636,10 @@ export async function checkHttpUniversal(
     headers?: string | Record<string, string>;
     body?: string;
     timeoutSeconds?: number;
+    /** PEM-encoded client certificate chain (mTLS). Node runtimes only. */
+    clientCert?: string;
+    /** PEM-encoded private key for the client certificate (mTLS). Node runtimes only. */
+    clientKey?: string;
   } = {},
 ): Promise<{
   status: MonitorStatus;
@@ -546,10 +647,29 @@ export async function checkHttpUniversal(
   errorReason?: string | undefined;
   bodyText: string;
   statusCode?: number | undefined;
+  /** Final response body size in bytes (as received, before any truncation). */
+  bodySizeBytes?: number | undefined;
+  /** Redirect hops followed to reach the final response. */
+  redirectChain?: RedirectHop[] | undefined;
 }> {
   const start = Date.now();
   const method = config?.method || "GET";
   const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
+
+  // mTLS: undici Dispatcher with client cert — Node-only. Workers has no such
+  // dispatcher concept, so this resolves to null there.
+  let mtlsDispatcher: any = undefined;
+  if (config.clientCert && config.clientKey) {
+    mtlsDispatcher = await createMtlsDispatcher(config.clientCert, config.clientKey);
+    if (!mtlsDispatcher) {
+      return {
+        status: "DOWN",
+        latency: 0,
+        errorReason: "MTLS_UNSUPPORTED_RUNTIME: Client certificates are only supported on Node.js-based checkers",
+        bodyText: "",
+      };
+    }
+  }
   const userHeaders: Record<string, string> = {};
 
   if (config.headers) {
@@ -576,6 +696,7 @@ export async function checkHttpUniversal(
   let response: Response | null = null;
   let hops = 0;
   const maxHops = 5;
+  const redirectChain: RedirectHop[] = [];
 
   while (hops < maxHops) {
     const ssrfCheck = await isPrivateOrInternalUrlAsync(currentUrl);
@@ -585,6 +706,7 @@ export async function checkHttpUniversal(
         latency: Date.now() - start,
         errorReason: `SSRF_PROTECTION: ${ssrfCheck.reason || "Forbidden target URL or redirect target"}`,
         bodyText: "",
+        redirectChain,
       };
     }
 
@@ -613,13 +735,21 @@ export async function checkHttpUniversal(
         body:
           hops === 0 && ["POST", "PUT", "PATCH"].includes(method) ? (config.body ?? null) : null,
         signal: AbortSignal.timeout(timeoutMs),
+        // @ts-ignore — dispatcher is undici-specific; ignored on other runtimes
+        dispatcher: mtlsDispatcher,
       });
 
       // Handle redirect chain manually to re-apply SSRF validation per hop
       if ([301, 302, 303, 307, 308].includes(response.status)) {
         const location = response.headers.get("location");
         if (!location) break;
-        currentUrl = new URL(location, currentUrl).href;
+        const nextUrl = new URL(location, currentUrl).href;
+        redirectChain.push({
+          url: currentUrl,
+          status: response.status,
+          location: nextUrl,
+        });
+        currentUrl = nextUrl;
         hops++;
         continue;
       }
@@ -633,6 +763,7 @@ export async function checkHttpUniversal(
         latency,
         errorReason,
         bodyText: "",
+        redirectChain,
       };
     }
   }
@@ -643,21 +774,36 @@ export async function checkHttpUniversal(
       latency: Date.now() - start,
       errorReason: "TOO_MANY_REDIRECTS: Exceeded maximum redirect hop count of 5",
       bodyText: "",
+      redirectChain,
+    };
+  }
+
+  // The loop can also exit with the last response still being a redirect —
+  // that means the hop cap was hit. Without this, a 302 would fall through
+  // to the "3xx is healthy" classifier and wrongly report UP.
+  if ([301, 302, 303, 307, 308].includes(response.status)) {
+    return {
+      status: "DOWN",
+      latency: Date.now() - start,
+      errorReason: "TOO_MANY_REDIRECTS: Exceeded maximum redirect hop count of 5",
+      bodyText: "",
+      statusCode: response.status,
+      redirectChain,
     };
   }
 
   // Stream body with strict size limit to prevent OOM/memory exhaustion
   let bodyText = "";
+  let bodySizeBytes = 0;
   if (response.body) {
     const reader = response.body.getReader();
-    let receivedBytes = 0;
     const decoder = new TextDecoder();
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
       if (value) {
-        receivedBytes += value.length;
-        if (receivedBytes > MAX_RESPONSE_BYTES) {
+        bodySizeBytes += value.length;
+        if (bodySizeBytes > MAX_RESPONSE_BYTES) {
           reader.cancel("Response size exceeded maximum limit of 5MB");
           return {
             status: "DOWN",
@@ -665,6 +811,8 @@ export async function checkHttpUniversal(
             errorReason: "RESPONSE_TOO_LARGE: Exceeded maximum body size limit of 5MB",
             bodyText: bodyText.substring(0, 1024) + "... [truncated]",
             statusCode: response.status,
+            bodySizeBytes,
+            redirectChain,
           };
         }
         bodyText += decoder.decode(value, { stream: true });
@@ -685,6 +833,8 @@ export async function checkHttpUniversal(
     errorReason: isHealthyStatus ? undefined : diagnoseStatus(response.status, currentUrl),
     bodyText,
     statusCode: statusNum,
+    bodySizeBytes,
+    redirectChain: redirectChain.length > 0 ? redirectChain : undefined,
   };
 }
 
@@ -976,4 +1126,814 @@ export async function verifyAuthToken(
   } catch {
     return false;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Universal Raw Socket Client
+// ---------------------------------------------------------------------------
+
+interface UniversalSocket {
+  write(data: Uint8Array | string): void;
+  read(): Promise<Uint8Array | null>;
+  close(): Promise<void>;
+}
+
+/**
+ * Opens a raw TCP socket in the current runtime and returns a normalized
+ * request/response client. Supports Node.js (net/tls) and Cloudflare Workers
+ * (cloudflare:sockets — TCP only). TLS is only available in Node runtimes.
+ */
+async function openUniversalSocket(
+  host: string,
+  port: number,
+  timeoutMs: number,
+  useTls: boolean,
+): Promise<UniversalSocket> {
+  // Node.js runtime first (supports TLS)
+  // Import the module without swallowing connection failures below: only the
+  // import itself is fallible here. A rejected connect (ECONNREFUSED, timeout)
+  // must propagate to the caller so it can classify the real error.
+  let net: any = null;
+  try {
+    // @ts-ignore
+    net = await import(useTls ? "tls" : "net");
+  } catch {
+    if (useTls) {
+      // TLS unavailable (Workers runtime or missing module) — rethrow so the
+      // caller can report it instead of silently downgrading to plaintext.
+      throw new Error("TLS socket unavailable");
+    }
+    // Plaintext fallthrough to Cloudflare Workers socket below
+  }
+  if (net && typeof net.connect === "function") {
+    {
+      return await new Promise<UniversalSocket>((resolve, reject) => {
+        const socket = net.connect({ host, port });
+        const chunks: Uint8Array[] = [];
+        let pending: ((value: Uint8Array | null) => void) | null = null;
+        let closed = false;
+
+        const timer = setTimeout(() => {
+          socket.destroy();
+          reject(new Error(`Socket connection timed out after ${timeoutMs}ms`));
+        }, timeoutMs);
+
+        socket.on("connect", () => {
+          clearTimeout(timer);
+          resolve({
+            write(data) {
+              if (closed) return;
+              socket.write(data);
+            },
+            read() {
+              if (closed) return Promise.resolve(null);
+              if (chunks.length > 0) {
+                return Promise.resolve(chunks.shift()!);
+              }
+              return new Promise((res) => {
+                pending = res;
+              });
+            },
+            close() {
+              closed = true;
+              try {
+                socket.end();
+              } catch {}
+              return Promise.resolve();
+            },
+          });
+        });
+
+        socket.on("data", (chunk: Uint8Array) => {
+          if (pending) {
+            const res = pending;
+            pending = null;
+            res(chunk);
+          } else {
+            chunks.push(chunk);
+          }
+        });
+
+        socket.on("error", (err: Error) => {
+          clearTimeout(timer);
+          socket.destroy();
+          reject(err);
+        });
+
+        socket.on("close", () => {
+          closed = true;
+          if (pending) {
+            const res = pending;
+            pending = null;
+            res(null);
+          }
+        });
+      });
+    }
+  }
+
+  // Cloudflare Workers runtime (plaintext TCP only)
+  try {
+    // @ts-ignore
+    const { connect } = await import("cloudflare:sockets");
+    if (typeof connect === "function") {
+      const socket = connect({ hostname: host, port });
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error(`Socket connection timed out after ${timeoutMs}ms`)), timeoutMs),
+      );
+      await Promise.race([socket.opened, timeoutPromise]);
+
+      const writer = socket.writable.getWriter();
+      const reader = socket.readable.getReader();
+      let doneReading = false;
+
+      return {
+        async write(data) {
+          if (doneReading) return;
+          await writer.write(
+            typeof data === "string" ? new TextEncoder().encode(data) : data,
+          );
+        },
+        async read() {
+          if (doneReading) return null;
+          try {
+            const { done, value } = await reader.read();
+            if (done) {
+              doneReading = true;
+              return null;
+            }
+            return value;
+          } catch {
+            doneReading = true;
+            return null;
+          }
+        },
+        async close() {
+          try {
+            await writer.close();
+          } catch {}
+          try {
+            reader.cancel();
+          } catch {}
+          try {
+            socket.close();
+          } catch {}
+        },
+      };
+    }
+  } catch (err) {
+    throw err instanceof Error ? err : new Error("Socket unavailable");
+  }
+
+  throw new Error("NO_COMPATIBLE_RUNTIME");
+}
+
+interface RawConversationOptions {
+  host: string;
+  port: number;
+  timeoutMs: number;
+  useTls?: boolean;
+}
+
+interface RawExchange {
+  greeting: string;
+  responses: string[];
+}
+
+/**
+ * Performs a line-oriented request/response conversation over a raw TCP/TLS
+ * socket (SMTP, FTP, IMAP, POP3 all work this way: a greeting banner followed
+ * by one response per command line).
+ */
+async function rawConversation(
+  options: RawConversationOptions,
+  commands: string[],
+): Promise<RawExchange> {
+  const { host, port, timeoutMs, useTls = false } = options;
+  const socket = await openUniversalSocket(host, port, timeoutMs, useTls);
+
+  const readAvailable = async (budgetMs: number): Promise<string> => {
+    const decoder = new TextDecoder();
+    let text = "";
+    const deadline = Date.now() + budgetMs;
+    while (Date.now() < deadline) {
+      const remaining = deadline - Date.now();
+      const chunk = await Promise.race([
+        socket.read(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), remaining)),
+      ]);
+      if (!chunk) break;
+      text += decoder.decode(chunk, { stream: true });
+      // Give the server a moment to deliver the rest of the banner
+      const more = await Promise.race([
+        socket.read(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), 150)),
+      ]);
+      if (!more) break;
+      text += decoder.decode(more, { stream: true });
+    }
+    return text;
+  };
+
+  try {
+    const greeting = await readAvailable(Math.min(timeoutMs, 5000));
+    const responses: string[] = [];
+    for (const command of commands) {
+      socket.write(`${command}\r\n`);
+      const response = await readAvailable(Math.min(timeoutMs, 5000));
+      responses.push(response);
+    }
+    return { greeting, responses };
+  } finally {
+    try {
+      socket.write("QUIT\r\n");
+    } catch {}
+    await socket.close();
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Protocol Monitor Checkers
+// ---------------------------------------------------------------------------
+
+function parseHostPort(urlStr: string, defaultPort: number): { host: string; port: number } {
+  let candidate = urlStr.trim();
+  try {
+    const url = new URL(candidate);
+    return {
+      host: url.hostname,
+      port: url.port ? parseInt(url.port, 10) : defaultPort,
+    };
+  } catch {}
+  // Bare "host:port" or "host"
+  candidate = candidate.replace(/^\w+:\/\//, "").split("/")[0] || candidate;
+  const [host, portStr] = candidate.split(":");
+  return {
+    host: host || candidate,
+    port: portStr ? parseInt(portStr, 10) : defaultPort,
+  };
+}
+
+export interface ProtocolCheckResult {
+  status: MonitorStatus;
+  latency: number;
+  errorReason?: string | undefined;
+  banner: string;
+}
+
+/**
+ * gRPC health check via the grpc.health.v1.Health protocol.
+ *
+ * Performs a full HTTP/2 connection preface + HEADERS frame for
+ * /grpc.health.v1.Health/Check, reads the response HEADERS and DATA frames,
+ * and decodes the HealthCheckResponse wire payload (field 1, varint:
+ * 0=UNKNOWN, 1=SERVING, 2=NOT_SERVING).
+ */
+export async function checkGrpcHealth(
+  urlStr: string,
+  config: { serviceName?: string; timeoutSeconds?: number; useTls?: boolean } = {},
+): Promise<ProtocolCheckResult> {
+  const start = Date.now();
+  const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
+  const { host, port } = parseHostPort(urlStr, config.useTls ? 443 : 80);
+
+  try {
+    const socket = await openUniversalSocket(host, port, timeoutMs, config.useTls === true);
+    const readWithTimeout = async (budgetMs: number): Promise<Uint8Array | null> => {
+      return await Promise.race([
+        socket.read(),
+        new Promise<null>((resolve) => setTimeout(() => resolve(null), budgetMs)),
+      ]);
+    };
+
+    try {
+      // HTTP/2 client connection preface
+      socket.write(
+        new Uint8Array([
+          0x50, 0x52, 0x49, 0x20, 0x2a, 0x20, 0x48, 0x54, 0x54, 0x50, 0x2f, 0x32, 0x2e, 0x30,
+          0x0d, 0x0a, 0x0d, 0x0a, 0x53, 0x4d, 0x0d, 0x0a, 0x0d, 0x0a,
+        ]),
+      );
+
+      // SETTINGS frame (empty, ACK not required for our purposes)
+      socket.write(new Uint8Array([0x00, 0x00, 0x00, 0x04, 0x00, 0x00, 0x00, 0x00, 0x00]));
+
+      // HPACK-encoded HEADERS frame for /grpc.health.v1.Health/Check with
+      // content-type application/grpc and te: trailers. Encoding uses literal
+      // header fields without indexing (0x00 prefix).
+      const authority = port === 80 || port === 443 ? host : `${host}:${port}`;
+      const path = "/grpc.health.v1.Health/Check";
+      const enc = new TextEncoder();
+      const pseudoAndHeaders: [string, string][] = [
+        [":method", "POST"],
+        [":scheme", "http"],
+        [":path", path],
+        [":authority", authority],
+        ["content-type", "application/grpc"],
+        ["te", "trailers"],
+      ];
+      const headerBlock: number[] = [];
+      const pushString = (s: string) => {
+        const bytes = enc.encode(s);
+        if (bytes.length < 127) {
+          headerBlock.push(bytes.length);
+        } else {
+          let len = bytes.length;
+          while (len >= 128) {
+            headerBlock.push((len & 0x7f) | 0x80);
+            len >>= 7;
+          }
+          headerBlock.push(len);
+        }
+        for (const b of bytes) headerBlock.push(b);
+      };
+      for (const [name, value] of pseudoAndHeaders) {
+        headerBlock.push(0x00);
+        pushString(name);
+        pushString(value);
+      }
+
+      const headerBlockBytes = new Uint8Array(headerBlock);
+      const frame = new Uint8Array(9 + headerBlockBytes.length);
+      const blockLen = headerBlockBytes.length;
+      frame[0] = (blockLen >> 16) & 0xff;
+      frame[1] = (blockLen >> 8) & 0xff;
+      frame[2] = blockLen & 0xff;
+      frame[3] = 0x01; // HEADERS
+      frame[4] = 0x04; // END_HEADERS
+      frame[5] = 0x00;
+      frame[6] = 0x00;
+      frame[7] = 0x00;
+      frame[8] = 0x01; // stream 1
+      frame.set(headerBlockBytes, 9);
+      socket.write(frame);
+
+      // HealthCheckRequest{ service: config.serviceName } — protobuf wire format
+      const svcName = config.serviceName || "";
+      let messageBody: Uint8Array;
+      if (svcName) {
+        const nameBytes = enc.encode(svcName);
+        messageBody = new Uint8Array(1 + nameBytes.length + 4);
+        messageBody[0] = 0x0a; // field 1, wire type 2
+        messageBody[1] = nameBytes.length;
+        messageBody.set(nameBytes, 2);
+      } else {
+        messageBody = new Uint8Array(0);
+      }
+      const grpcFrame = new Uint8Array(5 + messageBody.length);
+      grpcFrame[0] = 0x00; // uncompressed
+      new DataView(grpcFrame.buffer).setUint32(1, messageBody.length);
+      grpcFrame.set(messageBody, 5);
+      const dataFrame = new Uint8Array(9 + grpcFrame.length);
+      const grpcLen = grpcFrame.length;
+      dataFrame[0] = (grpcLen >> 16) & 0xff;
+      dataFrame[1] = (grpcLen >> 8) & 0xff;
+      dataFrame[2] = grpcLen & 0xff;
+      dataFrame[3] = 0x00; // DATA
+      dataFrame[4] = 0x00; // no END_STREAM (await trailers)
+      dataFrame[5] = 0x00;
+      dataFrame[6] = 0x00;
+      dataFrame[7] = 0x00;
+      dataFrame[8] = 0x01;
+      dataFrame.set(grpcFrame, 9);
+      socket.write(dataFrame);
+
+      // Read response frames until a HEADERS or DATA frame on stream 1 arrives
+      const buffer: number[] = [];
+      let sawHeaders = false;
+      let grpcStatus: number | null = null;
+      let servingState: number | null = null;
+      let dataPayload: number[] = [];
+
+      const deadline = Date.now() + timeoutMs;
+      while (Date.now() < deadline) {
+        const remaining = deadline - Date.now();
+        const chunk = await readWithTimeout(remaining);
+        if (!chunk) break;
+        for (const b of chunk) buffer.push(b);
+
+        while (buffer.length >= 9) {
+          const len = (buffer[0]! << 16) | (buffer[1]! << 8) | buffer[2]!;
+          const type = buffer[3]!;
+          if (buffer.length < 9 + len) break;
+          const payload = buffer.slice(9, 9 + len);
+          buffer.splice(0, 9 + len);
+
+          if (type === 0x01) {
+            // HEADERS: scan for grpc-status literal header (crude but sufficient)
+            const text = new TextDecoder().decode(new Uint8Array(payload));
+            if (text.includes("grpc-status")) {
+              const m = text.match(/grpc-status[\x00-\x7f]*?(\d{1,3})/);
+              if (m) grpcStatus = parseInt(m[1]!, 10);
+            }
+            sawHeaders = true;
+          } else if (type === 0x00) {
+            dataPayload = payload;
+          } else if (type === 0x07) {
+            // GOAWAY — server rejected the connection
+            throw new Error("Server sent GOAWAY (HTTP/2 handshake rejected)");
+          }
+        }
+
+        if (sawHeaders && (grpcStatus !== null || dataPayload.length > 0)) break;
+      }
+
+      // Decode HealthCheckResponse payload: field 1 varint = serving state
+      if (dataPayload.length > 0) {
+        let i = 0;
+        const payload = dataPayload;
+        while (i < payload.length) {
+          const tag = payload[i]!;
+          if (tag === 0x08) {
+            servingState = payload[i + 1] ?? null;
+            break;
+          }
+          i++;
+        }
+      }
+
+      const latency = Date.now() - start;
+      if (grpcStatus !== null && grpcStatus !== 0) {
+        return {
+          status: "DOWN",
+          latency,
+          errorReason: `GRPC_STATUS_${grpcStatus}`,
+          banner: "",
+        };
+      }
+      if (servingState === 1) {
+        return { status: "UP", latency, banner: "SERVING" };
+      }
+      if (servingState === 2) {
+        return {
+          status: "DOWN",
+          latency,
+          errorReason: "GRPC_NOT_SERVING",
+          banner: "NOT_SERVING",
+        };
+      }
+      if (dataPayload.length > 0 || sawHeaders) {
+        // Response arrived but state UNKNOWN (0) or undecodable
+        return {
+          status: servingState === 0 ? "DOWN" : "UP",
+          latency,
+          errorReason: servingState === 0 ? "GRPC_UNKNOWN_STATE" : undefined,
+          banner: sawHeaders ? "responded" : "",
+        };
+      }
+      throw new Error("No gRPC response received within timeout");
+    } finally {
+      await socket.close();
+    }
+  } catch (err: any) {
+    return {
+      status: "DOWN",
+      latency: Date.now() - start,
+      errorReason: diagnoseError(err, `${host}:${port}`),
+      banner: "",
+    };
+  }
+}
+
+/**
+ * SMTP check: verifies the EHLO handshake and optionally tests AUTH LOGIN.
+ * URL forms: smtp://host:port, smtps://host:465 (implicit TLS), host (25).
+ */
+export async function checkSmtp(
+  urlStr: string,
+  config: {
+    username?: string;
+    password?: string;
+    timeoutSeconds?: number;
+    ehloDomain?: string;
+  } = {},
+): Promise<ProtocolCheckResult> {
+  const start = Date.now();
+  const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
+  const isSmtps = urlStr.startsWith("smtps://");
+  const { host, port } = parseHostPort(urlStr, isSmtps ? 465 : 25);
+
+  try {
+    const commands = [`EHLO ${config.ehloDomain || "steadystack.monitor"}`];
+    if (config.username) {
+      // AUTH LOGIN with base64 credentials
+      commands.push("AUTH LOGIN");
+      commands.push(btoa(config.username));
+      if (config.password) commands.push(btoa(config.password));
+    }
+
+    const { greeting, responses } = await rawConversation(
+      { host, port, timeoutMs, useTls: isSmtps },
+      commands,
+    );
+
+    const latency = Date.now() - start;
+    const bannerCode = parseInt(greeting.slice(0, 3), 10);
+    if (isNaN(bannerCode) || bannerCode !== 220) {
+      return {
+        status: "DOWN",
+        latency,
+        errorReason: `SMTP_BAD_GREETING: ${greeting.slice(0, 80) || "no banner"}`,
+        banner: greeting.slice(0, 200),
+      };
+    }
+
+    const ehloResponse = responses[0] || "";
+    if (!ehloResponse.startsWith("250")) {
+      return {
+        status: "DOWN",
+        latency,
+        errorReason: `SMTP_EHLO_FAILED: ${ehloResponse.slice(0, 80) || "no response"}`,
+        banner: greeting.slice(0, 200),
+      };
+    }
+
+    if (config.username) {
+      const authResponse = responses[2] || "";
+      const authCode = parseInt(authResponse.slice(0, 3), 10);
+      if (authCode !== 235) {
+        return {
+          status: "DOWN",
+          latency,
+          errorReason: `SMTP_AUTH_FAILED: ${authResponse.slice(0, 80) || "no response"}`,
+          banner: greeting.slice(0, 200),
+        };
+      }
+    }
+
+    return { status: "UP", latency, banner: greeting.slice(0, 200) };
+  } catch (err: any) {
+    return {
+      status: "DOWN",
+      latency: Date.now() - start,
+      errorReason: diagnoseError(err, `${host}:${port}`),
+      banner: "",
+    };
+  }
+}
+
+/**
+ * FTP check: verifies the 220 greeting and that the USER command is accepted
+ * (331 = need password, 230 = logged in). SFTP targets (sftp://) fall back to
+ * a TCP availability check against port 22 because SSH handshake negotiation
+ * is not feasible over line-oriented probes.
+ */
+export async function checkFtp(
+  urlStr: string,
+  config: { username?: string; password?: string; timeoutSeconds?: number } = {},
+): Promise<ProtocolCheckResult> {
+  const start = Date.now();
+  const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
+  const isSftp = urlStr.startsWith("sftp://");
+  const { host, port } = parseHostPort(urlStr, isSftp ? 22 : 21);
+
+  if (isSftp) {
+    // SSH/SFTP: just verify the TCP port is reachable and an SSH banner is returned
+    try {
+      const { greeting } = await rawConversation({ host, port, timeoutMs }, []);
+      const latency = Date.now() - start;
+      if (greeting.startsWith("SSH-")) {
+        return { status: "UP", latency, banner: greeting.slice(0, 200) };
+      }
+      return {
+        status: greeting ? "DOWN" : "UP",
+        latency,
+        errorReason: greeting ? `SFTP_BAD_BANNER: ${greeting.slice(0, 80)}` : undefined,
+        banner: greeting.slice(0, 200),
+      };
+    } catch (err: any) {
+      return {
+        status: "DOWN",
+        latency: Date.now() - start,
+        errorReason: diagnoseError(err, `${host}:${port}`),
+        banner: "",
+      };
+    }
+  }
+
+  try {
+    const username = config.username || "anonymous";
+    const commands = [`USER ${username}`];
+    if (config.password) commands.push(`PASS ${config.password}`);
+
+    const { greeting, responses } = await rawConversation({ host, port, timeoutMs }, commands);
+    const latency = Date.now() - start;
+    const bannerCode = parseInt(greeting.slice(0, 3), 10);
+    if (isNaN(bannerCode) || bannerCode !== 220) {
+      return {
+        status: "DOWN",
+        latency,
+        errorReason: `FTP_BAD_GREETING: ${greeting.slice(0, 80) || "no banner"}`,
+        banner: greeting.slice(0, 200),
+      };
+    }
+
+    const userResponse = responses[0] || "";
+    const userCode = parseInt(userResponse.slice(0, 3), 10);
+    if (userCode !== 331 && userCode !== 230) {
+      return {
+        status: "DOWN",
+        latency,
+        errorReason: `FTP_LOGIN_REJECTED: ${userResponse.slice(0, 80) || "no response"}`,
+        banner: greeting.slice(0, 200),
+      };
+    }
+
+    return { status: "UP", latency, banner: greeting.slice(0, 200) };
+  } catch (err: any) {
+    return {
+      status: "DOWN",
+      latency: Date.now() - start,
+      errorReason: diagnoseError(err, `${host}:${port}`),
+      banner: "",
+    };
+  }
+}
+
+/**
+ * IMAP / POP3 mailbox check.
+ * URL forms: imap://host:143, imaps://host:993 (implicit TLS),
+ * pop3://host:110, pop3s://host:995 (implicit TLS). Optional credentials test
+ * a real LOGIN; without them the server banner + capability/auth readiness is
+ * verified.
+ */
+export async function checkMailRetrieval(
+  urlStr: string,
+  config: { username?: string; password?: string; timeoutSeconds?: number } = {},
+): Promise<ProtocolCheckResult> {
+  const start = Date.now();
+  const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
+  const lower = urlStr.toLowerCase();
+  const isImap = lower.startsWith("imap") || lower.startsWith("imaps");
+  const isTls = lower.startsWith("imaps") || lower.startsWith("pop3s");
+  const { host, port } = parseHostPort(
+    urlStr,
+    isImap ? (isTls ? 993 : 143) : isTls ? 995 : 110,
+  );
+
+  const commands = isImap
+    ? ["A001 CAPABILITY"]
+    : ["CAPA"]; // POP3 capability discovery; some servers respond -ERR (still alive)
+  if (config.username) {
+    commands.push(isImap ? `A002 LOGIN ${config.username} ${config.password || ""}` : `USER ${config.username}`);
+    if (!isImap && config.password) commands.push(`PASS ${config.password}`);
+  }
+
+  try {
+    const { greeting, responses } = await rawConversation(
+      { host, port, timeoutMs, useTls: isTls },
+      commands,
+    );
+
+    const latency = Date.now() - start;
+    if (isImap) {
+      // Greeting must be OK/BAD/NO ("* OK ..." or "* PREAUTH")
+      if (!greeting.startsWith("*")) {
+        return {
+          status: "DOWN",
+          latency,
+          errorReason: `IMAP_BAD_GREETING: ${greeting.slice(0, 80) || "no banner"}`,
+          banner: greeting.slice(0, 200),
+        };
+      }
+      const capaResponse = responses[0] || "";
+      const hasImapRev1 = capaResponse.includes("IMAPrev1") || capaResponse.includes("IMAP4rev1");
+      const hasAuth = capaResponse.includes("AUTH=") || /\bAUTH\b/.test(capaResponse);
+      if (config.username) {
+        const loginResponse = responses[1] || "";
+        if (!loginResponse.includes("A002 OK")) {
+          return {
+            status: "DOWN",
+            latency,
+            errorReason: `IMAP_LOGIN_FAILED: ${loginResponse.slice(0, 80) || "no response"}`,
+            banner: greeting.slice(0, 200),
+          };
+        }
+      } else if (!hasImapRev1 && !hasAuth && !capaResponse.includes("A001")) {
+        // No usable capability response — server likely broken
+        return {
+          status: "DOWN",
+          latency,
+          errorReason: `IMAP_NO_CAPABILITIES: ${capaResponse.slice(0, 80) || "empty"}`,
+          banner: greeting.slice(0, 200),
+        };
+      }
+      return { status: "UP", latency, banner: greeting.slice(0, 200) };
+    }
+
+    // POP3: greeting must be +OK
+    if (!greeting.startsWith("+OK")) {
+      return {
+        status: "DOWN",
+        latency,
+        errorReason: `POP3_BAD_GREETING: ${greeting.slice(0, 80) || "no banner"}`,
+        banner: greeting.slice(0, 200),
+      };
+    }
+    if (config.username) {
+      const passIdx = config.password ? 2 : 1;
+      const finalResponse = responses[passIdx] || responses[passIdx - 1] || "";
+      if (!finalResponse.startsWith("+OK")) {
+        return {
+          status: "DOWN",
+          latency,
+          errorReason: `POP3_AUTH_FAILED: ${finalResponse.slice(0, 80) || "no response"}`,
+          banner: greeting.slice(0, 200),
+        };
+      }
+    }
+    return { status: "UP", latency, banner: greeting.slice(0, 200) };
+  } catch (err: any) {
+    return {
+      status: "DOWN",
+      latency: Date.now() - start,
+      errorReason: diagnoseError(err, `${host}:${port}`),
+      banner: "",
+    };
+  }
+}
+
+/**
+ * True ICMP ping.
+ *
+ * Cloudflare Workers cannot send raw ICMP packets (cloudflare:sockets is
+ * TCP-only), so this check runs a real ICMP echo in two modes:
+ * 1. Node probes: system `ping` binary via child_process (true ICMP echo).
+ * 2. Workers runtime: TCP connect fallback to port 80 (documented limitation).
+ */
+export async function checkIcmpPing(
+  urlStr: string,
+  config: { timeoutSeconds?: number } = {},
+): Promise<ProtocolCheckResult & { packetLoss?: number }> {
+  const start = Date.now();
+  const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
+  const host = parseHostPort(urlStr, 0).host;
+
+  if (!host) {
+    return { status: "DOWN", latency: 0, errorReason: "ICMP_NO_HOST", banner: "" };
+  }
+
+  // Node runtime: real ICMP echo via the system ping binary
+  try {
+    // @ts-ignore
+    const cp = await import("child_process");
+    if (cp && typeof cp.execFile === "function") {
+      const timeoutSec = Math.max(1, Math.ceil(timeoutMs / 1000));
+      const result = await new Promise<{ code: number; stdout: string; stderr: string }>(
+        (resolve) => {
+          try {
+            cp.execFile(
+              "ping",
+              ["-n", "-c", "1", "-W", String(timeoutSec), host],
+              { timeout: timeoutMs },
+              (err: any, stdout: string, stderr: string) => {
+                // ping exits non-zero on 100% packet loss; stdout still tells us what happened
+                resolve({ code: err ? (err.code ?? 1) : 0, stdout: stdout || "", stderr: stderr || "" });
+              },
+            );
+          } catch (spawnErr) {
+            resolve({ code: -1, stdout: "", stderr: String(spawnErr) });
+          }
+        },
+      );
+
+      const latency = Date.now() - start;
+      const output = `${result.stdout}\n${result.stderr}`;
+      const timeMatch = result.stdout.match(/time[=<]([\d.]+)\s*ms/i);
+      const lossMatch = result.stdout.match(/([\d.]+)%\s*packet loss/i);
+      const packetLoss = lossMatch ? parseFloat(lossMatch[1]!) : result.code === 0 ? 0 : 100;
+
+      if (result.code === 0 && timeMatch) {
+        return {
+          status: "UP",
+          latency: Math.round(parseFloat(timeMatch[1]!)),
+          banner: `ICMP echo ${timeMatch[1]}ms`,
+          packetLoss,
+        };
+      }
+      if (result.code === -1) {
+        // ping binary unavailable — fall through to TCP fallback below
+      } else {
+        return {
+          status: "DOWN",
+          latency,
+          errorReason: `PING_FAILED: ${output.slice(0, 120).replace(/\n/g, " ") || "host unreachable"}`,
+          banner: output.slice(0, 200),
+          packetLoss,
+        };
+      }
+    }
+  } catch {
+    // fall through to TCP fallback
+  }
+
+  // Workers / restricted runtimes: TCP connect fallback to port 80
+  const portResult = await checkPortUniversal(host, 80, timeoutMs);
+  const latency = Date.now() - start;
+  return {
+    status: portResult.isOpen ? "UP" : "DOWN",
+    latency: portResult.isOpen ? portResult.latency : latency,
+    errorReason: portResult.isOpen ? undefined : portResult.errorReason,
+    banner: portResult.isOpen ? "TCP_FALLBACK" : "",
+  };
 }

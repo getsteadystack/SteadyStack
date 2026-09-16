@@ -5,7 +5,15 @@ import { MonitorForm } from "./monitor-form";
 import { MaintenanceManager } from "./maintenance-manager";
 import { Settings, Construction } from "lucide-react";
 
-export function MonitorSettingsView({ monitor, windows }: { monitor: any; windows: any[] }) {
+export function MonitorSettingsView({
+  monitor,
+  windows,
+  hasProtocolCredentials = false,
+}: {
+  monitor: any;
+  windows: any[];
+  hasProtocolCredentials?: boolean;
+}) {
   const [activeTab, setActiveTab] = useState<"general" | "maintenance">("general");
 
   return (
@@ -39,7 +47,7 @@ export function MonitorSettingsView({ monitor, windows }: { monitor: any; window
       {/* Content */}
       <div className="min-h-[500px]">
         {activeTab === "general" ? (
-          <MonitorForm monitor={monitor} />
+          <MonitorForm monitor={monitor} hasProtocolCredentials={hasProtocolCredentials} />
         ) : (
           <MaintenanceManager monitorId={monitor.id} windows={windows} />
         )}

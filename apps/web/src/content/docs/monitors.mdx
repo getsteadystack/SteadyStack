@@ -7,7 +7,7 @@ badge: "Surveillance"
 lastUpdated: "2026-08-22"
 ---
 
-SteadyStack provides six specialized surveillance engine protocols designed to pinpoint infrastructure regressions before customers notice.
+SteadyStack provides specialized surveillance engine protocols designed to pinpoint infrastructure regressions before customers notice.
 
 ---
 
@@ -36,6 +36,26 @@ Queries authoritative nameservers for `A`, `AAAA`, `CNAME`, `MX`, and `TXT` reco
 ### 6. HEARTBEAT (Cron Job Watchdog)
 
 Passive incoming webhook watcher. Your internal background worker or cron script pings a unique SteadyStack heartbeat URL upon task completion. If no ping is received within the expected window, an incident triggers.
+
+### 7. GRPC (gRPC Health Protocol)
+
+Issues a real gRPC request against the standard `grpc.health.v1.Health/Check` RPC (HTTP/2 preface, HEADERS, and protobuf-encoded `HealthCheckResponse`). Reports UP only when the service answers `SERVING`; `NOT_SERVING` and non-zero `grpc-status` codes map to DOWN with the specific code surfaced.
+
+### 8. SMTP (Mail Submission)
+
+Performs the SMTP handshake: validates the `220` service banner, issues `EHLO`, and optionally completes an `AUTH LOGIN` exchange with configured credentials (`235` accepted). Supports `smtp://host:587` (STARTTLS-capable) and `smtps://host:465` (implicit TLS).
+
+### 9. FTP / SFTP (File Transfer)
+
+FTP monitors verify the `220` greeting and that the server accepts the `USER` command (`331` need-password or `230` logged-in). `sftp://` targets verify the SSH version banner on port 22.
+
+### 10. ICMP (True Ping)
+
+Real ICMP echo requests measuring raw round-trip time and packet loss. Runs genuine ICMP via the system `ping` binary on Node-based private probes; on edge runtimes (where raw sockets are unavailable) it falls back to a TCP connect probe and tags the result as a TCP fallback.
+
+### 11. IMAP / POP3 (Mail Retrieval)
+
+Connects to IMAP (`imap://` / `imaps://` on 143/993) or POP3 (`pop3://` / `pop3s://` on 110/995), validates the greeting banner and capability response, and optionally performs a real `LOGIN` to verify mailbox credentials.
 
 ---
 

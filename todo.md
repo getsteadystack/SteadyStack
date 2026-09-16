@@ -83,11 +83,11 @@
 
 ### 🔍 Monitoring Engine (Worker)
 
-- [ ] Add `GRPC` monitor type for gRPC health check protocol
-- [ ] Add `SMTP` monitor type (EHLO handshake + optional AUTH test)
-- [ ] Add `FTP` / `SFTP` monitor type for file server availability
-- [ ] Add `ICMP` (true ping) monitor type using Cloudflare's socket bindings
-- [ ] Add `IMAP` / `POP3` monitor type for mail server checks
+- [x] Add `GRPC` monitor type for gRPC health check protocol
+- [x] Add `SMTP` monitor type (EHLO handshake + optional AUTH test)
+- [x] Add `FTP` / `SFTP` monitor type for file server availability
+- [x] Add `ICMP` (true ping) monitor type using Cloudflare's socket bindings
+- [x] Add `IMAP` / `POP3` monitor type for mail server checks
 - [ ] Add `LDAP` monitor type for directory server availability
 - [ ] Add `MQTT` monitor type for IoT broker connectivity
 - [ ] Add `Redis` monitor type (PING command check)
@@ -100,9 +100,9 @@
 - [ ] Add monitor grouping/tagging for bulk operations
 - [ ] Add `composite` monitor type: alert if X of N monitors fail simultaneously
 - [ ] Add `synthetic` keyword monitoring (check if specific text appears in response body)
-- [ ] Implement response body size threshold alerting
-- [ ] Add HTTP redirect chain inspector (follow all redirects, report each hop)
-- [ ] Add support for client certificate (mTLS) in HTTP monitors
+- [x] Implement response body size threshold alerting
+- [x] Add HTTP redirect chain inspector (follow all redirects, report each hop)
+- [x] Add support for client certificate (mTLS) in HTTP monitors
 - [ ] Add HTTP/2 and HTTP/3 protocol enforcement option in HTTP monitor
 - [ ] Implement custom request body/headers templates with variable substitution
 - [ ] Add monitor clone/duplicate feature (one-click copy with new name)

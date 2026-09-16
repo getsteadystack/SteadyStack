@@ -5,6 +5,7 @@ export type FeatureFlag =
   | "browser_monitors"
   | "sequence_monitors"
   | "mcp_database_monitors"
+  | "protocol_monitors"
   | "multi_region"
   | "dynamic_thresholding"
   | "white_label_status_pages"
@@ -22,6 +23,7 @@ export const PLAN_FEATURE_FLAGS: Record<PlanTier, Record<FeatureFlag, boolean>> 
     browser_monitors: false,
     sequence_monitors: false,
     mcp_database_monitors: false,
+    protocol_monitors: false,
     multi_region: false,
     dynamic_thresholding: false,
     white_label_status_pages: false,
@@ -38,6 +40,7 @@ export const PLAN_FEATURE_FLAGS: Record<PlanTier, Record<FeatureFlag, boolean>> 
     browser_monitors: true,
     sequence_monitors: true,
     mcp_database_monitors: false,
+    protocol_monitors: true,
     multi_region: true,
     dynamic_thresholding: true,
     white_label_status_pages: true,
@@ -54,6 +57,7 @@ export const PLAN_FEATURE_FLAGS: Record<PlanTier, Record<FeatureFlag, boolean>> 
     browser_monitors: true,
     sequence_monitors: true,
     mcp_database_monitors: true,
+    protocol_monitors: true,
     multi_region: true,
     dynamic_thresholding: true,
     white_label_status_pages: true,
@@ -77,6 +81,10 @@ const FEATURE_DESCRIPTIONS: Record<FeatureFlag, { name: string; requiredPlan: Pl
   mcp_database_monitors: {
     name: "MCP & Database Monitoring",
     requiredPlan: "CONSTRUCT",
+  },
+  protocol_monitors: {
+    name: "gRPC, SMTP, FTP, ICMP & Mail Monitoring",
+    requiredPlan: "NETRUNNER",
   },
   multi_region: { name: "Multi-Region Monitoring", requiredPlan: "NETRUNNER" },
   dynamic_thresholding: {

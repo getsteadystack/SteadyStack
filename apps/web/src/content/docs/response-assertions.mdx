@@ -99,6 +99,21 @@ For richer comparison logic, use the `json_assertions` array:
 
 **Supported JSON Operators**: `equals` (`==`), `not_equals` (`!=`), `contains`, `not_contains`.
 
+### 6. Body Size Thresholds
+
+Alert when the response body crosses a size threshold, measured against the exact received byte count. Useful for catching bloated responses, truncated payloads, or empty error pages served with a 200 status.
+
+```json
+{
+  "expectation": {
+    "max_body_size_bytes": 1048576,
+    "min_body_size_bytes": 100
+  }
+}
+```
+
+Both keys are optional and independent. The check fails with `BODY_TOO_LARGE` or `BODY_TOO_SMALL` and the alert includes the measured size. Hard platform ceiling: 5 MB regardless of thresholds.
+
 ---
 
 ## Configuring via Terraform / OpenTofu

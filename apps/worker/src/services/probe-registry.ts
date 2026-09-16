@@ -18,6 +18,7 @@ export interface ProbeJob {
   body?: string;
   expectation?: string;
   script?: string;
+  clientCert?: string;
 }
 
 export interface ProbeResult {
@@ -135,6 +136,7 @@ export async function pollJobs(
           interval: true,
           nextCheck: true,
           lastCheck: true,
+          clientCert: true,
         },
       },
     },
@@ -155,10 +157,13 @@ export async function pollJobs(
         type: m.type,
         timeout: DEFAULT_CHECK_TIMEOUT_SECONDS,
         method: m.method || "GET",
+        // Headers are stored encrypted (enc:v1:); decryption happens on the
+        // probe via its own ENCRYPTION_SECRET (same platform secret).
         headers: m.headers || undefined,
         body: m.body || undefined,
         expectation: m.expectation || undefined,
         script: m.script || undefined,
+        clientCert: m.clientCert || undefined,
       });
     }
   }

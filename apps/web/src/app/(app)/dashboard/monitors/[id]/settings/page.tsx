@@ -3,8 +3,18 @@ import { getMonitor } from "@/actions/monitors";
 import { MonitorSettingsView } from "@/components/monitors/settings-view";
 import { auth } from "@steadystack/auth";
 import { headers } from "next/headers";
+import { isEncrypted } from "@steadystack/core";
 
 export const dynamic = "force-dynamic";
+
+function parseJsonSafe(value: unknown): unknown {
+  if (typeof value !== "string" || value.length === 0) return null;
+  try {
+    return JSON.parse(value);
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Renders the monitor settings page.
@@ -36,9 +46,33 @@ export default async function MonitorSettingsPage({ params }: { params: Promise<
   // Cast because prisma types might be stale in this context but runtime is correct
   const windows = (monitor as any).maintenanceWindows || [];
 
+  // Secrets never reach the browser: the headers column (encrypted envelope
+  // or legacy plaintext credentials) and the clientCert bundle are stripped.
+  // The form only learns whether protocol credentials (SMTP/FTP/MAIL) exist,
+  // so an untouched edit keeps what is stored instead of wiping it.
+  const m = monitor as any;
+  const parsedHeaders = parseJsonSafe(m.headers);
+  const hasProtocolCredentials =
+    typeof m.headers === "string" &&
+    m.headers.length > 0 &&
+    !Array.isArray(parsedHeaders) &&
+    (isEncrypted(m.headers) ||
+      (parsedHeaders !== null &&
+        typeof parsedHeaders === "object" &&
+        ("username" in parsedHeaders || "password" in parsedHeaders)));
+  const editableMonitor = {
+    ...monitor,
+    headers: null,
+    clientCert: m.clientCert ? "configured" : null,
+  } as any;
+
   return (
     <div className="flex justify-center p-6">
-      <MonitorSettingsView monitor={monitor} windows={windows} />
+      <MonitorSettingsView
+        monitor={editableMonitor}
+        windows={windows}
+        hasProtocolCredentials={hasProtocolCredentials}
+      />
     </div>
   );
 }

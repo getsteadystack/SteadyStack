@@ -135,6 +135,20 @@ async function runDueChecks() {
               }
             }
 
+            // mTLS: decrypt the client certificate bundle when present
+            let clientCert: string | undefined;
+            let clientKey: string | undefined;
+            if (monitor.clientCert) {
+              try {
+                const raw = await decryptSecret(monitor.clientCert);
+                const parsed = JSON.parse(raw) as { cert?: string; key?: string };
+                clientCert = parsed.cert;
+                clientKey = parsed.key;
+              } catch {
+                console.error("[MTLS] Failed to parse client certificate bundle");
+              }
+            }
+
             const response = await fetch(monitor.url, {
               method,
               redirect: "follow",
@@ -145,6 +159,11 @@ async function runDueChecks() {
               },
               body: ["POST", "PUT", "PATCH"].includes(method) ? monitor.body : undefined,
               signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
+              // @ts-ignore — Node dispatcher for mTLS; ignored on non-Node runtimes
+              dispatcher:
+                clientCert && clientKey
+                  ? (await import("@steadystack/core")).createMtlsDispatcher(clientCert, clientKey)
+                  : undefined,
             });
 
             const body = await response.text();
@@ -158,11 +177,18 @@ async function runDueChecks() {
             currentStatus = isHealthy ? "UP" : "DOWN";
 
             if (currentStatus === "UP" && monitor.expectation) {
-              const { validatePayload } = await import("@/lib/payload-parser");
-              const validation = validatePayload(body, response.status, monitor.expectation);
-              if (!validation.success) {
+              const { validatePayload, validateBodySize } = await import("@/lib/payload-parser");
+              // Body size thresholds first (byte-exact), then content validation
+              const sizeValidation = validateBodySize(new Blob([body]).size, monitor.expectation);
+              if (!sizeValidation.success) {
                 currentStatus = "DOWN";
-                errorReason = validation.errorMessage || "Payload validation failed";
+                errorReason = sizeValidation.errorMessage;
+              } else {
+                const validation = validatePayload(body, response.status, monitor.expectation);
+                if (!validation.success) {
+                  currentStatus = "DOWN";
+                  errorReason = validation.errorMessage || "Payload validation failed";
+                }
               }
             } else if (currentStatus === "DOWN") {
               errorReason = `HTTP_${response.status}`;

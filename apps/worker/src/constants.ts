@@ -14,6 +14,11 @@ export const MonitorType = {
   DATABASE: "DATABASE",
   BGP: "BGP",
   MCP: "MCP",
+  GRPC: "GRPC",
+  SMTP: "SMTP",
+  FTP: "FTP",
+  ICMP: "ICMP",
+  MAIL: "MAIL",
 } as const;
 
 export type MonitorTypeValue = (typeof MonitorType)[keyof typeof MonitorType];
@@ -44,6 +49,11 @@ export const CheckErrorReason = {
   WEBSOCKET_CHECK_FAILED: "WEBSOCKET_CHECK_FAILED",
   DATABASE_CHECK_FAILED: "DATABASE_CHECK_FAILED",
   BGP_CHECK_FAILED: "BGP_CHECK_FAILED",
+  GRPC_CHECK_FAILED: "GRPC_CHECK_FAILED",
+  SMTP_CHECK_FAILED: "SMTP_CHECK_FAILED",
+  FTP_CHECK_FAILED: "FTP_CHECK_FAILED",
+  ICMP_CHECK_FAILED: "ICMP_CHECK_FAILED",
+  MAIL_CHECK_FAILED: "MAIL_CHECK_FAILED",
 } as const;
 
 export type CheckErrorReasonValue = (typeof CheckErrorReason)[keyof typeof CheckErrorReason];

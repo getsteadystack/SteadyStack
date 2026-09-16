@@ -19,6 +19,11 @@ import {
   ShieldCheck,
   Heart,
   Lock,
+  Radio,
+  Mail,
+  FolderOpen,
+  Wifi,
+  Inbox,
 } from "lucide-react";
 import Link from "next/link";
 import { createMonitor, updateMonitor } from "@/actions/monitors";
@@ -34,28 +39,48 @@ const initialState = {
   error: "",
 };
 
+type ProtocolMonitorType = "GRPC" | "SMTP" | "FTP" | "ICMP" | "MAIL";
+
+const PROTOCOL_TYPES: ProtocolMonitorType[] = ["GRPC", "SMTP", "FTP", "ICMP", "MAIL"];
+
+const PROTOCOL_DEFAULT_PORTS: Record<ProtocolMonitorType, number> = {
+  GRPC: 80,
+  SMTP: 25,
+  FTP: 21,
+  ICMP: 0,
+  MAIL: 143,
+};
+
 interface MonitorFormProps {
   monitor?: {
     id: string;
     name: string;
     url: string;
-    type: "HTTP" | "PING" | "PORT" | "BROWSER" | "SEQUENCE" | "SSL" | "DNS" | "HEARTBEAT";
+    type: "HTTP" | "PING" | "PORT" | "BROWSER" | "SEQUENCE" | "SSL" | "DNS" | "HEARTBEAT" | ProtocolMonitorType;
     interval: number;
     checkRegions?: string | null;
     alertThreshold?: number;
     runbookUrl?: string | null;
     method?: string;
+    /** Never populated with secrets — the server strips it; presence of
+     *  stored protocol credentials is signaled via hasProtocolCredentials. */
     headers?: string | null;
     body?: string | null;
     script?: string | null;
     expectation?: string | null;
     heartbeatToken?: string | null;
+    /** Encrypted mTLS bundle — only presence is exposed to the client. */
+    clientCert?: string | null;
     tags?: string[];
   };
   usageSummary?: UsageSummary;
 }
 
-export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
+export function MonitorForm({
+  monitor,
+  usageSummary,
+  hasProtocolCredentials = false,
+}: MonitorFormProps & { hasProtocolCredentials?: boolean }) {
   const searchParams = useSearchParams();
   const typeParam = searchParams.get("type")?.toUpperCase() as
     | "HTTP"
@@ -66,11 +91,20 @@ export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
     | "SSL"
     | "DNS"
     | "HEARTBEAT"
+    | ProtocolMonitorType
     | null;
 
   // Parse initial values
-  let initialType: "HTTP" | "PING" | "PORT" | "BROWSER" | "SEQUENCE" | "SSL" | "DNS" | "HEARTBEAT" =
-    monitor?.type || typeParam || "HTTP";
+  let initialType:
+    | "HTTP"
+    | "PING"
+    | "PORT"
+    | "BROWSER"
+    | "SEQUENCE"
+    | "SSL"
+    | "DNS"
+    | "HEARTBEAT"
+    | ProtocolMonitorType = monitor?.type || typeParam || "HTTP";
   let initialUrl = monitor?.url || "";
   let initialPort = "";
   let initialRegions: string[] = [];
@@ -87,18 +121,26 @@ export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
   if (monitor) {
     if (monitor.type === "PING" && initialUrl.startsWith("ping://")) {
       initialUrl = initialUrl.replace("ping://", "");
+    } else if (monitor.type === "ICMP" && initialUrl.startsWith("icmp://")) {
+      initialUrl = initialUrl.replace("icmp://", "");
     } else if (monitor.type === "PORT" && initialUrl.startsWith("tcp://")) {
       const trimmed = initialUrl.replace("tcp://", "");
       const [host, port] = trimmed.split(":");
       initialUrl = host;
       initialPort = port;
+    } else if (
+      PROTOCOL_TYPES.includes(monitor.type as ProtocolMonitorType) &&
+      /^\w+:\/\//.test(initialUrl)
+    ) {
+      // Show bare host (optionally host:port) for protocol monitors
+      initialUrl = initialUrl.replace(/^\w+:\/\//, "").split("/")[0] || initialUrl;
     } else if (monitor.type === "HEARTBEAT" && initialUrl.startsWith("heartbeat://")) {
       initialUrl = "";
     }
   }
 
   const [monitorType, setMonitorType] = useState<
-    "HTTP" | "PING" | "PORT" | "BROWSER" | "SEQUENCE" | "SSL" | "DNS" | "HEARTBEAT"
+    "HTTP" | "PING" | "PORT" | "BROWSER" | "SEQUENCE" | "SSL" | "DNS" | "HEARTBEAT" | ProtocolMonitorType
   >(initialType);
   const [selectedRegions, setSelectedRegions] = useState<string[]>(initialRegions);
   const [threshold, setThreshold] = useState(monitor?.alertThreshold || 1);
@@ -171,6 +213,50 @@ export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
     }
     return "";
   });
+
+  // Protocol Monitor Config State (SMTP/FTP/MAIL credentials, gRPC service name)
+  // Body size thresholds from the expectation JSON (HTTP monitors)
+  const [maxBodySize, setMaxBodySize] = useState(() => {
+    if (monitor?.expectation) {
+      try {
+        const parsed = JSON.parse(monitor.expectation);
+        return typeof parsed.max_body_size_bytes === "number" ? String(parsed.max_body_size_bytes) : "";
+      } catch {}
+    }
+    return "";
+  });
+  const [minBodySize, setMinBodySize] = useState(() => {
+    if (monitor?.expectation) {
+      try {
+        const parsed = JSON.parse(monitor.expectation);
+        return typeof parsed.min_body_size_bytes === "number" ? String(parsed.min_body_size_bytes) : "";
+      } catch {}
+    }
+    return "";
+  });
+  // mTLS: the stored bundle is encrypted, so only presence is shown — the key
+  // must be re-entered to change it (empty fields keep the existing cert).
+  const [hasClientCert, setHasClientCert] = useState(Boolean(monitor?.clientCert));
+  const [clientCertPem, setClientCertPem] = useState("");
+  const [clientKeyPem, setClientKeyPem] = useState("");
+  const [removeClientCert, setRemoveClientCert] = useState(false);
+  // Protocol credentials (SMTP/FTP/MAIL) are never shipped to the browser —
+  // the server strips the headers column and passes only a presence flag.
+  // Untouched edits keep the stored credentials; posting a username (with
+  // optional password) replaces them; the checkbox removes them.
+  const [protocolUsername, setProtocolUsername] = useState("");
+  const [protocolPassword, setProtocolPassword] = useState("");
+  const [removeProtocolCredentials, setRemoveProtocolCredentials] = useState(false);
+  const [grpcServiceName, setGrpcServiceName] = useState(() => {
+    if (monitor?.expectation) {
+      try {
+        const parsed = JSON.parse(monitor.expectation);
+        return parsed.serviceName || "";
+      } catch {}
+    }
+    return "";
+  });
+  const isProtocolType = PROTOCOL_TYPES.includes(monitorType as ProtocolMonitorType);
 
   // Browser Steps State
   const [steps, setSteps] = useState<{ action: string; value: string; selector: string }[]>(() => {
@@ -507,6 +593,101 @@ export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
                 <Heart className="size-5" />
                 <span className="text-[11px] font-bold uppercase tracking-wider">Heartbeat</span>
               </label>
+
+              <label
+                className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl border transition-all cursor-pointer ${
+                  monitorType === "GRPC"
+                    ? "border-primary bg-primary/5 text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                    : "border-border bg-card text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="type"
+                  value="GRPC"
+                  className="sr-only"
+                  checked={monitorType === "GRPC"}
+                  onChange={() => setMonitorType("GRPC")}
+                />
+                <Radio className="size-5" />
+                <span className="text-[11px] font-bold uppercase tracking-wider">gRPC</span>
+              </label>
+
+              <label
+                className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl border transition-all cursor-pointer ${
+                  monitorType === "SMTP"
+                    ? "border-primary bg-primary/5 text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                    : "border-border bg-card text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="type"
+                  value="SMTP"
+                  className="sr-only"
+                  checked={monitorType === "SMTP"}
+                  onChange={() => setMonitorType("SMTP")}
+                />
+                <Mail className="size-5" />
+                <span className="text-[11px] font-bold uppercase tracking-wider">SMTP</span>
+              </label>
+
+              <label
+                className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl border transition-all cursor-pointer ${
+                  monitorType === "FTP"
+                    ? "border-primary bg-primary/5 text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                    : "border-border bg-card text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="type"
+                  value="FTP"
+                  className="sr-only"
+                  checked={monitorType === "FTP"}
+                  onChange={() => setMonitorType("FTP")}
+                />
+                <FolderOpen className="size-5" />
+                <span className="text-[11px] font-bold uppercase tracking-wider">FTP/SFTP</span>
+              </label>
+
+              <label
+                className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl border transition-all cursor-pointer ${
+                  monitorType === "ICMP"
+                    ? "border-primary bg-primary/5 text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                    : "border-border bg-card text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="type"
+                  value="ICMP"
+                  className="sr-only"
+                  checked={monitorType === "ICMP"}
+                  onChange={() => setMonitorType("ICMP")}
+                />
+                <Wifi className="size-5" />
+                <span className="text-[11px] font-bold uppercase tracking-wider">ICMP</span>
+              </label>
+
+              <label
+                className={`flex flex-col items-center justify-center gap-2.5 p-4 rounded-xl border transition-all cursor-pointer ${
+                  monitorType === "MAIL"
+                    ? "border-primary bg-primary/5 text-foreground shadow-[0_2px_8px_rgba(0,0,0,0.02)]"
+                    : "border-border bg-card text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                }`}
+              >
+                <input
+                  type="radio"
+                  name="type"
+                  value="MAIL"
+                  className="sr-only"
+                  checked={monitorType === "MAIL"}
+                  onChange={() => setMonitorType("MAIL")}
+                />
+                <Inbox className="size-5" />
+                <span className="text-[11px] font-bold uppercase tracking-wider">IMAP/POP3</span>
+              </label>
             </div>
           </div>
 
@@ -548,7 +729,9 @@ export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
                 monitorType === "SSL" ||
                 monitorType === "DNS"
                   ? "Target URL / Domain"
-                  : "Hostname / IP"}
+                  : monitorType === "GRPC" || monitorType === "SMTP" || monitorType === "FTP" || monitorType === "MAIL"
+                    ? "Server Host"
+                    : "Hostname / IP"}
               </label>
               <div className="flex gap-4">
                 <input
@@ -562,7 +745,15 @@ export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
                       ? "https://example.com"
                       : monitorType === "SSL" || monitorType === "DNS"
                         ? "example.com or https://example.com"
-                        : "192.168.1.1 or example.com"
+                        : monitorType === "GRPC"
+                          ? "grpc.example.com:50051"
+                          : monitorType === "SMTP"
+                            ? "smtp.example.com:587"
+                            : monitorType === "FTP"
+                              ? "ftp.example.com:21"
+                              : monitorType === "MAIL"
+                                ? "imap.example.com:143"
+                                : "192.168.1.1 or example.com"
                   }
                 />
                 {monitorType === "PORT" && (
@@ -864,8 +1055,102 @@ export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
                       operator: a.operator,
                       value: a.value,
                     })),
+                  max_body_size_bytes: maxBodySize ? Number(maxBodySize) : undefined,
+                  min_body_size_bytes: minBodySize ? Number(minBodySize) : undefined,
                 })}
               />
+            </div>
+          )}
+
+          {/* HTTP Response Size + mTLS Config */}
+          {monitorType === "HTTP" && (
+            <div className="flex flex-col gap-5 border-l border-border pl-6 py-1 animate-in fade-in slide-in-from-left-4 duration-300">
+              <div className="flex flex-col">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="size-4 text-primary animate-pulse" />
+                  Response Size Alerts (Optional)
+                </label>
+                <p className="text-[9px] text-muted-foreground font-semibold uppercase mt-0.5 tracking-wider">
+                  Alert when the response body crosses a size threshold in bytes
+                </p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Max Size (Bytes)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={maxBodySize}
+                    onChange={(e) => setMaxBodySize(e.target.value)}
+                    placeholder="e.g. 1048576 (1 MB)"
+                    className="bg-accent/30 border border-border focus:border-primary/20 text-xs font-semibold rounded-lg p-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full font-mono"
+                  />
+                </div>
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Min Size (Bytes)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={minBodySize}
+                    onChange={(e) => setMinBodySize(e.target.value)}
+                    placeholder="e.g. 100 — flags empty/error pages"
+                    className="bg-accent/30 border border-border focus:border-primary/20 text-xs font-semibold rounded-lg p-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full font-mono"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                  Client Certificate (mTLS)
+                </label>
+                {hasClientCert && (
+                  <p className="text-[9px] font-semibold uppercase tracking-wider text-emerald-500">
+                    Certificate configured — leave blank to keep, or replace below
+                  </p>
+                )}
+                <textarea
+                  value={clientCertPem}
+                  onChange={(e) => setClientCertPem(e.target.value)}
+                  placeholder={"-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----"}
+                  rows={3}
+                  className="bg-accent/30 border border-border focus:border-primary/20 text-[10px] font-semibold rounded-lg p-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full font-mono resize-none"
+                />
+                <textarea
+                  value={clientKeyPem}
+                  onChange={(e) => setClientKeyPem(e.target.value)}
+                  placeholder={"-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----"}
+                  rows={3}
+                  className="bg-accent/30 border border-border focus:border-primary/20 text-[10px] font-semibold rounded-lg p-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full font-mono resize-none"
+                />
+                {/* Only post cert fields when the user entered a replacement,
+                    so untouched edits keep the stored certificate. */}
+                {clientCertPem && (
+                  <input type="hidden" name="clientCertPem" value={clientCertPem} />
+                )}
+                {clientKeyPem && (
+                  <input type="hidden" name="clientKeyPem" value={clientKeyPem} />
+                )}
+                {hasClientCert && (
+                  <label className="flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={removeClientCert}
+                      onChange={(e) => setRemoveClientCert(e.target.checked)}
+                      className="size-3 accent-red-500"
+                    />
+                    Remove stored certificate
+                  </label>
+                )}
+                <input
+                  type="hidden"
+                  name="removeClientCert"
+                  value={removeClientCert ? "1" : ""}
+                />
+              </div>
             </div>
           )}
 
@@ -901,6 +1186,103 @@ export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
                     : [],
                 })}
               />
+            </div>
+          )}
+
+          {/* Protocol Config (gRPC / SMTP / FTP / ICMP / MAIL) */}
+          {isProtocolType && (
+            <div className="flex flex-col gap-5 border-l border-border pl-6 py-1 animate-in fade-in slide-in-from-left-4 duration-300">
+              <div className="flex flex-col">
+                <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider flex items-center gap-1.5">
+                  <ShieldCheck className="size-4 text-primary animate-pulse" />
+                  {monitorType === "GRPC" ? "gRPC Health Check" : monitorType === "SMTP" ? "SMTP Handshake" : monitorType === "FTP" ? "File Server Availability" : monitorType === "ICMP" ? "ICMP Echo" : "Mail Server Check"}
+                </label>
+                <p className="text-[9px] text-muted-foreground font-semibold uppercase mt-0.5 tracking-wider">
+                  {monitorType === "GRPC" && "Verifies grpc.health.v1.Health/Check returns SERVING"}
+                  {monitorType === "SMTP" && "EHLO handshake with optional AUTH verification"}
+                  {monitorType === "FTP" && "Banner + login readiness (SFTP verifies SSH banner)"}
+                  {monitorType === "ICMP" && "True ICMP echo on Node probes, TCP fallback on edge"}
+                  {monitorType === "MAIL" && "IMAP/POP3 greeting + capability/LOGIN verification"}
+                </p>
+              </div>
+
+              {monitorType === "GRPC" && (
+                <div className="flex flex-col gap-2">
+                  <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                    Service Name (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={grpcServiceName}
+                    onChange={(e) => setGrpcServiceName(e.target.value)}
+                    placeholder="e.g. my.service.v1 — blank checks server overall health"
+                    className="bg-accent/30 border border-border focus:border-primary/20 text-xs font-semibold rounded-lg p-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full font-mono"
+                  />
+                  <input
+                    type="hidden"
+                    name="expectation"
+                    value={JSON.stringify({ serviceName: grpcServiceName || undefined })}
+                  />
+                </div>
+              )}
+
+              {(monitorType === "SMTP" || monitorType === "FTP" || monitorType === "MAIL") && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Username (Optional)
+                    </label>
+                    <input
+                      type="text"
+                      value={protocolUsername}
+                      onChange={(e) => setProtocolUsername(e.target.value)}
+                      placeholder={monitorType === "FTP" ? "anonymous" : "user@example.com"}
+                      className="bg-accent/30 border border-border focus:border-primary/20 text-xs font-semibold rounded-lg p-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+                      Password (Optional)
+                    </label>
+                    <input
+                      type="password"
+                      value={protocolPassword}
+                      onChange={(e) => setProtocolPassword(e.target.value)}
+                      placeholder={hasProtocolCredentials ? "Stored — leave blank to keep" : "Leave blank to skip AUTH"}
+                      className="bg-accent/30 border border-border focus:border-primary/20 text-xs font-semibold rounded-lg p-3 text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full"
+                    />
+                  </div>
+                  {/* Secrets stay server-side: credentials are only posted when
+                      the user typed a username (password optional — blank keeps
+                      the stored one), so untouched edits never wipe them. */}
+                  {protocolUsername && (
+                    <input
+                      type="hidden"
+                      name="headers"
+                      value={JSON.stringify({
+                        username: protocolUsername,
+                        password: protocolPassword || undefined,
+                      })}
+                    />
+                  )}
+                  {hasProtocolCredentials && (
+                    <label className="col-span-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={removeProtocolCredentials}
+                        onChange={(e) => setRemoveProtocolCredentials(e.target.checked)}
+                        className="size-3 accent-red-500"
+                      />
+                      Remove stored credentials
+                    </label>
+                  )}
+                  <input
+                    type="hidden"
+                    name="removeProtocolCredentials"
+                    value={removeProtocolCredentials ? "1" : ""}
+                  />
+                </div>
+              )}
             </div>
           )}
 

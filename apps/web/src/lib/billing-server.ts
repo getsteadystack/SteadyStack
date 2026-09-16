@@ -253,6 +253,17 @@ export async function assertMonitorLimits(
     return { allowed: false, error: getFeatureError("browser_monitors") };
   }
 
+  if (
+    (params.type === "GRPC" ||
+      params.type === "SMTP" ||
+      params.type === "FTP" ||
+      params.type === "ICMP" ||
+      params.type === "MAIL") &&
+    !isFeatureEnabled(plan, "protocol_monitors")
+  ) {
+    return { allowed: false, error: getFeatureError("protocol_monitors") };
+  }
+
   if (params.type === "SEQUENCE" && !isFeatureEnabled(plan, "sequence_monitors")) {
     return { allowed: false, error: getFeatureError("sequence_monitors") };
   }

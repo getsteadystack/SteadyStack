@@ -9,6 +9,8 @@ export const env = createEnv({
     PROBE_HEARTBEAT_INTERVAL: z.coerce.number().int().positive().default(30),
     PROBE_REGION: z.string().default("private"),
     PROBE_CONCURRENCY: z.coerce.number().int().positive().default(5),
+    /** Platform encryption secret — required to decrypt encrypted monitor config (headers, mTLS certs). */
+    ENCRYPTION_SECRET: z.string().min(1).optional(),
   },
   runtimeEnv: process.env,
   emptyStringAsUndefined: true,
