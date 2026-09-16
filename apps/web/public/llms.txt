@@ -1,0 +1,73 @@
+# SteadyStack
+
+> Multi-region uptime monitoring that requires quorum consensus across 7 global regions before alerting. Free tier: 50 monitors, 3-minute checks, commercial use allowed. Open-source, self-hostable, with public status pages, SSL/DNS/heartbeat monitoring, and Terraform/CI/CD integrations.
+
+## Docs
+
+Product documentation: setup, architecture, alerting, and API reference.
+
+- [Introduction](https://steadystack.dev/docs/introduction): Edge-native synthetic surveillance and zero-false-positive uptime monitoring.
+- [Quickstart](https://steadystack.dev/docs/quickstart): Deploy your first synthetic check and notification channel in under 5 minutes.
+- [Monitors](https://steadystack.dev/docs/monitors): Comprehensive guide to HTTP, PING, PORT, SSL, DNS, and Heartbeat synthetic surveillance.
+- [Response Assertions & Payload Validation](https://steadystack.dev/docs/response-assertions): Define expectations on HTTP status codes, body text, JSON paths, and regex patterns to catch silent 200 OK failures.
+- [Quorum Consensus](https://steadystack.dev/docs/quorum-consensus): How 4-of-7 multi-region edge verification eliminates false positives.
+- [Dynamic Thresholding](https://steadystack.dev/docs/dynamic-thresholding): AI-driven latency anomaly learning and degradation detection.
+- [Network Architecture & Out-of-Band Sentinel](https://steadystack.dev/docs/network-architecture): How 7 sovereign edge clusters and independent Hetzner hardware eradicate global blind spots.
+- [Alert Rules](https://steadystack.dev/docs/alert-rules): Configure conditional incident routing, triggers, and threshold evaluations.
+- [Integrations](https://steadystack.dev/docs/integrations): Connect SteadyStack to PagerDuty, Opsgenie, Slack, Discord, Telegram, and Webhooks.
+- [Incident Runbooks & Postmortems](https://steadystack.dev/docs/incident-runbooks): Equip on-call engineers with instant runbook links and automated postmortem summaries.
+- [Hosted Status Pages](https://steadystack.dev/docs/status-pages): Build public and private cyberpunk-themed status pages with custom domains.
+- [Status Badges & Widgets](https://steadystack.dev/docs/status-badges): Embed dynamic real-time SVG status badges in your READMEs, dashboards, and websites.
+- [SLA & Audit Reports](https://steadystack.dev/docs/sla-reports): SLA availability mathematics, maintenance window exclusions, and SOC2 audit exports.
+- [Terraform / OpenTofu Provider](https://steadystack.dev/docs/terraform): Manage synthetic surveillance, alert routing rules, and status pages as code.
+- [GitHub Actions CI/CD Gates](https://steadystack.dev/docs/github-actions): Block broken deployments and automate synthetic smoke tests in GitHub Actions workflows.
+- [CLI & Docker Probes](https://steadystack.dev/docs/cli): Inspect live surveillance in the terminal and deploy custom on-premise Docker probe nodes.
+- [Self-Hosting & Docker Deployments](https://steadystack.dev/docs/self-hosting): Deploy SteadyStack on your own servers or run private VPC probes with Docker Compose.
+- [REST API Reference](https://steadystack.dev/docs/api-reference): Direct programmatic REST API endpoints for monitors, metrics, status pages, and webhooks.
+- [Webhook Signatures & Payloads](https://steadystack.dev/docs/webhooks): Verify HMAC-SHA256 signatures and process automated incident notification payloads.
+- [Prometheus & Grafana Observability](https://steadystack.dev/docs/prometheus-grafana): Scrape SteadyStack latency, availability, and uptime metrics into Prometheus, Datadog, or Grafana.
+
+## Comparisons
+
+Head-to-head comparisons with other monitoring tools.
+
+- [vs Uptime Kuma](https://steadystack.dev/vs/uptime-kuma)
+- [vs UptimeRobot](https://steadystack.dev/vs/uptimerobot)
+- [vs Better Stack](https://steadystack.dev/vs/better-stack)
+- [vs Checkly](https://steadystack.dev/vs/checkly)
+- [Alternatives: Freshping](https://steadystack.dev/alternatives/freshping)
+
+## Features
+
+Core capabilities, each with its own detailed page.
+
+- [Automated Dispatch](https://steadystack.dev/features/automated-dispatch)
+- [Latency Grid](https://steadystack.dev/features/latency-grid)
+- [Sleep Mode](https://steadystack.dev/features/sleep-mode)
+- [Global Verification (quorum consensus)](https://steadystack.dev/features/global-verification)
+
+## Tools
+
+Free, no-signup developer utilities.
+
+- [SSL Checker](https://steadystack.dev/tools/ssl-checker)
+- [DNS Sentinel](https://steadystack.dev/tools/dns-sentinel)
+- [Cron Sentinel](https://steadystack.dev/tools/cron-sentinel)
+- [HTTP Headers Analyzer](https://steadystack.dev/tools/http-headers)
+- [Global Latency Checker](https://steadystack.dev/tools/global-latency)
+- [Port Checker](https://steadystack.dev/tools/port-checker)
+- [Payload Regex Tester](https://steadystack.dev/tools/payload-regex)
+- [IP Subnet Calculator](https://steadystack.dev/tools/ip-subnet)
+- [Visual Diff](https://steadystack.dev/tools/visual-diff)
+
+## Benchmarks
+
+- [False-Positive Benchmarks vs UptimeRobot](https://steadystack.dev/benchmarks/false-positives)
+
+## Optional
+
+- [Full documentation (complete content of all doc pages)](https://steadystack.dev/llms-full.txt)
+- [Blog](https://steadystack.dev/blog)
+- [Is X Down — service status lookup for 400+ services](https://steadystack.dev/is-down)
+- [Public Status Pages directory](https://steadystack.dev/status-page)
+- [GitHub repository](https://github.com/getsteadystack/SteadyStack)

@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import prisma from "@steadystack/db";
 import { getAllPosts } from "@/lib/blog";
 import { getAllServices } from "@/content/is-down-services";
+import { getAllDocs } from "@/lib/docs";
 
 export const dynamic = "force-dynamic";
 
@@ -56,6 +57,23 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             ? 0.7
             : 0.5,
   }));
+
+  // Documentation (prime AEO surface — frequently cited by answer engines)
+  sitemapEntries.push({
+    url: `${baseUrl}/docs`,
+    lastModified: new Date(),
+    changeFrequency: "weekly",
+    priority: 0.8,
+  });
+
+  for (const doc of getAllDocs()) {
+    sitemapEntries.push({
+      url: `${baseUrl}/docs/${doc.slug}`,
+      lastModified: doc.meta.lastUpdated ? new Date(doc.meta.lastUpdated) : new Date(),
+      changeFrequency: "monthly",
+      priority: 0.7,
+    });
+  }
 
   // Blog posts (statically generated from MDX)
   for (const post of getAllPosts()) {

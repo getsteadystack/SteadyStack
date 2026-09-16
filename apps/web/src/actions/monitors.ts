@@ -812,14 +812,6 @@ export async function getMonitors() {
       },
     });
 
-    const now = new Date();
-    const overdueMonitors = monitors.filter(
-      (m) => m.status !== "PAUSED" && (!m.nextCheck || m.nextCheck <= now),
-    );
-    if (overdueMonitors.length > 0) {
-      Promise.allSettled(overdueMonitors.map((m) => checkMonitor(m.id))).catch(() => {});
-    }
-
     return monitors;
   } catch (error) {
     console.error("Failed to fetch monitors", error);
