@@ -228,7 +228,7 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
             <Settings className="size-12 text-zinc-700 mb-4" />
             <h3 className="text-lg font-medium text-foreground mb-2">Monitor Settings</h3>
             <p className="text-muted-foreground mb-6 text-center max-w-sm">
-              Configure monitor frequency, timeouts, alert thresholds, and notifications in the
+              Configure monitor frequency, alert thresholds, and notifications in the
               dedicated settings page.
             </p>
             <Link

@@ -1,6 +1,6 @@
 import { DurableObject } from "cloudflare:workers";
 import type { ProbeCheckResult, ProbeHealthState } from "@steadystack/types";
-import { isPrivateOrInternalUrlAsync, decryptSecret } from "@steadystack/core";
+import { isPrivateOrInternalUrlAsync, decryptSecret, DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 import {
   getRegionByCode,
   type DOLocationHint,
@@ -117,14 +117,13 @@ export class RegionalProbe extends DurableObject<Env> {
   async executeSingleCheck(monitor: {
     id: string;
     url: string;
-    timeout?: number;
     method?: string;
     headers?: string | null;
     body?: string | null;
   }): Promise<ProbeCheckResult> {
     const state = await this.initializeState();
     const start = performance.now();
-    const timeoutSeconds = monitor.timeout || 10;
+    const timeoutSeconds = DEFAULT_CHECK_TIMEOUT_SECONDS;
 
     const performRequest = async (
       _isRetry = false,
@@ -338,7 +337,6 @@ export class RegionalProbe extends DurableObject<Env> {
               select: {
                 id: true,
                 url: true,
-                timeout: true,
                 method: true,
                 headers: true,
                 body: true,

@@ -69,7 +69,6 @@ export async function GET(req: NextRequest) {
             host: target.host,
             port: target.port,
             interval: m.interval,
-            timeout: m.timeout,
             method: m.method,
             headers: m.headers,
             body: m.body,

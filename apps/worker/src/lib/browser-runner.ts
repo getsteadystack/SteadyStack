@@ -1,4 +1,5 @@
 import puppeteer from "@cloudflare/puppeteer";
+import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 
 export interface BrowserStep {
   action: "goto" | "click" | "fill" | "wait" | "assert_text";
@@ -97,7 +98,7 @@ export async function performBrowserCheck(
 ): Promise<{ status: "UP" | "DOWN"; latency: number; errorReason?: string }> {
   const steps: BrowserStep[] = JSON.parse(monitor.script || "[]");
   const firstGoto = steps.find((s) => s.action === "goto" && s.value)?.value || monitor.url;
-  const timeoutLimit = Math.min((monitor.timeout || 15) * 1000, 25000);
+  const timeoutLimit = Math.min(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000, 25000);
 
   // If targeting a local machine address (localhost / 127.0.0.1), Cloudflare's remote browser in the cloud
   // cannot reach non-public loopbacks. Use local synthetic HTTP verification.

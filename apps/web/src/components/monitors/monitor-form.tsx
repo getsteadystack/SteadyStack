@@ -41,10 +41,8 @@ interface MonitorFormProps {
     url: string;
     type: "HTTP" | "PING" | "PORT" | "BROWSER" | "SEQUENCE" | "SSL" | "DNS" | "HEARTBEAT";
     interval: number;
-    timeout: number;
     checkRegions?: string | null;
     alertThreshold?: number;
-    dynamicThresholding?: boolean;
     runbookUrl?: string | null;
     method?: string;
     headers?: string | null;
@@ -1471,79 +1469,31 @@ export function MonitorForm({ monitor, usageSummary }: MonitorFormProps) {
             <input type="hidden" name="checkRegions" value="[]" />
           )}
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                Check Interval
-              </label>
-              <div className="relative group/select">
-                <Clock className="absolute top-3.5 left-3 size-4 text-muted-foreground/60 pointer-events-none group-focus-within/select:text-foreground transition-colors" />
-                <select
-                  name="interval"
-                  defaultValue={monitor?.interval}
-                  className="bg-accent/30 border border-border focus:border-primary/20 text-xs font-semibold rounded-lg p-3 pl-10 pr-10 text-foreground focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full appearance-none cursor-pointer"
-                >
-                  <option value="30" className="bg-popover text-foreground">
-                    30 Seconds
-                  </option>
-                  <option value="60" className="bg-popover text-foreground">
-                    1 Minute
-                  </option>
-                  <option value="300" className="bg-popover text-foreground">
-                    5 Minutes
-                  </option>
-                  <option value="600" className="bg-popover text-foreground">
-                    10 Minutes
-                  </option>
-                </select>
-                <ChevronDown className="absolute top-3.5 right-3 size-3.5 text-muted-foreground/60 pointer-events-none group-focus-within/select:text-foreground transition-colors" />
-              </div>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
-                Request Timeout
-              </label>
-              <div className="relative group/select">
-                <Clock className="absolute top-3.5 left-3 size-4 text-muted-foreground/60 pointer-events-none group-focus-within/select:text-foreground transition-colors" />
-                <select
-                  name="timeout"
-                  defaultValue={monitor?.timeout}
-                  className="bg-accent/30 border border-border focus:border-primary/20 text-xs font-semibold rounded-lg p-3 pl-10 pr-10 text-foreground focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full appearance-none cursor-pointer"
-                >
-                  <option value="5" className="bg-popover text-foreground">
-                    5 Seconds
-                  </option>
-                  <option value="10" className="bg-popover text-foreground">
-                    10 Seconds
-                  </option>
-                  <option value="30" className="bg-popover text-foreground">
-                    30 Seconds
-                  </option>
-                </select>
-                <ChevronDown className="absolute top-3.5 right-3 size-3.5 text-muted-foreground/60 pointer-events-none group-focus-within/select:text-foreground transition-colors" />
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 border border-border bg-accent/30 p-4 rounded-xl mt-1">
-            <input
-              type="checkbox"
-              id="dynamicThresholding"
-              name="dynamicThresholding"
-              defaultChecked={monitor?.dynamicThresholding}
-              className="accent-primary size-4 cursor-pointer rounded border-border"
-            />
-            <div className="flex flex-col">
-              <label
-                htmlFor="dynamicThresholding"
-                className="text-[10px] font-bold text-foreground uppercase tracking-wider cursor-pointer"
+          <div className="flex flex-col gap-2">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+              Check Interval
+            </label>
+            <div className="relative group/select">
+              <Clock className="absolute top-3.5 left-3 size-4 text-muted-foreground/60 pointer-events-none group-focus-within/select:text-foreground transition-colors" />
+              <select
+                name="interval"
+                defaultValue={monitor?.interval}
+                className="bg-accent/30 border border-border focus:border-primary/20 text-xs font-semibold rounded-lg p-3 pl-10 pr-10 text-foreground focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full appearance-none cursor-pointer"
               >
-                Dynamic Timeout
-              </label>
-              <p className="text-[9px] text-muted-foreground font-semibold uppercase mt-0.5 tracking-wider">
-                Auto-scale timeout to p95 historical latency
-              </p>
+                <option value="30" className="bg-popover text-foreground">
+                  30 Seconds
+                </option>
+                <option value="60" className="bg-popover text-foreground">
+                  1 Minute
+                </option>
+                <option value="300" className="bg-popover text-foreground">
+                  5 Minutes
+                </option>
+                <option value="600" className="bg-popover text-foreground">
+                  10 Minutes
+                </option>
+              </select>
+              <ChevronDown className="absolute top-3.5 right-3 size-3.5 text-muted-foreground/60 pointer-events-none group-focus-within/select:text-foreground transition-colors" />
             </div>
           </div>
 

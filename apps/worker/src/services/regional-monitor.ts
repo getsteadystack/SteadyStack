@@ -5,7 +5,7 @@
  * Evaluates results using the 4-of-7 Quorum Consensus Engine.
  */
 
-import { isPrivateOrInternalUrlAsync, decryptSecret } from "@steadystack/core";
+import { isPrivateOrInternalUrlAsync, decryptSecret, DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 import {
   CLOUDFLARE_PROBE_REGIONS,
   FREE_TIER_PROBE_REGIONS,
@@ -145,7 +145,7 @@ export async function checkSingleRegion(
         ...userHeaders,
       },
       ...(hasBody && monitor.body ? { body: monitor.body } : {}),
-      signal: AbortSignal.timeout(((monitor.timeout || 10) as number) * 1000),
+      signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
       redirect: "follow",
     });
 
@@ -171,7 +171,7 @@ export async function checkSingleRegion(
 
     if (error.name === "TimeoutError" || error.message?.includes("timeout")) {
       errorClass = "TIMEOUT";
-      const timeoutSeconds = monitor.timeout || 10;
+      const timeoutSeconds = DEFAULT_CHECK_TIMEOUT_SECONDS;
       errorReason = `Timed out after ${timeoutSeconds}s`;
       latency = timeoutSeconds * 1000;
     } else if (error.message?.includes("fetch")) {

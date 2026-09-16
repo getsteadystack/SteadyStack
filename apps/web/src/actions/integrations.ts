@@ -78,12 +78,10 @@ export async function importThirdPartyMonitors(projects: IntegrationProject[]) {
           url: finalUrl,
           type: project.type,
           interval: defaultInterval,
-          timeout: 10,
           userId,
           organizationId: active?.id,
           checkRegions: defaultRegions,
           alertThreshold: 1,
-          dynamicThresholding: false,
           method: "GET",
         },
       });

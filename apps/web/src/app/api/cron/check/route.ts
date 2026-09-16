@@ -4,6 +4,7 @@ import { isPrivateOrInternalUrlAsync, decryptSecret } from "@steadystack/core";
 import { STEADYSTACK_CANONICAL_USER_AGENT } from "@steadystack/shared";
 import { sendMonitorAlert } from "@steadystack/email";
 import net from "net";
+import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -91,7 +92,7 @@ async function runDueChecks() {
 
           await new Promise<void>((resolve, reject) => {
             const socket = net.connect({ host: hostname, port: port || 80 });
-            socket.setTimeout((monitor.timeout || 10) * 1000);
+            socket.setTimeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000);
             socket.on("connect", () => {
               currentStatus = "UP";
               socket.end();
@@ -143,7 +144,7 @@ async function runDueChecks() {
                 ...userHeaders,
               },
               body: ["POST", "PUT", "PATCH"].includes(method) ? monitor.body : undefined,
-              signal: AbortSignal.timeout((monitor.timeout || 10) * 1000),
+              signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
             });
 
             const body = await response.text();

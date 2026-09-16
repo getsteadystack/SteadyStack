@@ -1,4 +1,4 @@
-import { checkHttpUniversal, checkPortUniversal } from "@steadystack/core";
+import { checkHttpUniversal, checkPortUniversal, DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 import { env } from "@steadystack/env/probe";
 import type { ProbeJob, CheckResult } from "@steadystack/types";
 
@@ -78,7 +78,7 @@ async function runCheck(job: ProbeJob): Promise<CheckResult> {
         method: job.method,
         headers: job.headers,
         body: job.body,
-        timeoutSeconds: job.timeout,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
       });
 
       return {
@@ -93,7 +93,7 @@ async function runCheck(job: ProbeJob): Promise<CheckResult> {
 
     if (job.type === "PING" || job.url.startsWith("ping://")) {
       const hostname = job.url.replace("ping://", "");
-      const checkResult = await checkPortUniversal(hostname, 80, (job.timeout || 10) * 1000);
+      const checkResult = await checkPortUniversal(hostname, 80, DEFAULT_CHECK_TIMEOUT_SECONDS * 1000);
 
       return {
         monitorId: job.monitorId,
@@ -111,7 +111,7 @@ async function runCheck(job: ProbeJob): Promise<CheckResult> {
       const checkResult = await checkPortUniversal(
         hostname ?? "",
         parseInt(portStr ?? "80", 10),
-        (job.timeout || 10) * 1000,
+        DEFAULT_CHECK_TIMEOUT_SECONDS * 1000,
       );
 
       return {

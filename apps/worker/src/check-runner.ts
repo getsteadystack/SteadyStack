@@ -1,6 +1,10 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { MonitorStatus } from "@steadystack/types";
-import { checkHttpUniversal, checkPortUniversal } from "@steadystack/core";
+import {
+  checkHttpUniversal,
+  checkPortUniversal,
+  DEFAULT_CHECK_TIMEOUT_SECONDS,
+} from "@steadystack/core";
 import { CheckErrorReason, MonitorStatus as Status, MonitorType } from "./constants";
 import type { Env } from "./env";
 
@@ -26,7 +30,7 @@ export interface CheckOutcome {
  *
  * The function checks the status of the URL by making an HTTP GET request, establishing a TCP connection, or sending a ping based on the URL protocol. It measures the latency and captures any error reasons if the check fails. The function handles various protocols and classifies errors into specific categories for better diagnostics. If the monitor is explicitly marked as "MAINTENANCE", the check is skipped.
  *
- * @param monitor - An object containing the URL to be monitored and optional timeout settings.
+ * @param monitor - An object containing the URL to be monitored. A fixed internal timeout is applied.
  * @param env - Optional worker environment bindings (used by browser/sequence checks).
  * @param prisma - Optional database client (used by heartbeat checks).
  * @returns An object containing the status ("UP", "DOWN", or "MAINTENANCE"), the latency in milliseconds, and an optional error reason.
@@ -224,7 +228,7 @@ export async function performCheck(monitor: any, env?: Env, prisma?: any): Promi
   if (monitor.type === MonitorType.WEBSOCKET) {
     const { checkWebSocket } = await import("./services/websocket-monitor");
     try {
-      const listenSeconds = monitor.timeout || 5;
+      const listenSeconds = DEFAULT_CHECK_TIMEOUT_SECONDS;
       const wsAssertion = monitor.expectation
         ? (JSON.parse(monitor.expectation) as any)
         : undefined;
@@ -379,7 +383,7 @@ export async function performInternalRequest(
         method: monitor.method,
         headers: headersObj,
         body: monitor.body,
-        timeoutSeconds: monitor.timeout,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
       });
 
       currentStatus = checkResult.status;
@@ -409,7 +413,7 @@ export async function performInternalRequest(
       const checkResult = await checkPortUniversal(
         hostname,
         parseInt(port, 10),
-        (monitor.timeout || 10) * 1000,
+        DEFAULT_CHECK_TIMEOUT_SECONDS * 1000,
       );
 
       if (checkResult.isOpen) {
@@ -420,7 +424,11 @@ export async function performInternalRequest(
       }
     } else if (urlStr.startsWith("ping://")) {
       const hostname = urlStr.replace("ping://", "");
-      const checkResult = await checkPortUniversal(hostname, 80, (monitor.timeout || 10) * 1000);
+      const checkResult = await checkPortUniversal(
+        hostname,
+        80,
+        DEFAULT_CHECK_TIMEOUT_SECONDS * 1000,
+      );
 
       if (checkResult.isOpen) {
         currentStatus = Status.UP;

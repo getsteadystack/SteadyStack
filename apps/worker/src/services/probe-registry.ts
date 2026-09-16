@@ -1,3 +1,5 @@
+import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
+
 export interface ProbeRegistration {
   id: string;
   name: string;
@@ -151,7 +153,7 @@ export async function pollJobs(
         monitorId: m.id,
         url: m.url,
         type: m.type,
-        timeout: m.timeout || 10,
+        timeout: DEFAULT_CHECK_TIMEOUT_SECONDS,
         method: m.method || "GET",
         headers: m.headers || undefined,
         body: m.body || undefined,

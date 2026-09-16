@@ -15,7 +15,6 @@ interface Monitor {
   type: string;
   status: string;
   interval: number;
-  timeout: number;
   lastCheck: string | null;
   method?: string;
   alertThreshold?: number;
@@ -65,7 +64,6 @@ function normalizeMonitor(def: any): any {
     url,
     type,
     interval: Number(def.interval) || 60,
-    timeout: Number(def.timeout) || 10,
     method: (def.method || "GET").toUpperCase(),
     alertThreshold: Number(def.alertThreshold) || 1,
   };
@@ -239,7 +237,7 @@ monitorsCmd
       console.log(chalk.dim(`  ID       : ${monitor.id}`));
       console.log(chalk.dim(`  URL      : ${monitor.url}`));
       console.log(chalk.dim(`  Type     : ${monitor.type}`));
-      console.log(chalk.dim(`  Interval : ${monitor.interval}s  Timeout: ${monitor.timeout}s`));
+      console.log(chalk.dim(`  Interval : ${monitor.interval}s`));
       console.log(
         chalk.dim(
           `  Last check: ${monitor.lastCheck ? new Date(monitor.lastCheck).toLocaleString() : "never"}`,
@@ -419,7 +417,6 @@ monitorsCmd
           url: m.url,
           type: m.type,
           interval: m.interval,
-          timeout: m.timeout,
           method: m.method || "GET",
           alertThreshold: m.alertThreshold,
           ...(m.checkRegions ? { checkRegions: JSON.parse(m.checkRegions) } : {}),
@@ -493,14 +490,6 @@ monitorsCmd
         validate: (input: string) =>
           /^\d+$/.test(input) && Number(input) > 0 ? true : "Must be a positive integer",
       },
-      {
-        type: "input",
-        name: "timeout",
-        message: "Timeout (seconds):",
-        default: "10",
-        validate: (input: string) =>
-          /^\d+$/.test(input) && Number(input) > 0 ? true : "Must be a positive integer",
-      },
     ]);
 
     const spinner = ora("Creating monitor…").start();
@@ -510,7 +499,6 @@ monitorsCmd
         url: answers.url,
         type: answers.type,
         interval: Number(answers.interval),
-        timeout: Number(answers.timeout),
       };
       await api.post("/api/cli/monitors", payload);
       spinner.succeed("Monitor created");

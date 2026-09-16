@@ -171,7 +171,6 @@ export async function importUptimeRobotMonitors(
         url: targetUrl,
         type: item.type as any,
         interval: item.interval || 60,
-        timeout: 10,
         status: "UP" as const,
         checkRegions: JSON.stringify(["us-east", "eu-central", "ap-tokyo"]),
         userId: session.user.id,

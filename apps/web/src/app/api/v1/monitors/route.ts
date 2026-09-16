@@ -81,7 +81,6 @@ export async function POST(req: NextRequest) {
     url,
     type = "HTTP",
     interval = 60,
-    timeout = 10,
     method = "GET",
     headers: customHeaders,
     body: requestBody,
@@ -89,7 +88,6 @@ export async function POST(req: NextRequest) {
     tags = [],
     checkRegions,
     alertThreshold = 1,
-    dynamicThresholding = false,
     runbookUrl,
   } = body;
 
@@ -106,7 +104,6 @@ export async function POST(req: NextRequest) {
     type,
     interval,
     checkRegionsCount: Array.isArray(checkRegions) ? checkRegions.length : 1,
-    dynamicThresholding,
   });
 
   if (!limitCheck.allowed) {
@@ -124,7 +121,6 @@ export async function POST(req: NextRequest) {
       url: url.trim(),
       type: type as any,
       interval: Number(interval),
-      timeout: Number(timeout),
       method: method.toUpperCase(),
       headers: customHeaders ? await encryptSecret(JSON.stringify(customHeaders)) : null,
       body: requestBody || null,
@@ -132,7 +128,6 @@ export async function POST(req: NextRequest) {
       tags: Array.isArray(tags) ? tags : [],
       checkRegions: checkRegions ? JSON.stringify(checkRegions) : null,
       alertThreshold: Number(alertThreshold),
-      dynamicThresholding: Boolean(dynamicThresholding),
       runbookUrl: runbookUrl ? String(runbookUrl).trim() : null,
       alertRules: {
         create: {

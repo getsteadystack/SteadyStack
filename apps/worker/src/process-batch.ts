@@ -19,6 +19,7 @@ import {
   shouldSendAlert,
 } from "./check-runner";
 import { queueNotification } from "./lib/send-notification";
+import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 import { evaluateQuorum } from "./services/quorum-engine";
 import type { ProbeCheckResult } from "@steadystack/types";
 import type { Env } from "./env";
@@ -130,41 +131,14 @@ export async function processBatch(
   for (let i = 0; i < monitors.length; i++) {
     const monitor = monitors[i];
 
-    // --- DYNAMIC THRESHOLDING CALCULATION ---
-    let effectiveTimeout = monitor.timeout || 10;
+    // --- ANOMALY BASELINE (recent latencies feed the anomaly detector) ---
     let capturedLatencies: number[] | undefined;
-
     if (monitor.dynamicThresholding) {
-      try {
-        const latencies = recentLatenciesMap.get(monitor.id) || [];
-
-        if (latencies.length >= 10) {
-          capturedLatencies = latencies;
-          // Sort ascending to find p95
-          const sorted = [...latencies].sort((a: number, b: number) => a - b);
-          const p95Index = Math.floor(sorted.length * 0.95);
-          const p95Latency = sorted[p95Index];
-          if (p95Latency === undefined) continue;
-
-          // Calc dynamic (p95 + 30% buffer, convert ms to seconds)
-          let calcTimeout = ((p95Latency ?? 0) * 1.3) / 1000;
-
-          // Enforce bounds min 2, max 30
-          if (calcTimeout < 2) calcTimeout = 2;
-          if (calcTimeout > 30) calcTimeout = 30;
-
-          effectiveTimeout = calcTimeout;
-          console.log(
-            `[DynamicThreshold] ${monitor.name}: p95=${p95Latency}ms -> New Timeout=${effectiveTimeout.toFixed(2)}s`,
-          );
-        }
-      } catch (calcErr) {
-        console.error(`[DynamicThreshold] Failed to calculate for ${monitor.name}:`, calcErr);
+      const latencies = recentLatenciesMap.get(monitor.id) || [];
+      if (latencies.length >= 10) {
+        capturedLatencies = latencies;
       }
     }
-
-    // Set the resolved timeout on the monitor object for the checks
-    monitor.timeout = effectiveTimeout;
 
     // --- PROCESSING LOGIC START ---
     try {

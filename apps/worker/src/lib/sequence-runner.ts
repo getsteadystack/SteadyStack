@@ -1,3 +1,5 @@
+import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
+
 export interface SequenceStep {
   name: string;
   method: string;
@@ -61,7 +63,7 @@ export async function performSequenceCheck(
 
   const variables: Record<string, string> = {};
   let totalLatency = 0;
-  const timeoutMs = (monitor.timeout || 15) * 1000;
+  const timeoutMs = DEFAULT_CHECK_TIMEOUT_SECONDS * 1000;
   const controller = new AbortController();
   const globalTimeout = setTimeout(() => controller.abort(), timeoutMs);
 

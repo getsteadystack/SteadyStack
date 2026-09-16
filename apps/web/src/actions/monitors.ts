@@ -16,6 +16,7 @@ import {
   assertManualCheckRateLimit,
   checkAndNotifyUsageLimits,
 } from "@/lib/billing-server";
+import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 import { generateDeepInsightAnalysis, getAIProviderClient } from "@/lib/ai";
 import { getActiveWorkspace } from "@/actions/team";
 
@@ -56,7 +57,6 @@ const baseSchema = z.object({
     "HEARTBEAT",
   ]),
   interval: z.coerce.number().min(10),
-  timeout: z.coerce.number().min(1),
   url: z.string().optional(), // For HTTP/Ping
   // For Port:
   hostname: z.string().optional(),
@@ -252,11 +252,9 @@ export async function createMonitor(prevState: any, formData: FormData) {
           | "DATABASE"
           | "HEARTBEAT") || "HTTP",
       interval: Number(formData.get("interval") || 60),
-      timeout: Number(formData.get("timeout") || 10),
       port: formData.get("port") ? Number(formData.get("port")) : undefined,
       checkRegions: (formData.get("checkRegions") as string) || undefined,
       alertThreshold: formData.get("alertThreshold") ? Number(formData.get("alertThreshold")) : 1,
-      dynamicThresholding: formData.get("dynamicThresholding") === "on",
       runbookUrl: (formData.get("runbookUrl") as string) || undefined,
       method: (formData.get("method") as string) || "GET",
       headers: (formData.get("headers") as string) || undefined,
@@ -295,7 +293,6 @@ export async function createMonitor(prevState: any, formData: FormData) {
       type: data.type,
       interval: data.interval,
       checkRegionsCount,
-      dynamicThresholding: data.dynamicThresholding,
       isNew: true,
     });
 
@@ -328,13 +325,11 @@ export async function createMonitor(prevState: any, formData: FormData) {
         url: finalUrl,
         type: data.type as any,
         interval: data.interval,
-        timeout: data.timeout,
         nextCheck: new Date(),
         userId: session.user.id,
         organizationId: active?.id || null,
         checkRegions: data.checkRegions,
         alertThreshold: data.alertThreshold,
-        dynamicThresholding: data.dynamicThresholding,
         runbookUrl: data.runbookUrl,
         method: data.method,
         headers: data.headers ? await encryptSecret(data.headers) : null,
@@ -501,11 +496,9 @@ export async function updateMonitor(id: string, prevState: any, formData: FormDa
         | "DATABASE"
         | "HEARTBEAT") || "HTTP",
     interval: Number(formData.get("interval") || 60),
-    timeout: Number(formData.get("timeout") || 10),
     port: formData.get("port") ? Number(formData.get("port")) : undefined,
     checkRegions: (formData.get("checkRegions") as string) || undefined,
     alertThreshold: formData.get("alertThreshold") ? Number(formData.get("alertThreshold")) : 1,
-    dynamicThresholding: formData.get("dynamicThresholding") === "on",
     runbookUrl: (formData.get("runbookUrl") as string) || undefined,
     method: (formData.get("method") as string) || "GET",
     headers: (formData.get("headers") as string) || undefined,
@@ -543,7 +536,6 @@ export async function updateMonitor(id: string, prevState: any, formData: FormDa
     type: data.type,
     interval: data.interval,
     checkRegionsCount,
-    dynamicThresholding: data.dynamicThresholding,
     isNew: false,
   });
 
@@ -584,11 +576,9 @@ export async function updateMonitor(id: string, prevState: any, formData: FormDa
         url: finalUrl,
         type: data.type as any,
         interval: data.interval,
-        timeout: data.timeout,
         nextCheck: new Date(),
         checkRegions: data.checkRegions,
         alertThreshold: data.alertThreshold,
-        dynamicThresholding: data.dynamicThresholding,
         runbookUrl: data.runbookUrl,
         method: data.method,
         headers: data.headers,
@@ -795,7 +785,7 @@ export async function checkMonitor(
           ...(cookieHeader ? { Cookie: cookieHeader } : {}),
         },
         body: JSON.stringify({ monitor }),
-        signal: AbortSignal.timeout((monitor.timeout || 15) * 1000),
+        signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
       });
 
       latency = Date.now() - start;
@@ -831,7 +821,7 @@ export async function checkMonitor(
             port: port,
           });
 
-          socket.setTimeout((monitor.timeout || 10) * 1000);
+          socket.setTimeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000);
 
           socket.on("connect", () => {
             currentStatus = "UP";
@@ -897,7 +887,7 @@ export async function checkMonitor(
               ...userHeaders,
             },
             body: ["POST", "PUT", "PATCH"].includes(method) ? monitor.body : undefined,
-            signal: AbortSignal.timeout((monitor.timeout || 10) * 1000),
+            signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
           });
 
           const body = await response.text();

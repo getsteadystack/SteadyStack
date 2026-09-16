@@ -228,7 +228,6 @@ export async function assertMonitorLimits(
     type?: string;
     interval?: number;
     checkRegionsCount?: number;
-    dynamicThresholding?: boolean;
     isNew?: boolean;
   },
 ): Promise<{ allowed: boolean; error?: string }> {
@@ -267,10 +266,6 @@ export async function assertMonitorLimits(
 
   if ((params.checkRegionsCount ?? 0) > 1 && !isFeatureEnabled(plan, "multi_region")) {
     return { allowed: false, error: getFeatureError("multi_region") };
-  }
-
-  if (params.dynamicThresholding && !isFeatureEnabled(plan, "dynamic_thresholding")) {
-    return { allowed: false, error: getFeatureError("dynamic_thresholding") };
   }
 
   return { allowed: true };

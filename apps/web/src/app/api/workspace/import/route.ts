@@ -12,7 +12,6 @@ interface ParsedMonitor {
   url: string;
   type: MonitorType;
   interval: number;
-  timeout: number;
   method: string;
   headers?: string | null;
   body?: string | null;
@@ -36,7 +35,6 @@ function parseUptimeKumaFormat(data: any): ParsedMonitor[] {
     let url = m.url || "";
     const method = (m.method || "GET").toUpperCase();
     const interval = Math.max(30, Number(m.interval) || 60);
-    const timeout = Math.min(60, Math.max(2, Number(m.timeout) || 10));
     const alertThreshold = Math.max(1, Number(m.maxretries) || 1);
 
     switch (rawType) {
@@ -137,7 +135,6 @@ function parseUptimeKumaFormat(data: any): ParsedMonitor[] {
       url: url || "https://example.com",
       type,
       interval,
-      timeout,
       method,
       headers: customHeaders,
       body: m.body || null,
@@ -156,7 +153,6 @@ function parseSteadyStackFormat(data: any): ParsedMonitor[] {
       url: m.url || (m.host ? `${m.host}:${m.port || 80}` : "https://example.com"),
       type: (m.type as MonitorType) || "HTTP",
       interval: Math.max(30, Number(m.interval) || 60),
-      timeout: Math.min(60, Math.max(2, Number(m.timeout) || 10)),
       method: (m.method || "GET").toUpperCase(),
       headers:
         typeof m.headers === "string" ? m.headers : m.headers ? JSON.stringify(m.headers) : null,
@@ -298,7 +294,6 @@ export async function POST(req: NextRequest) {
             url: m.url,
             type: m.type,
             interval: m.interval,
-            timeout: m.timeout,
             method: m.method,
             headers: encryptedHeaders,
             body: m.body,
@@ -320,7 +315,6 @@ export async function POST(req: NextRequest) {
             url: m.url,
             type: m.type,
             interval: m.interval,
-            timeout: m.timeout,
             method: m.method,
             headers: encryptedHeaders,
             body: m.body,

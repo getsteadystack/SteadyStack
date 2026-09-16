@@ -1,6 +1,13 @@
 import type { MonitorStatus } from "@steadystack/types";
 
 /**
+ * Fixed internal timeout (in seconds) applied to all uptime checks.
+ * The per-monitor timeout setting has been removed; checks can never hang
+ * longer than this.
+ */
+export const DEFAULT_CHECK_TIMEOUT_SECONDS = 10;
+
+/**
  * Validates a target URL string to prevent Server-Side Request Forgery (SSRF)
  * against private IP ranges, local loopbacks, link-local addresses, and cloud metadata endpoints.
  */
@@ -542,7 +549,7 @@ export async function checkHttpUniversal(
 }> {
   const start = Date.now();
   const method = config?.method || "GET";
-  const timeoutMs = (config.timeoutSeconds || 10) * 1000;
+  const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
   const userHeaders: Record<string, string> = {};
 
   if (config.headers) {
