@@ -1,0 +1,226 @@
+---
+title: "Monitoring as Code"
+description: "Define monitors in steadystack.yaml, review diffs, and apply them idempotently with the pulse CLI — GitOps for your uptime checks."
+section: "IaC & Developer Tools"
+order: 10.5
+badge: "GitOps"
+lastUpdated: "2026-09-16"
+---
+
+Monitoring as Code (MaC) means your monitor definitions live in a Git repo,
+go through pull requests, and are applied to SteadyStack declaratively — the
+same workflow as your infrastructure. The CLI is the engine:
+
+- **`pulse monitors apply`** — create/update from YAML, idempotent by name
+- **`pulse monitors diff`** — preview drift between YAML and live state
+- **`pulse monitors import`** — snapshot live monitors back to YAML
+
+For full command syntax see the [CLI reference](/docs/cli-reference); for
+Terraform-based provisioning, see [Terraform / OpenTofu](/docs/terraform).
+
+## Quick start
+
+```bash
+pulse auth login --key pg_live_xxxxxxxxxxxxxxxx
+
+cat > steadystack.yaml <<'EOF'
+monitors:
+  - name: marketing-site
+    url: https://acme.com
+    type: HTTP
+    interval: 60
+
+  - name: checkout-api
+    url: https://api.acme.com/health
+    interval: 30
+    expectation:
+      statusCode: [200, 204]
+      keyword: '"status":"ok"'
+    tags: [production, payments]
+EOF
+
+pulse monitors apply -f steadystack.yaml
+```
+
+## File format and layout
+
+Top-level keys: `monitors` (list of monitor definitions). A bare YAML *array*
+of monitors, or even a single monitor object with a `name`, is also accepted.
+
+A file or **directory** can be passed. When given a directory, every `*.yml`
+and `*.yaml` file inside is merged — organize freely:
+
+```text
+monitoring/
+├── prod.yaml
+├── staging.yaml
+└── internal.yaml
+```
+
+```bash
+pulse monitors apply -f monitoring/
+pulse monitors diff -f monitoring/
+```
+
+When no `-f` is given, the CLI looks for `steadystack.yaml` then
+`steadystack.yml` in the current directory.
+
+## Monitor definition schema
+
+| Field | Type | Default | Description |
+| :---- | :--- | :------ | :---------- |
+| `name` | string | — (required) | **Identity key.** Apply matches on lowercase name: same name = update, new name = create |
+| `url` | string | — (required) | Target. Shorthand forms allowed per type (below) |
+| `type` | string | `HTTP` | Monitor type (case-insensitive; `TCP` normalizes to `PORT`) |
+| `interval` | int (seconds) | `60` | Check cadence |
+| `method` | string | `GET` | HTTP method (uppercased) |
+| `headers` | object | unset | Request headers (sent as JSON; encrypted server-side) |
+| `body` | string | unset | Request payload (POST/PUT/PATCH) |
+| `expectation` | object | unset | Response assertions — see [Response Assertions](/docs/response-assertions) |
+| `checkRegions` | list[string] | unset | Probe region codes, e.g. `["wnam", "weur"]` (see `/api/v1/regions`) |
+| `alertThreshold` | int | `1` | Consecutive failures before alerting |
+| `runbookUrl` | string | unset | Linked from incident alerts to your runbook |
+| `tags` | list[string] | `[]` | Free-form labels, filterable in the dashboard and API |
+
+### Host shorthand per type
+
+Instead of a full `url`, provide `host` (or `hostname`) — and where relevant
+`port` — and the CLI builds the URL:
+
+| Type | `url` built from host |
+| :--- | :-------------------- |
+| `PORT` | `tcp://<host>` or `tcp://<host>:<port>` |
+| `PING` | `ping://<host>` |
+| `DNS` | `<host>` |
+| `SSL` / `DOMAIN` | `https://<host>` (unless host already starts with `http`) |
+| others | `<host>` as-is |
+
+`HEARTBEAT` monitors need no target at all: without a `url`, a heartbeat
+endpoint is derived from the monitor's name.
+
+### Complete example
+
+```yaml
+monitors:
+  # Plain HTTP with assertions and quorum regions
+  - name: checkout-api
+    url: https://api.acme.com/health
+    interval: 30
+    expectation:
+      statusCode: 200
+      maxResponseTime: 2000
+      keyword: '"status":"ok"'
+    checkRegions: [wnam, weur, apac]
+    alertThreshold: 2
+    runbookUrl: https://wiki.acme.com/runbooks/checkout
+    tags: [production, payments]
+
+  # Authenticated request
+  - name: admin-panel
+    url: https://admin.internal.acme.com/
+    headers:
+      Authorization: "Bearer ${ADMIN_TOKEN}"   # resolve secrets in CI, not in Git
+    expectation:
+      statusCode: 200
+    tags: [internal]
+
+  # TCP port check using host shorthand
+  - name: postgres-primary
+    type: PORT
+    host: db-1.internal.acme.com
+    port: 5432
+    interval: 60
+    tags: [database]
+
+  # Heartbeat (dead-man's switch) — endpoint derived from the name
+  - name: nightly-backup
+    type: HEARTBEAT
+    interval: 3600
+    tags: [jobs]
+```
+
+Expectation fields follow the same schema the dashboard produces — status
+codes, keywords, JSON paths, regex, and response-time ceilings are documented
+in [Response Assertions](/docs/response-assertions).
+
+## Apply semantics
+
+`apply` is a **converge**, not a blind create:
+
+1. Loads definitions from file/directory (invalid YAML or zero monitors →
+   hard error, nothing applied).
+2. Normalizes each definition (type casing, host shorthand, defaults).
+3. Fetches live monitors and indexes them by lowercase name.
+4. For each definition: **update** (PUT) if the name exists, **create** (POST)
+   if not, then prints `[~] Updated` / `[+] Created` per monitor and a final
+   `✔ Applied: N created, M updated`.
+5. Per-monitor failures don't abort the run — the failing monitor is reported
+   and the rest proceed.
+
+**Nothing is deleted.** Monitors removed from YAML keep running — apply never
+destroys. Delete deliberately via the dashboard or
+`pulse monitors delete <id>`. This makes partial files and multi-team
+directories safe.
+
+`--dry-run` prints the exact CREATE/UPDATE plan and touches nothing.
+
+## Diff semantics
+
+`diff` compares each YAML definition against live state and prints `[+] NEW`,
+`[~] MODIFY` with per-field changes (`url: old -> new`, `type`, `interval`), or
+`[=] UNCHANGED`. Use it as a review aid and a drift alarm:
+
+```bash
+pulse monitors diff -f monitoring/ || echo "::warning::monitoring drift"
+```
+
+## Import: bootstrap from live state
+
+Adopting MaC on an existing workspace starts with a snapshot:
+
+```bash
+pulse monitors import              # writes steadystack.yaml
+git add steadystack.yaml && git commit -m "Adopt Monitoring as Code"
+```
+
+The export contains name, url, type, interval, method, alertThreshold, and
+checkRegions per monitor — edit, review, and let Git own it from then on.
+
+## GitOps with CI
+
+Typical GitHub Actions apply job:
+
+```yaml
+name: Apply monitors
+on:
+  push:
+    branches: [main]
+    paths: ["monitoring/**"]
+jobs:
+  apply:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm install -g @steadystack/cli
+      - run: pulse monitors diff -f monitoring/   # log what will change
+      - run: pulse monitors apply -f monitoring/
+        env:
+          STEADYSTACK_API_KEY: ${{ secrets.STEADYSTACK_API_KEY }}
+```
+
+<Check>
+Give CI its own API key (read scope if the job only diffs). Store keys in
+secret management — never in `steadystack.yaml`; use environment-variable
+interpolation in your pipeline for secrets inside `headers`.
+</Check>
+
+## MaC vs Terraform vs API
+
+| Surface | Best for |
+| :------ | :------- |
+| **CLI YAML (this page)** | Teams that live in Git; simplest loop; apply/diff/import |
+| [Terraform provider](/docs/terraform) | Provisioning monitors alongside cloud infra; `terraform plan` drift previews |
+| [REST API](/docs/api-reference) | Runtime automation, control panels, provisioning from other systems |
+
+All three converge on the same monitors; mix them freely, keeping one as the
+source of truth per monitor.

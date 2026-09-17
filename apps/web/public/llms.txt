@@ -7,23 +7,30 @@
 Product documentation: setup, architecture, alerting, and API reference.
 
 - [Introduction](https://steadystack.dev/docs/introduction): Edge-native synthetic surveillance and zero-false-positive uptime monitoring.
-- [Quickstart](https://steadystack.dev/docs/quickstart): Deploy your first synthetic check and notification channel in under 5 minutes.
+- [Getting Started](https://steadystack.dev/docs/quickstart): Copy-paste your way from zero to a monitored endpoint with alerts and a status page — dashboard, CLI, API, or Terraform.
 - [Monitors](https://steadystack.dev/docs/monitors): Comprehensive guide to HTTP, PING, PORT, SSL, DNS, and Heartbeat synthetic surveillance.
 - [Response Assertions & Payload Validation](https://steadystack.dev/docs/response-assertions): Define expectations on HTTP status codes, body text, JSON paths, and regex patterns to catch silent 200 OK failures.
 - [Quorum Consensus](https://steadystack.dev/docs/quorum-consensus): How 4-of-7 multi-region edge verification eliminates false positives.
 - [Dynamic Thresholding](https://steadystack.dev/docs/dynamic-thresholding): AI-driven latency anomaly learning and degradation detection.
 - [Network Architecture & Out-of-Band Sentinel](https://steadystack.dev/docs/network-architecture): How 7 sovereign edge clusters and independent Hetzner hardware eradicate global blind spots.
 - [Alert Rules](https://steadystack.dev/docs/alert-rules): Configure conditional incident routing, triggers, and threshold evaluations.
+- [Alert Channels Setup](https://steadystack.dev/docs/alert-channels): Step-by-step setup for every notification channel: email, Slack, Discord, PagerDuty, Opsgenie, Telegram, SMS, and custom webhooks.
 - [Integrations](https://steadystack.dev/docs/integrations): Connect SteadyStack to PagerDuty, Opsgenie, Slack, Discord, Telegram, and Webhooks.
 - [Incident Runbooks & Postmortems](https://steadystack.dev/docs/incident-runbooks): Equip on-call engineers with instant runbook links and automated postmortem summaries.
 - [Hosted Status Pages](https://steadystack.dev/docs/status-pages): Build public and private cyberpunk-themed status pages with custom domains.
+- [Customizing Status Pages](https://steadystack.dev/docs/status-page-customization): Themes, branding, custom domains, SEO, access control, localization, and per-monitor display options for hosted status pages.
 - [Status Badges & Widgets](https://steadystack.dev/docs/status-badges): Embed dynamic real-time SVG status badges in your READMEs, dashboards, and websites.
 - [SLA & Audit Reports](https://steadystack.dev/docs/sla-reports): SLA availability mathematics, maintenance window exclusions, and SOC2 audit exports.
+- [Teams & RBAC](https://steadystack.dev/docs/teams-rbac): Invite teammates, assign roles, and control who can edit monitors, view incidents, and manage billing.
+- [SLA Calculation Methodology](https://steadystack.dev/docs/sla-methodology): How SteadyStack computes SLA ratios, uptime percentages, and what counts as downtime — exactly.
+- [Monitoring as Code](https://steadystack.dev/docs/monitoring-as-code): Define monitors in steadystack.yaml, review diffs, and apply them idempotently with the pulse CLI — GitOps for your uptime checks.
 - [Terraform / OpenTofu Provider](https://steadystack.dev/docs/terraform): Manage synthetic surveillance, alert routing rules, and status pages as code.
 - [GitHub Actions CI/CD Gates](https://steadystack.dev/docs/github-actions): Block broken deployments and automate synthetic smoke tests in GitHub Actions workflows.
 - [CLI & Docker Probes](https://steadystack.dev/docs/cli): Inspect live surveillance in the terminal and deploy custom on-premise Docker probe nodes.
+- [CLI Command Reference](https://steadystack.dev/docs/cli-reference): Complete command reference for the pulse CLI — auth, monitors, apply/diff, trigger, logs, wait, and import.
 - [Self-Hosting & Docker Deployments](https://steadystack.dev/docs/self-hosting): Deploy SteadyStack on your own servers or run private VPC probes with Docker Compose.
-- [REST API Reference](https://steadystack.dev/docs/api-reference): Direct programmatic REST API endpoints for monitors, metrics, status pages, and webhooks.
+- [Deploying Private Probes](https://steadystack.dev/docs/probe-deployment): Run SteadyStack probe agents inside your VPC with Docker Compose or the Kubernetes Helm chart — exact env vars, values, and examples.
+- [REST API Reference](https://steadystack.dev/docs/api-reference): Programmatic REST API v1 for monitors, alert channels, alert rules, status pages, regions, and instant multi-region probes — with request and response examples for every endpoint.
 - [Webhook Signatures & Payloads](https://steadystack.dev/docs/webhooks): Verify HMAC-SHA256 signatures and process automated incident notification payloads.
 - [Prometheus & Grafana Observability](https://steadystack.dev/docs/prometheus-grafana): Scrape SteadyStack latency, availability, and uptime metrics into Prometheus, Datadog, or Grafana.
 
@@ -70,4 +77,6 @@ Free, no-signup developer utilities.
 - [Blog](https://steadystack.dev/blog)
 - [Is X Down — service status lookup for 400+ services](https://steadystack.dev/is-down)
 - [Public Status Pages directory](https://steadystack.dev/status-page)
+- [Integrations directory](https://steadystack.dev/integrations): All supported alert channels (Slack, Discord, PagerDuty, Opsgenie, Email, Telegram, SMS, Webhook) with setup links and plan availability.
+- [Changelog](https://steadystack.dev/changelog): Platform release notes with dates and per-release feature/security/CLI categories.
 - [GitHub repository](https://github.com/getsteadystack/SteadyStack)

@@ -1017,4 +1017,999 @@ export const openApiSpec = {
       },
     },
   },
-};
+} as const;
+
+/**
+ * REST API v1 fragment — the `/api/v1/*` surface documented in
+ * /docs/api-reference. Key-authenticated (bearer pg_live_…) and independent
+ * of the session-cookie tRPC/CLI surface above.
+ */
+const v1Paths = {
+  "/api/v1/monitors": {
+    get: {
+      tags: ["Monitors v1"],
+      summary: "List monitors",
+      description:
+        "Returns monitors for the key's owner. Query params: `tag` (exact match), `status` (UP, DOWN, DEGRADED, PAUSED, MAINTENANCE).",
+      security: [{ apiKey: [] }],
+      operationId: "v1ListMonitors",
+      parameters: [
+        { name: "tag", in: "query", schema: { type: "string" } },
+        {
+          name: "status",
+          in: "query",
+          schema: {
+            type: "string",
+            enum: ["UP", "DOWN", "DEGRADED", "PAUSED", "MAINTENANCE"],
+          },
+        },
+      ],
+      responses: {
+        "200": {
+          description: "Monitor list",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["data", "count"],
+                properties: {
+                  data: {
+                    type: "array",
+                    items: { $ref: "#/components/schemas/V1Monitor" },
+                  },
+                  count: { type: "integer" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+      },
+    },
+    post: {
+      tags: ["Monitors v1"],
+      summary: "Create a monitor",
+      description:
+        "Defaults: type=HTTP, interval=60, method=GET, alertThreshold=1. Automatically attaches a default STATUS_CHANGE→DOWN alert rule. 403 on plan quota/feature limits.",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1CreateMonitor",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/V1MonitorCreate" },
+          },
+        },
+      },
+      responses: {
+        "201": {
+          description: "Monitor created",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1Monitor" },
+                },
+              },
+            },
+          },
+        },
+        "400": { $ref: "#/components/responses/BadRequest" },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "403": { $ref: "#/components/responses/Forbidden" },
+      },
+    },
+  },
+  "/api/v1/monitors/{id}": {
+    parameters: [
+      {
+        name: "id",
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+        description: "Monitor ID",
+      },
+    ],
+    get: {
+      tags: ["Monitors v1"],
+      summary: "Get a monitor (with alert rules and channels)",
+      security: [{ apiKey: [] }],
+      operationId: "v1GetMonitor",
+      responses: {
+        "200": {
+          description: "Monitor details",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1Monitor" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+    patch: {
+      tags: ["Monitors v1"],
+      summary: "Update a monitor (partial)",
+      description:
+        "Only provided fields change. Changing interval/type/checkRegions re-runs plan limits.",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1UpdateMonitor",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/V1MonitorUpdate" },
+          },
+        },
+      },
+      responses: {
+        "200": {
+          description: "Monitor updated",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1Monitor" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "403": { $ref: "#/components/responses/Forbidden" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+    delete: {
+      tags: ["Monitors v1"],
+      summary: "Delete a monitor",
+      description: "Cascades to events, alert rules, and status-page placements. Cannot be undone.",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1DeleteMonitor",
+      responses: {
+        "200": {
+          description: "Deleted",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/SuccessResponse" },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "403": { $ref: "#/components/responses/Forbidden" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+  },
+  "/api/v1/alert-channels": {
+    get: {
+      tags: ["Alerting v1"],
+      summary: "List notification channels",
+      security: [{ apiKey: [] }],
+      operationId: "v1ListAlertChannels",
+      responses: {
+        "200": {
+          description: "Channel list",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["data", "count"],
+                properties: {
+                  data: {
+                    type: "array",
+                    items: { $ref: "#/components/schemas/V1AlertChannel" },
+                  },
+                  count: { type: "integer" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+      },
+    },
+    post: {
+      tags: ["Alerting v1"],
+      summary: "Create a notification channel",
+      description:
+        "`config` shape depends on `type`: EMAIL → {email}, SLACK/DISCORD/WEBHOOK → {webhookUrl}, TELEGRAM → {botToken, chatId}, PAGERDUTY → {routingKey}, OPSGENIE → {apiKey, region}.",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1CreateAlertChannel",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/V1AlertChannelCreate" },
+          },
+        },
+      },
+      responses: {
+        "201": {
+          description: "Channel created",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1AlertChannel" },
+                },
+              },
+            },
+          },
+        },
+        "400": { $ref: "#/components/responses/BadRequest" },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "403": { $ref: "#/components/responses/Forbidden" },
+      },
+    },
+  },
+  "/api/v1/alert-channels/{id}": {
+    parameters: [
+      {
+        name: "id",
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+        description: "Channel ID",
+      },
+    ],
+    get: {
+      tags: ["Alerting v1"],
+      summary: "Get a notification channel",
+      security: [{ apiKey: [] }],
+      operationId: "v1GetAlertChannel",
+      responses: {
+        "200": {
+          description: "Channel details",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1AlertChannel" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+    patch: {
+      tags: ["Alerting v1"],
+      summary: "Update a channel (name, full config replace)",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1UpdateAlertChannel",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              properties: {
+                name: { type: "string" },
+                config: { type: "object", additionalProperties: true },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        "200": {
+          description: "Channel updated",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1AlertChannel" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+    delete: {
+      tags: ["Alerting v1"],
+      summary: "Delete a channel",
+      description: "Detaches the channel from any alert rules referencing it.",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1DeleteAlertChannel",
+      responses: {
+        "200": {
+          description: "Deleted",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/SuccessResponse" },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+  },
+  "/api/v1/alert-rules": {
+    get: {
+      tags: ["Alerting v1"],
+      summary: "List alert rules",
+      security: [{ apiKey: [] }],
+      operationId: "v1ListAlertRules",
+      parameters: [
+        { name: "monitorId", in: "query", schema: { type: "string" } },
+      ],
+      responses: {
+        "200": {
+          description: "Rule list",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["data", "count"],
+                properties: {
+                  data: {
+                    type: "array",
+                    items: { $ref: "#/components/schemas/V1AlertRule" },
+                  },
+                  count: { type: "integer" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+      },
+    },
+    post: {
+      tags: ["Alerting v1"],
+      summary: "Create an alert rule",
+      description:
+        "Connects a monitor's trigger condition to channels. Every channelIds entry must belong to you (400 otherwise).",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1CreateAlertRule",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/V1AlertRuleCreate" },
+          },
+        },
+      },
+      responses: {
+        "201": {
+          description: "Rule created",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1AlertRule" },
+                },
+              },
+            },
+          },
+        },
+        "400": { $ref: "#/components/responses/BadRequest" },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+  },
+  "/api/v1/alert-rules/{id}": {
+    parameters: [
+      {
+        name: "id",
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+        description: "Rule ID",
+      },
+    ],
+    get: {
+      tags: ["Alerting v1"],
+      summary: "Get an alert rule",
+      security: [{ apiKey: [] }],
+      operationId: "v1GetAlertRule",
+      responses: {
+        "200": {
+          description: "Rule details",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1AlertRule" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+    patch: {
+      tags: ["Alerting v1"],
+      summary: "Update a rule (channelIds is a full replacement)",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1UpdateAlertRule",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/V1AlertRuleCreate" },
+          },
+        },
+      },
+      responses: {
+        "200": {
+          description: "Rule updated",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1AlertRule" },
+                },
+              },
+            },
+          },
+        },
+        "400": { $ref: "#/components/responses/BadRequest" },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+    delete: {
+      tags: ["Alerting v1"],
+      summary: "Delete an alert rule",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1DeleteAlertRule",
+      responses: {
+        "200": {
+          description: "Deleted",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/SuccessResponse" },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+  },
+  "/api/v1/status-pages": {
+    get: {
+      tags: ["Status Pages v1"],
+      summary: "List hosted status pages (with monitor placements)",
+      security: [{ apiKey: [] }],
+      operationId: "v1ListStatusPages",
+      responses: {
+        "200": {
+          description: "Status page list",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["data", "count"],
+                properties: {
+                  data: {
+                    type: "array",
+                    items: { $ref: "#/components/schemas/V1StatusPage" },
+                  },
+                  count: { type: "integer" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+      },
+    },
+    post: {
+      tags: ["Status Pages v1"],
+      summary: "Create a hosted status page",
+      description:
+        "Slug is normalized (lowercase, [^a-z0-9-_] → -). 409 when the slug is taken; 403 on plan limits (custom domain, password protection).",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1CreateStatusPage",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/V1StatusPageCreate" },
+          },
+        },
+      },
+      responses: {
+        "201": {
+          description: "Page created",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1StatusPage" },
+                },
+              },
+            },
+          },
+        },
+        "400": { $ref: "#/components/responses/BadRequest" },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "403": { $ref: "#/components/responses/Forbidden" },
+        "409": {
+          description: "Slug already taken",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
+      },
+    },
+  },
+  "/api/v1/status-pages/{id}": {
+    parameters: [
+      {
+        name: "id",
+        in: "path",
+        required: true,
+        schema: { type: "string" },
+        description: "Status page ID",
+      },
+    ],
+    get: {
+      tags: ["Status Pages v1"],
+      summary: "Get a status page",
+      security: [{ apiKey: [] }],
+      operationId: "v1GetStatusPage",
+      responses: {
+        "200": {
+          description: "Page details",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1StatusPage" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+    patch: {
+      tags: ["Status Pages v1"],
+      summary: "Update a status page",
+      description:
+        "Updatable: slug (re-checked for uniqueness), title, description, customDomain, isPrivate, password, theme, showUptime, showResponseTime, historyDays.",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1UpdateStatusPage",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: { $ref: "#/components/schemas/V1StatusPageCreate" },
+          },
+        },
+      },
+      responses: {
+        "200": {
+          description: "Page updated",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: { $ref: "#/components/schemas/V1StatusPage" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "403": { $ref: "#/components/responses/Forbidden" },
+        "404": { $ref: "#/components/responses/NotFound" },
+        "409": {
+          description: "Slug already in use",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/Error" },
+            },
+          },
+        },
+      },
+    },
+    delete: {
+      tags: ["Status Pages v1"],
+      summary: "Delete a status page",
+      security: [{ apiKey: ["write"] }],
+      operationId: "v1DeleteStatusPage",
+      responses: {
+        "200": {
+          description: "Deleted",
+          content: {
+            "application/json": {
+              schema: { $ref: "#/components/schemas/SuccessResponse" },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+        "404": { $ref: "#/components/responses/NotFound" },
+      },
+    },
+  },
+  "/api/v1/regions": {
+    get: {
+      tags: ["System"],
+      summary: "List sovereign probe regions",
+      security: [{ apiKey: [] }],
+      operationId: "v1ListRegions",
+      responses: {
+        "200": {
+          description: "Probe regions (wnam, enam, weur, eeur, apac, apac-ne, apac-se)",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                required: ["data", "count"],
+                properties: {
+                  data: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      required: ["code", "name", "location", "flag"],
+                      properties: {
+                        code: { type: "string" },
+                        name: { type: "string" },
+                        location: { type: "string" },
+                        flag: { type: "string" },
+                      },
+                    },
+                  },
+                  count: { type: "integer" },
+                },
+              },
+            },
+          },
+        },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+      },
+    },
+  },
+  "/api/v1/probes/instant": {
+    post: {
+      tags: ["Monitors v1"],
+      summary: "Run a one-off multi-region probe",
+      description:
+        "Probes a URL from multiple regions in parallel and returns a quorum verdict. SSRF-guarded: http/https only, no credentials, private/loopback/link-local targets rejected.",
+      security: [{ apiKey: [] }],
+      operationId: "v1InstantProbe",
+      requestBody: {
+        required: true,
+        content: {
+          "application/json": {
+            schema: {
+              type: "object",
+              required: ["url"],
+              properties: {
+                url: { type: "string", format: "uri" },
+                regions: {
+                  type: "array",
+                  items: { type: "string" },
+                  default: ["wnam", "weur", "apac"],
+                },
+                method: { type: "string", default: "GET" },
+                expectedStatus: {
+                  type: "array",
+                  items: { type: "integer" },
+                  default: [200, 201, 204, 301, 302, 307, 308],
+                },
+                timeoutMs: { type: "integer", default: 8000 },
+              },
+            },
+          },
+        },
+      },
+      responses: {
+        "200": {
+          description: "Quorum result",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  data: {
+                    type: "object",
+                    required: ["url", "status", "quorumPass", "regions", "checkedAt"],
+                    properties: {
+                      url: { type: "string" },
+                      status: { type: "string", enum: ["UP", "DOWN"] },
+                      overallLatencyMs: { type: "integer" },
+                      quorumPass: { type: "boolean" },
+                      quorumRatio: { type: "string" },
+                      regions: {
+                        type: "array",
+                        items: {
+                          type: "object",
+                          properties: {
+                            region: { type: "string" },
+                            name: { type: "string" },
+                            flag: { type: "string" },
+                            status: { type: "string", enum: ["UP", "DOWN"] },
+                            httpCode: { type: "integer" },
+                            latencyMs: { type: "integer" },
+                            error: { type: "string", nullable: true },
+                          },
+                        },
+                      },
+                      checkedAt: { type: "string", format: "date-time" },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
+        "400": { $ref: "#/components/responses/BadRequest" },
+        "401": { $ref: "#/components/responses/Unauthorized" },
+      },
+    },
+  },
+} as const;
+
+const v1Schemas = {
+  SuccessResponse: {
+    type: "object",
+    required: ["success"],
+    properties: { success: { type: "boolean", const: true } },
+  },
+  V1Monitor: {
+    type: "object",
+    required: ["id", "name", "url", "type", "status", "interval"],
+    properties: {
+      id: { type: "string" },
+      name: { type: "string" },
+      url: { type: "string" },
+      type: { $ref: "#/components/schemas/MonitorTypeV1" },
+      status: {
+        type: "string",
+        enum: ["UP", "DOWN", "DEGRADED", "PAUSED", "MAINTENANCE"],
+      },
+      interval: { type: "integer", description: "Seconds" },
+      timeout: { type: "integer", description: "Seconds" },
+      method: { type: "string" },
+      headers: { type: "object", additionalProperties: true, nullable: true },
+      body: { type: "string", nullable: true },
+      expectation: { type: "object", additionalProperties: true, nullable: true },
+      tags: { type: "array", items: { type: "string" } },
+      checkRegions: {
+        type: "array",
+        items: { type: "string" },
+        nullable: true,
+      },
+      alertThreshold: { type: "integer" },
+      runbookUrl: { type: "string", nullable: true },
+      lastCheck: { type: "string", format: "date-time", nullable: true },
+      nextCheck: { type: "string", format: "date-time", nullable: true },
+      createdAt: { type: "string", format: "date-time" },
+      updatedAt: { type: "string", format: "date-time" },
+    },
+  },
+  V1MonitorCreate: {
+    type: "object",
+    required: ["name", "url"],
+    properties: {
+      name: { type: "string" },
+      url: { type: "string" },
+      type: { $ref: "#/components/schemas/MonitorTypeV1" },
+      interval: { type: "integer", default: 60, description: "Seconds" },
+      method: { type: "string", default: "GET" },
+      headers: { type: "object", additionalProperties: true },
+      body: { type: "string" },
+      expectation: { type: "object", additionalProperties: true },
+      tags: { type: "array", items: { type: "string" } },
+      checkRegions: { type: "array", items: { type: "string" } },
+      alertThreshold: { type: "integer", default: 1 },
+      runbookUrl: { type: "string" },
+    },
+  },
+  V1MonitorUpdate: {
+    type: "object",
+    description: "All properties optional — only provided fields change",
+    properties: {
+      name: { type: "string" },
+      url: { type: "string" },
+      type: { $ref: "#/components/schemas/MonitorTypeV1" },
+      interval: { type: "integer" },
+      method: { type: "string" },
+      headers: { type: "object", additionalProperties: true, nullable: true },
+      body: { type: "string", nullable: true },
+      expectation: { type: "object", additionalProperties: true, nullable: true },
+      tags: { type: "array", items: { type: "string" } },
+      checkRegions: {
+        type: "array",
+        items: { type: "string" },
+        nullable: true,
+      },
+      alertThreshold: { type: "integer" },
+      runbookUrl: { type: "string", nullable: true },
+    },
+  },
+  V1AlertChannel: {
+    type: "object",
+    required: ["id", "name", "type"],
+    properties: {
+      id: { type: "string" },
+      name: { type: "string" },
+      type: { $ref: "#/components/schemas/NotificationTypeV1" },
+      config: { type: "object", additionalProperties: true },
+      createdAt: { type: "string", format: "date-time" },
+    },
+  },
+  V1AlertChannelCreate: {
+    type: "object",
+    required: ["name", "type", "config"],
+    properties: {
+      name: { type: "string" },
+      type: { $ref: "#/components/schemas/NotificationTypeV1" },
+      config: { type: "object", additionalProperties: true },
+    },
+  },
+  V1AlertRule: {
+    type: "object",
+    required: ["id", "monitorId", "trigger", "enabled"],
+    properties: {
+      id: { type: "string" },
+      monitorId: { type: "string" },
+      trigger: {
+        type: "string",
+        enum: ["STATUS_CHANGE", "LATENCY", "SSL_EXPIRY", "DNS_WATCHDOG", "DOMAIN_EXPIRY"],
+      },
+      threshold: { type: "integer", nullable: true },
+      comparison: { type: "string", enum: ["GT", "LT"], nullable: true },
+      targetStatus: { type: "string", nullable: true },
+      enabled: { type: "boolean" },
+      channels: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            name: { type: "string" },
+            type: { type: "string" },
+          },
+        },
+      },
+    },
+  },
+  V1AlertRuleCreate: {
+    type: "object",
+    properties: {
+      monitorId: { type: "string" },
+      trigger: {
+        type: "string",
+        enum: ["STATUS_CHANGE", "LATENCY", "SSL_EXPIRY", "DNS_WATCHDOG", "DOMAIN_EXPIRY"],
+        default: "STATUS_CHANGE",
+      },
+      threshold: { type: "integer", nullable: true },
+      comparison: { type: "string", enum: ["GT", "LT"], nullable: true },
+      targetStatus: { type: "string", default: "DOWN", nullable: true },
+      enabled: { type: "boolean", default: true },
+      channelIds: { type: "array", items: { type: "string" } },
+    },
+  },
+  V1StatusPage: {
+    type: "object",
+    required: ["id", "slug", "title"],
+    properties: {
+      id: { type: "string" },
+      slug: { type: "string" },
+      title: { type: "string" },
+      description: { type: "string", nullable: true },
+      customDomain: { type: "string", nullable: true },
+      isPrivate: { type: "boolean" },
+      historyDays: { type: "integer" },
+      showUptime: { type: "boolean" },
+      showResponseTime: { type: "boolean" },
+      monitors: {
+        type: "array",
+        items: {
+          type: "object",
+          properties: {
+            id: { type: "string" },
+            monitorId: { type: "string" },
+            displayName: { type: "string" },
+            sortOrder: { type: "integer" },
+          },
+        },
+      },
+      createdAt: { type: "string", format: "date-time" },
+    },
+  },
+  V1StatusPageCreate: {
+    type: "object",
+    properties: {
+      slug: { type: "string" },
+      title: { type: "string" },
+      description: { type: "string" },
+      customDomain: { type: "string" },
+      isPrivate: { type: "boolean", default: false },
+      password: { type: "string" },
+      theme: { type: "object", additionalProperties: true, nullable: true },
+      showUptime: { type: "boolean", default: true },
+      showResponseTime: { type: "boolean", default: true },
+      historyDays: { type: "integer", default: 90 },
+    },
+  },
+  MonitorTypeV1: {
+    type: "string",
+    description: "Monitor type (schema.prisma MonitorType enum)",
+  },
+  NotificationTypeV1: {
+    type: "string",
+    enum: ["EMAIL", "DISCORD", "SLACK", "WEBHOOK", "TELEGRAM", "SMS", "PAGERDUTY", "OPSGENIE"],
+  },
+} as const;
+
+/**
+ * Full document served at /docs/api/openapi.json: hand-maintained REST/CLI
+ * surface + REST v1 fragment + generated tRPC section (merged at import time).
+ */
+export function buildOpenApiSpec(trpcFragment?: {
+  paths: Record<string, unknown>;
+}) {
+  return {
+    ...openApiSpec,
+    tags: [
+      ...openApiSpec.tags,
+      { name: "Monitors v1", description: "REST API v1 — monitor CRUD and instant probes" },
+      { name: "Alerting v1", description: "REST API v1 — notification channels and alert rules" },
+      { name: "Status Pages v1", description: "REST API v1 — hosted status pages" },
+      {
+        name: "tRPC",
+        description:
+          "Internal dashboard RPC (POST /api/trpc/{procedure}). Session-cookie authenticated; prefer the REST v1 surface for automation.",
+      },
+    ],
+    paths: {
+      ...openApiSpec.paths,
+      ...v1Paths,
+      ...(trpcFragment ? trpcFragment.paths : undefined),
+    },
+    components: {
+      ...openApiSpec.components,
+      securitySchemes: {
+        ...openApiSpec.components.securitySchemes,
+        sessionCookie: {
+          type: "apiKey",
+          in: "cookie",
+          name: "better-auth.session_token",
+          description: "Web session cookie — used by the dashboard tRPC surface only",
+        },
+      },
+      schemas: {
+        ...openApiSpec.components.schemas,
+        ...v1Schemas,
+      },
+    },
+  };
+}

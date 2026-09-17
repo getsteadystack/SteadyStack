@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Wifi, CheckCircle, Zap, AlertTriangle, TrendingUp, TrendingDown } from "lucide-react";
 
 export interface DashboardStatsData {
@@ -9,7 +10,11 @@ export interface DashboardStatsData {
   activeAlerts: number;
 }
 
-export function DashboardStats({ stats: data }: { stats: DashboardStatsData }) {
+export const DashboardStats = memo(function DashboardStats({
+  stats: data,
+}: {
+  stats: DashboardStatsData;
+}) {
   const stats = [
     {
       name: "Active Monitors",
@@ -76,4 +81,4 @@ export function DashboardStats({ stats: data }: { stats: DashboardStatsData }) {
       ))}
     </div>
   );
-}
+});

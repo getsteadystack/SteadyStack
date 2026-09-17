@@ -1,4 +1,3 @@
-import * as React from "react";
 import {
   render,
   Html,
@@ -7,7 +6,6 @@ import {
   Container,
   Section,
   Text,
-  Link,
   EmailHeader,
   EmailFooter,
   PrimaryButton,

@@ -7,6 +7,8 @@ import { isRtlLocale } from "@/i18n/locales";
 
 import "../index.css";
 import Providers from "@/components/providers";
+import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import { CookieConsent } from "@/components/landing/cookie-consent";
 
 export const dynamic = "force-dynamic";
 
@@ -159,6 +161,8 @@ export default async function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>{children}</Providers>
+        <ServiceWorkerRegistration />
+        <CookieConsent />
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>
     </html>

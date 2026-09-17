@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { DashboardStats, type DashboardStatsData } from "@/components/dashboard/stats";
 import { MonitorsTable } from "@/components/dashboard/monitors-table";
@@ -60,18 +60,18 @@ export default function Dashboard({
     }
   }, []);
 
-  const handleToggleView = (mode: "list" | "grid") => {
+  const handleToggleView = useCallback((mode: "list" | "grid") => {
     setViewMode(mode);
     localStorage.setItem("steadystack_dashboard_view_mode", mode);
-  };
+  }, []);
 
-  const handleToggleGlobe = () => {
+  const handleToggleGlobe = useCallback(() => {
     setShowGlobe((prev) => {
       const next = !prev;
       localStorage.setItem("steadystack_dashboard_show_globe", String(next));
       return next;
     });
-  };
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">

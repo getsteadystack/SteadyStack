@@ -2,27 +2,39 @@ import { initTRPC, TRPCError } from "@trpc/server";
 
 import type { Context } from "./context";
 
-export const t = initTRPC.context<Context>().create();
+/** Procedure metadata — consumed by the OpenAPI generator (src/openapi.ts). */
+export interface ProcedureMeta {
+  /** Auth model: procedures marked "session" require a logged-in web session. */
+  auth?: "public" | "session";
+  /** Marks rate-limited procedures (shown as 429 in the API reference). */
+  rateLimited?: boolean;
+  /** Human-facing description surfaced in the generated OpenAPI document. */
+  description?: string;
+}
+
+export const t = initTRPC.context<Context>().meta<ProcedureMeta>().create();
 
 export const router = t.router;
 
 export const publicProcedure = t.procedure;
 
-export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
-  if (!ctx.session) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Authentication required",
-      cause: "No session",
+export const protectedProcedure = t.procedure
+  .use(({ ctx, next }) => {
+    if (!ctx.session) {
+      throw new TRPCError({
+        code: "UNAUTHORIZED",
+        message: "Authentication required",
+        cause: "No session",
+      });
+    }
+    return next({
+      ctx: {
+        ...ctx,
+        session: ctx.session,
+      },
     });
-  }
-  return next({
-    ctx: {
-      ...ctx,
-      session: ctx.session,
-    },
-  });
-});
+  })
+  .meta({ auth: "session" });
 
 // ─── In-memory sliding-window rate limiter ────────────────────────────────────
 // Keyed by "<userId>:<procedurePath>". Stores an array of call timestamps.
@@ -72,7 +84,9 @@ const rateLimitMiddleware = t.middleware(({ ctx, path, next }) => {
  * Enforces session auth + 100 req/min per user per procedure (sliding window).
  * Use this for all state-mutating or expensive query procedures.
  */
-export const rateLimitedProcedure = protectedProcedure.use(rateLimitMiddleware);
+export const rateLimitedProcedure = protectedProcedure
+  .use(rateLimitMiddleware)
+  .meta({ auth: "session", rateLimited: true });
 
 /**
  * Creates a tRPC procedure middleware enforcing workspace feature flags or quotas.

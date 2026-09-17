@@ -1,0 +1,131 @@
+---
+title: "Customizing Status Pages"
+description: "Themes, branding, custom domains, SEO, access control, localization, and per-monitor display options for hosted status pages."
+section: "Status Pages & Reporting"
+order: 8.5
+lastUpdated: "2026-09-16"
+---
+
+Every SteadyStack status page is served at
+`https://app.steadystack.dev/status-page/<slug>` — or your own domain — and is
+customizable from **Dashboard → Status Pages → your page → Settings**. Changes
+are live-previewed as you type; hit **Save Changes** to persist.
+
+## Branding and identity
+
+- **Title, slug, description** — the slug is the public URL segment
+  (`/status-page/<slug>`) and is normalized to lowercase; invalid characters
+  become `-`. Renaming a slug changes the public URL.
+- **Logo URL, Favicon URL** — full image URLs, shown in the header and the
+  browser tab.
+- **Logo link (homepage URL)** — clicking your logo navigates here.
+- **Contact support URL** — rendered as the support/contact link
+  (`https://…` or `mailto:…`).
+- **Custom footer links** — add label/URL pairs (Terms, Privacy, API status…),
+  reorder-safe, removable individually.
+
+## Themes and colors
+
+Pick one of four built-in themes — **Sentry Dark** (the cyberpunk default),
+**Loops Dark**, **Loops Light**, **Monochrome** — or build your own with five
+color pickers: background, text, operational, degraded, and outage. Choosing a
+custom color switches the theme to *Custom* automatically; the palette is
+stored with the page and applied everywhere.
+
+## Custom domain
+
+1. In page settings, set **Custom Domain** to e.g. `status.example.com`.
+2. Add a CNAME record in your DNS provider:
+   `status.example.com → cname.vercel-dns.com`.
+3. Wait for the certificate to be issued (usually minutes). Your page is then
+   served from your domain with automatic TLS.
+
+Custom domains are plan-gated — if saving fails with a plan error, that's the
+feature flag, not the DNS.
+
+## SEO and social sharing
+
+- **Allow indexing** — on by default. Turn off for internal-only pages; a
+  `noindex` is emitted for private and password-protected pages regardless.
+- **Feature in Community Showcase** — list a *public* page in the
+  [showcase gallery](/showcase).
+- **Meta title / meta description** — override the generated `<title>` and
+  description for search results.
+- **OG image URL** — a custom social-share preview image.
+
+## Access control
+
+| Mode | Behavior |
+| :--- | :------- |
+| Public | Anyone with the URL; indexed if allowed |
+| Password-protected | Viewer must enter the password you set |
+| IP whitelist | Comma-separated IPs (e.g. `192.168.1.1, 10.0.0.1`); others get no access |
+| Private | Not publicly listed or indexed; plan-gated |
+
+Password and IP whitelist can be combined for defense in depth.
+
+## Localization
+
+Status pages support all [SteadyStack locales](/docs/teams-rbac), including
+right-to-left rendering for Arabic. Enable per-language display in the
+**Localization** panel; visitors' language is detected from their browser and
+they can switch manually.
+
+## Tracker customization
+
+Two switches change how history is *rendered* (not what is measured — the SLA
+math is defined in [the methodology spec](/docs/sla-methodology)):
+
+- **Bar type** — *Absolute* shows real per-bucket status from check data;
+  *Manual* shows your overridden status (use with maintenance windows so a
+  planned downtime doesn't paint the timeline red).
+- **Card type** — *Duration* shows percent-uptime per card; *Requests* shows
+  check counts.
+
+Visibility toggles:
+
+- **Show uptime percentage**
+- **Show response charts** (latency graph per monitor)
+- **Show paused monitors** (off by default)
+
+## Per-monitor display settings
+
+Open the **Monitors** tab and edit any monitor row on the page:
+
+- **Display name** — shown publicly instead of the internal monitor name
+  (`api-prod-us-east-1` → `API (US)`).
+- **Show latency**, **Show uptime**, **Show check counts** — toggles per row.
+
+Drag rows to reorder; the public page follows `sortOrder`.
+
+## History window
+
+The **History** tab controls how far back incident/maintenance history is
+retained publicly — 7/30/60/90 days (`historyDays`). Uptime cards and the
+trend (improving/stable/degrading) are computed over this window.
+
+## Incidents and maintenance on the page
+
+- Post **incident updates** from the page editor; subscribers with incident
+  notifications enabled are emailed on create and resolve.
+- Schedule **maintenance windows** to pre-warn visitors — combine with the
+  *Manual* bar type (above) so the timeline reflects planned work, not outages.
+- Subscribers manage their own preferences through the link in every email
+  (`/subscribe/manage/…`).
+
+<Check>
+After any access-control change (password, whitelist, private), test the page
+in a private browser window — caches can briefly serve the previous state.
+</Check>
+
+## Embedding and automation
+
+- **Status badges and widgets** — generate embeddable SVGs in the **Widget**
+  tab; see [Status Badges & Widgets](/docs/status-badges).
+- **API** — create and update pages programmatically via the
+  [REST API](/docs/api-reference) (`/api/v1/status-pages`), including slug,
+  visibility, theme, and history window. Monitor placement is managed in the
+  dashboard editor.
+- **Custom CSS / JS** — the settings panel accepts a stylesheet and a script
+  (injected before `</body>`, no `<script>` tags) for full-brand control. JS
+  runs on the public page, so treat it like any public-facing code.

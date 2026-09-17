@@ -1,0 +1,96 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Offline — SteadyStack</title>
+    <style>
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #09090b;
+        color: #fafafa;
+        font-family:
+          ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+      }
+      .card {
+        max-width: 420px;
+        padding: 2.5rem;
+        text-align: center;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 0.75rem;
+        background: rgba(9, 9, 11, 0.6);
+      }
+      .dot {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 9999px;
+        background: #ef4444;
+        box-shadow: 0 0 8px #ef4444;
+        animation: pulse 1.6s ease-in-out infinite;
+      }
+      h1 {
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        margin: 1.25rem 0 0.5rem;
+      }
+      p {
+        font-size: 0.75rem;
+        line-height: 1.6;
+        color: #a1a1aa;
+        margin: 0 0 1.5rem;
+      }
+      button {
+        font: inherit;
+        font-size: 0.65rem;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 0.55rem 1rem;
+        border-radius: 0.5rem;
+        border: 1px solid rgba(16, 185, 129, 0.3);
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        cursor: pointer;
+      }
+      button:hover {
+        background: rgba(16, 185, 129, 0.2);
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.4;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="card">
+      <span class="dot" aria-hidden="true"></span>
+      <h1>Connection Lost</h1>
+      <p>
+        You're offline and this page wasn't cached yet. Your monitors are still being checked from
+        the edge — reconnect to see live status.
+      </p>
+      <button onclick="location.reload()">Retry</button>
+    </main>
+    <script>
+      // Reload automatically once connectivity returns.
+      addEventListener("online", () => location.reload());
+    </script>
+  </body>
+</html>

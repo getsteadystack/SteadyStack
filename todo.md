@@ -405,9 +405,9 @@
 - [ ] Add "Testimonials" section with customer quotes and logos
 - [ ] Add pricing page with feature matrix and FAQ
 - [x] Add use-case pages: DevOps, E-commerce, SaaS, API Monitoring
-- [ ] Add integration directory page listing all supported notification channels
-- [ ] Build changelog page (public release notes with dates and categories)
-- [ ] Add cookie consent banner (GDPR compliance)
+- [x] Add integration directory page listing all supported notification channels
+- [x] Build changelog page (public release notes with dates and categories)
+- [x] Add cookie consent banner (GDPR compliance)
 - [x] Add blog infrastructure (MDX-based, with SEO-optimized posts)
 - [x] Write 10 SEO-targeted blog posts (uptime monitoring, SLA calculations, etc.)
 
@@ -497,21 +497,21 @@
 - [x] Audit and remove unused dependencies from `apps/web/package.json`
 - [x] Enable Turbopack for faster local dev builds
 - [x] Add `prefetch` links for likely next navigations (monitors list → detail)
-- [ ] Profile React render cycles with React DevTools and fix unnecessary re-renders
-- [ ] Add service worker for offline fallback on the dashboard
+- [x] Profile React render cycles with React DevTools and fix unnecessary re-renders
+- [x] Add service worker for offline fallback on the dashboard
 
 ### CI/CD
 
-- [ ] Add Playwright E2E tests in `.github/workflows` on every PR
-- [ ] Add visual regression testing with Percy or Chromatic
+- [x] Add Playwright E2E tests in `.github/workflows` on every PR
+- [x] Add visual regression testing with Percy or Chromatic
 - [x] Set up preview deployments for every PR via Cloudflare Pages preview (implemented as Cloudflare Workers preview per PR, see `.github/workflows/preview.yml`)
 - [x] Add automated `bun audit` check in CI for dependency vulnerabilities
 - [x] Add Trivy container scan for the Docker probe image in CI
 - [x] Implement semantic release and auto-changelog generation
-- [ ] Add deploy lock mechanism to prevent concurrent production deployments
-- [ ] Set up staging environment with production-mirror config
-- [ ] Add smoke tests post-deployment (verify critical endpoints respond)
-- [ ] Add rollback automation trigger on smoke test failure
+- [x] Add deploy lock mechanism to prevent concurrent production deployments
+- [x] Set up staging environment with production-mirror config
+- [x] Add smoke tests post-deployment (verify critical endpoints respond)
+- [x] Add rollback automation trigger on smoke test failure
 
 ---
 
@@ -549,19 +549,19 @@
 
 ## 📚 P10 — Documentation
 
-- [ ] Write full API reference documentation (OpenAPI spec + Redoc/Scalar UI)
-- [ ] Generate OpenAPI spec from tRPC router definitions automatically
-- [ ] Write "Getting Started" guide with copy-paste commands
-- [ ] Write monitor type reference (one page per type with all config options)
-- [ ] Write alert channels setup guide (step-by-step for each channel)
-- [ ] Write status page customization guide
-- [ ] Write CLI reference documentation (`pulse --help` output as docs)
-- [ ] Write probe deployment guide (Docker Compose + Kubernetes Helm chart)
-- [ ] Write Monitoring as Code guide (YAML schema reference)
-- [ ] Write RBAC and team management guide
-- [ ] Write SLA calculation methodology explanation
-- [ ] Write architecture decision records (ADRs) for key design choices
-- [ ] Add inline code examples to all API documentation
+- [x] Write full API reference documentation (OpenAPI spec + Redoc/Scalar UI)
+- [x] Generate OpenAPI spec from tRPC router definitions automatically
+- [x] Write "Getting Started" guide with copy-paste commands
+- [x] Write monitor type reference (one page per type with all config options)
+- [x] Write alert channels setup guide (step-by-step for each channel)
+- [x] Write status page customization guide
+- [x] Write CLI reference documentation (`pulse --help` output as docs)
+- [x] Write probe deployment guide (Docker Compose + Kubernetes Helm chart)
+- [x] Write Monitoring as Code guide (YAML schema reference)
+- [x] Write RBAC and team management guide
+- [x] Write SLA calculation methodology explanation
+- [x] Write architecture decision records (ADRs) for key design choices
+- [x] Add inline code examples to all API documentation
 - [x] Build interactive API explorer (Scalar or Swagger UI at `/docs/api`)
 - [x] Write self-hosting guide (Docker Compose full stack)
 - [x] Add Helm chart for Kubernetes self-hosted deployment
@@ -582,9 +582,9 @@
 - [x] Translate CLI output messages (auto-detect locale or `--locale` flag)
 - [x] Add locale-aware date/time formatting throughout the dashboard
 - [x] Add locale-aware number formatting (uptime%, latency ms)
-- [ ] Implement per-user locale preference (override browser detection)
-- [ ] Add locale switcher to the landing page footer
-- [ ] Set up Crowdin or Weblate for community translation contributions
+- [x] Implement per-user locale preference (override browser detection)
+- [x] Add locale switcher to the landing page footer
+- [x] Set up Crowdin or Weblate for community translation contributions
 
 ---
 

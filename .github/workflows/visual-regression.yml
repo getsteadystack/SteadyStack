@@ -1,0 +1,64 @@
+name: Visual Regression
+
+# Chromatic visual regression on every PR.
+#
+# The web app ships Storybook (@storybook/nextjs-vite) with the Chromatic
+# addon already configured (.storybook/main.ts). Chromatic builds the
+# Storybook, captures every story, and diffs against the baselines of the
+# base branch. PRs get a "Visual changes" check with a diff review UI.
+#
+# Setup (one-time, see docs/ci.md for details):
+#   1. Create a Chromatic project for this repo (chromatic.com, free for OSS)
+#   2. Add repo secret CHROMATIC_PROJECT_TOKEN
+#
+# Only Chromium is captured by default (the stories are plain UI components;
+# cross-browser diffs add noise without value here).
+
+on:
+  pull_request:
+    branches: ["**"]
+    paths:
+      # Only run when visuals could actually change — keeps CI fast.
+      - "apps/web/src/**"
+      - "apps/web/.storybook/**"
+      - "apps/web/public/**"
+      - ".github/workflows/visual-regression.yml"
+
+concurrency:
+  group: chromatic-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  chromatic:
+    name: Chromatic storybook diff
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Chromatic needs history to find the correct baselines.
+          fetch-depth: 0
+
+      - uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: "1.3.6"
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Run Chromatic
+        uses: chromaui/action@v13
+        with:
+          # Repo secret: project token from chromatic.com
+          projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
+          workingDir: apps/web
+          # Build the Storybook as part of the run (matches `bun run build-storybook`).
+          storybookBuildCommand: bun run build-storybook
+          # Only capture one browser to keep snapshot noise low.
+          onlyChanged: false
+          exitZeroOnChanges: true
+          autoAcceptChanges: main

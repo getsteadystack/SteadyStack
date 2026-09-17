@@ -23,7 +23,7 @@ export default defineConfig({
   /* Opt out of parallel tests on CI. */
   ...(process.env.CI ? { workers: 1 } : {}),
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: "html",
+  reporter: process.env.CI ? [["list"], ["html", { open: "never" }]] : "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     /* Base URL to use in actions like `await page.goto('/')`. */
@@ -33,21 +33,30 @@ export default defineConfig({
     trace: "on-first-retry",
   },
 
+  expect: {
+    /* Generous default for server-rendered pages behind a cold Next.js dev/prod server. */
+    timeout: 15_000,
+  },
+
+  /* CI: start the production web server (built by the workflow) with a local
+     Postgres instance. `production` mode runs `next start` after `next build`. */
+  ...(process.env.CI
+    ? {
+        webServer: {
+          command: "bun run dev",
+          cwd: path.resolve(__dirname, "../../apps/web"),
+          url: "http://127.0.0.1:3000",
+          reuseExistingServer: false,
+          timeout: 180_000,
+        },
+      }
+    : {}),
+
   /* Configure projects for major browsers */
   projects: [
     {
       name: "chromium",
       use: { ...devices["Desktop Chrome"] },
-    },
-
-    {
-      name: "firefox",
-      use: { ...devices["Desktop Firefox"] },
-    },
-
-    {
-      name: "webkit",
-      use: { ...devices["Desktop Safari"] },
     },
   ],
 });

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { MonitorGridCard } from "./monitor-grid-card";
 import { LayoutGrid, Save, RotateCcw, AlertCircle } from "lucide-react";
@@ -29,23 +29,33 @@ export function MonitorsGrid({ monitors }: MonitorsGridProps) {
   const [isEditMode, setIsEditMode] = useState(false);
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  // Load layout from localStorage or generate default
+  // Track monitor ids separately so the layout-sync effect only re-runs when the
+  // set of monitors actually changes (not on every 5s poll that returns fresh objects).
+  const monitorIds = useMemo(() => monitors.map((m) => m.id).join(","), [monitors]);
+
+  const generateDefaultLayout = useCallback(() => {
+    setLayout(monitors.map((m) => ({ id: m.id, size: "1x1" as const })));
+  }, [monitors]);
+
+  // Load layout from localStorage or generate default.
+  // Only re-runs when the monitor id set changes — without this, every 5s poll
+  // overwrote user customizations (sizes/order) and re-triggered a full grid render.
   useEffect(() => {
     const savedLayout = localStorage.getItem("steadystack_dashboard_grid_layout");
     if (savedLayout) {
       try {
         const parsed = JSON.parse(savedLayout) as GridItemConfig[];
         // Filter out items that are no longer in monitors list, and add new ones
-        const monitorIds = new Set(monitors.map((m) => m.id));
-        const filtered = parsed.filter((item) => monitorIds.has(item.id));
+        const monitorIdSet = new Set(monitors.map((m) => m.id));
+        const filtered = parsed.filter((item) => monitorIdSet.has(item.id));
         const existingIds = new Set(filtered.map((item) => item.id));
 
         const newItems: GridItemConfig[] = [];
-        monitors.forEach((m) => {
+        for (const m of monitors) {
           if (!existingIds.has(m.id)) {
             newItems.push({ id: m.id, size: "1x1" });
           }
-        });
+        }
 
         setLayout([...filtered, ...newItems]);
       } catch (e) {
@@ -55,25 +65,22 @@ export function MonitorsGrid({ monitors }: MonitorsGridProps) {
     } else {
       generateDefaultLayout();
     }
-  }, [monitors]);
-
-  const generateDefaultLayout = () => {
-    const defaultLayout = monitors.map((m) => ({
-      id: m.id,
-      size: "1x1" as const,
-    }));
-    setLayout(defaultLayout);
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- depends only on the id set; monitor data refreshes flow through orderedItems below
+  }, [monitorIds, generateDefaultLayout]);
 
   const saveLayout = (newLayout: GridItemConfig[]) => {
     localStorage.setItem("steadystack_dashboard_grid_layout", JSON.stringify(newLayout));
   };
 
-  const handleResize = (id: string, size: "1x1" | "2x1" | "2x2") => {
-    const updated = layout.map((item) => (item.id === id ? { ...item, size } : item));
-    setLayout(updated);
-    saveLayout(updated);
-  };
+  // Shared resize callback — stable identity so memoized MonitorGridCards skip
+  // re-render on unrelated 5s polls (previously a fresh arrow per card per render).
+  const handleResize = useCallback((id: string, size: "1x1" | "2x1" | "2x2") => {
+    setLayout((prev) => {
+      const updated = prev.map((item) => (item.id === id ? { ...item, size } : item));
+      saveLayout(updated);
+      return updated;
+    });
+  }, []);
 
   const handleReset = () => {
     generateDefaultLayout();
@@ -81,37 +88,74 @@ export function MonitorsGrid({ monitors }: MonitorsGridProps) {
   };
 
   // Drag and Drop handlers
-  const handleDragStart = (index: number) => {
-    if (!isEditMode) return;
-    setDraggedIndex(index);
-  };
+  const handleDragStart = useCallback(
+    (index: number) => {
+      if (!isEditMode) return;
+      setDraggedIndex(index);
+    },
+    [isEditMode],
+  );
 
-  const handleDragOver = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    if (draggedIndex === null || draggedIndex === index || !isEditMode) return;
+  const handleDragOver = useCallback(
+    (e: React.DragEvent, index: number) => {
+      e.preventDefault();
+      if (draggedIndex === null || draggedIndex === index || !isEditMode) return;
 
-    // Reorder items in state to animate via framer-motion layout prop
-    const reordered = [...layout];
-    const [draggedItem] = reordered.splice(draggedIndex, 1);
-    reordered.splice(index, 0, draggedItem);
+      // Reorder items in state to animate via framer-motion layout prop
+      const reordered = [...layout];
+      const [draggedItem] = reordered.splice(draggedIndex, 1);
+      reordered.splice(index, 0, draggedItem);
 
-    setDraggedIndex(index);
-    setLayout(reordered);
-  };
+      setDraggedIndex(index);
+      setLayout(reordered);
+    },
+    [draggedIndex, isEditMode, layout],
+  );
 
-  const handleDragEnd = () => {
+  const handleDragEnd = useCallback(() => {
     setDraggedIndex(null);
     saveLayout(layout);
-  };
+  }, [layout]);
 
-  // Map configuration back to full monitor data
-  const monitorMap = new Map(monitors.map((m) => [m.id, m]));
-  const orderedItems = layout
-    .map((item) => ({
-      config: item,
-      data: monitorMap.get(item.id),
-    }))
-    .filter((item) => item.data !== undefined); // Exclude missing data
+  // Map configuration back to full monitor data (memoized: re-created on every
+  // poll previously, cascading re-renders through every grid card)
+  const orderedItems = useMemo(() => {
+    const monitorMap = new Map(monitors.map((m) => [m.id, m]));
+    return layout
+      .map((item) => ({
+        config: item,
+        data: monitorMap.get(item.id),
+      }))
+      .filter((item) => item.data !== undefined);
+  }, [monitors, layout]);
+
+  // Fresh-function-per-card props previously defeated memo(MonitorGridCard) on
+  // every render; identity-stable props keep memoization effective.
+  const onCardResize = handleResize;
+
+  // The drag handler reads the latest ordering through a ref so dragHandleProps
+  // stays identity-stable across polls (orderedItems itself changes identity
+  // whenever monitor data refreshes).
+  const orderedItemsRef = useRef(orderedItems);
+  useEffect(() => {
+    orderedItemsRef.current = orderedItems;
+  }, [orderedItems]);
+
+  const dragHandleProps = useMemo(
+    () => ({
+      draggable: isEditMode,
+      onDragStart: (e: React.DragEvent) => {
+        e.stopPropagation();
+        const cardId = (e.currentTarget.closest("[data-card-id]") as HTMLElement | null)?.dataset
+          .cardId;
+        if (cardId) {
+          const index = orderedItemsRef.current.findIndex((item) => item.config.id === cardId);
+          handleDragStart(index);
+        }
+      },
+    }),
+    [isEditMode, handleDragStart],
+  );
 
   return (
     <div className="flex flex-col gap-6">
@@ -174,6 +218,7 @@ export function MonitorsGrid({ monitors }: MonitorsGridProps) {
           {orderedItems.map(({ config, data }, index) => (
             <motion.div
               key={config.id}
+              data-card-id={config.id}
               layout
               transition={{
                 type: "spring",
@@ -195,15 +240,9 @@ export function MonitorsGrid({ monitors }: MonitorsGridProps) {
               <MonitorGridCard
                 monitor={data}
                 size={config.size}
-                onResize={(size) => handleResize(config.id, size)}
+                onResize={onCardResize}
                 isEditMode={isEditMode}
-                dragHandleProps={{
-                  draggable: isEditMode,
-                  onDragStart: (e: any) => {
-                    e.stopPropagation();
-                    handleDragStart(index);
-                  },
-                }}
+                dragHandleProps={dragHandleProps}
               />
             </motion.div>
           ))}

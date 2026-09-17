@@ -70,6 +70,21 @@ const nextConfig: NextConfig = {
           },
         ],
       },
+      {
+        // The service worker must revalidate on every load so deploy-time
+        // updates aren't stuck behind Cloudflare edge caching.
+        source: "/sw.js",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=0, must-revalidate",
+          },
+          {
+            key: "Service-Worker-Allowed",
+            value: "/",
+          },
+        ],
+      },
     ];
   },
 };

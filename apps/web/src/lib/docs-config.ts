@@ -61,6 +61,12 @@ export const DOCS_NAVIGATION: NavSection[] = [
     title: "Alerting & Incidents",
     items: [
       { title: "Alert Rules", slug: "alert-rules", href: "/docs/alert-rules" },
+      {
+        title: "Alert Channels Setup",
+        slug: "alert-channels",
+        href: "/docs/alert-channels",
+        badge: "Setup",
+      },
       { title: "Integrations", slug: "integrations", href: "/docs/integrations" },
       {
         title: "Incident Runbooks",
@@ -74,6 +80,11 @@ export const DOCS_NAVIGATION: NavSection[] = [
     title: "Status Pages & Reporting",
     items: [
       { title: "Hosted Status Pages", slug: "status-pages", href: "/docs/status-pages" },
+      {
+        title: "Customizing Status Pages",
+        slug: "status-page-customization",
+        href: "/docs/status-page-customization",
+      },
       { title: "Status Badges & Widgets", slug: "status-badges", href: "/docs/status-badges" },
       {
         title: "SLA & Audit Reports",
@@ -84,8 +95,26 @@ export const DOCS_NAVIGATION: NavSection[] = [
     ],
   },
   {
+    title: "Workspace & Governance",
+    items: [
+      { title: "Teams & RBAC", slug: "teams-rbac", href: "/docs/teams-rbac" },
+      {
+        title: "SLA Calculation Methodology",
+        slug: "sla-methodology",
+        href: "/docs/sla-methodology",
+        badge: "Spec",
+      },
+    ],
+  },
+  {
     title: "IaC & CI/CD Gates",
     items: [
+      {
+        title: "Monitoring as Code",
+        slug: "monitoring-as-code",
+        href: "/docs/monitoring-as-code",
+        badge: "GitOps",
+      },
       { title: "Terraform / OpenTofu", slug: "terraform", href: "/docs/terraform", badge: "IaC" },
       {
         title: "GitHub Actions Gates",
@@ -94,7 +123,19 @@ export const DOCS_NAVIGATION: NavSection[] = [
         badge: "CI/CD",
       },
       { title: "CLI & Docker Probes", slug: "cli", href: "/docs/cli" },
+      {
+        title: "CLI Command Reference",
+        slug: "cli-reference",
+        href: "/docs/cli-reference",
+        badge: "CLI",
+      },
       { title: "Self-Hosting", slug: "self-hosting", href: "/docs/self-hosting" },
+      {
+        title: "Deploying Private Probes",
+        slug: "probe-deployment",
+        href: "/docs/probe-deployment",
+        badge: "Self-host",
+      },
     ],
   },
   {

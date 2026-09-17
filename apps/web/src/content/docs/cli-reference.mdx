@@ -1,0 +1,252 @@
+---
+title: "CLI Reference"
+description: "Complete command reference for the pulse CLI — auth, monitors, apply/diff, trigger, logs, wait, and import."
+section: "IaC & Developer Tools"
+order: 11.5
+badge: "CLI"
+lastUpdated: "2026-09-16"
+---
+
+The SteadyStack CLI (`pulse`, also installed as `ss` and `steadystack`) brings
+Monitoring as Code, live debugging, and CI/CD gates to the terminal. This page
+mirrors `pulse --help` output as of v0.1.0.
+
+For the conceptual overview and Docker probes, see [CLI & Docker Probes](/docs/cli);
+for the YAML file format, see [Monitoring as Code](/docs/monitoring-as-code).
+
+## Installation
+
+```bash
+# Bun or npm — installs pulse, ss, and steadystack binaries
+bun add -g @steadystack/cli
+npm install -g @steadystack/cli
+```
+
+Requires Node.js ≥ 18.
+
+## Global behavior
+
+```text
+steadystack [global options] <command> [subcommand] [args]
+
+Global options:
+  -V, --version          output the version number
+  --locale <locale>      Output language: en, es, fr, de, pt-BR, ja, ko, zh-CN, ar
+  -h, --help             display help
+```
+
+- `--locale` wins over the `STEADYSTACK_LOCALE` environment variable, which
+  wins over your system locale; anything unrecognized falls back to English.
+- Every command that talks to the API requires authentication (see `auth
+  login`).
+- Commands that check health exit `0` on success and `1` on failure — designed
+  for CI gates.
+
+---
+
+## `auth` — manage authentication
+
+### `pulse auth login --key <apiKey> [--url <baseUrl>]`
+
+Validate and store an API key. The key is verified against your workspace
+before being persisted; a failed validation leaves no stored credentials.
+
+```bash
+# Key from Workspace Settings → API Keys (format pg_live_…)
+pulse auth login --key pg_live_xxxxxxxxxxxxxxxx
+
+# Self-hosted instance
+pulse auth login --key pg_live_xxx --url https://steadystack.internal.example.com
+```
+
+Credentials are stored in a local config file managed by the CLI. Without
+`--key`, the command prints where to generate a key and exits.
+
+### `pulse auth status`
+
+Show whether you're logged in, the stored key prefix, and the base URL.
+
+### `pulse auth logout`
+
+Clear stored credentials.
+
+---
+
+## `monitors` — manage monitors
+
+### `pulse monitors list` (alias `ls`)
+
+Table of all monitors: status (colored), name, type, URL (truncated), interval,
+last check.
+
+| Flag | Effect |
+| :--- | :----- |
+| `--json` | Machine-readable JSON array |
+
+### `pulse monitors get <id>`
+
+Details for one monitor plus its recent check events (timestamp, status,
+latency, error reason).
+
+| Flag | Effect |
+| :--- | :----- |
+| `--json` | Full monitor object as JSON |
+
+### `pulse monitors create`
+
+Interactive wizard: name, URL, type (all 19 monitor types offered), interval.
+Creates the monitor immediately.
+
+### `pulse monitors apply [-f <path>] [--dry-run]`
+
+Create or update monitors from a
+[`steadystack.yaml`](/docs/monitoring-as-code) file or a whole directory of
+YAML files. **Idempotent**: monitors are matched by *name* — existing names
+are updated, new names are created.
+
+| Flag | Effect |
+| :--- | :----- |
+| `-f, --file <path>` | YAML file or directory (default: `steadystack.yaml` / `steadystack.yml` in cwd) |
+| `--dry-run` | Print the planned CREATE/UPDATE actions without calling the API |
+
+```bash
+$ pulse monitors apply -f monitors/ --dry-run
+DRY RUN — previewing changes without applying
+
+  [+] CREATE checkout-api (HTTP: https://api.acme.com/health)
+  [~] UPDATE marketing-site (HTTP: https://acme.com)
+
+$ pulse monitors apply -f monitors/
+✔ Applied: 1 created, 1 updated
+```
+
+### `pulse monitors diff [-f <path>]`
+
+Read-only comparison of local YAML against remote state. Prints `[+] NEW`,
+`[~] MODIFY` (with per-field changes: url, type, interval), or `[=]
+UNCHANGED` per monitor. Exits without changes to remote state — use it in CI to
+detect drift:
+
+```bash
+pulse monitors diff -f monitors/ || echo "config drift detected"
+```
+
+### `pulse monitors import [-o <path>]`
+
+The reverse of apply: export all current monitors to YAML (default
+`steadystack.yaml`) with a generated-timestamp header. Great seed for
+adopting Monitoring as Code on an existing workspace.
+
+### `pulse monitors delete <id>`
+
+Delete a monitor. Immediate, cascades to its events and alert rules.
+
+---
+
+## `trigger` — force an immediate check
+
+```text
+pulse trigger <id> [--url <url>] [--json]
+```
+
+Runs an instant check on an HTTP monitor and prints status, latency, HTTP
+code, and any error reason. Exits `1` if the result is DOWN — usable as a
+quick smoke test.
+
+| Flag | Effect |
+| :--- | :----- |
+| `--url <url>` | Override the target URL for this one check |
+| `--json` | Raw result object |
+
+Only HTTP monitors support instant trigger; the API answers `422` otherwise.
+
+---
+
+## `logs` — stream monitor events
+
+```text
+pulse logs tail <id> [-n <lines>] [--interval <ms>]
+```
+
+`tail -f` for check events: prints the last N events, then polls for new ones.
+Each line: timestamp, colored status dot, latency (right-aligned), region, and
+error reason when present. Ctrl+C stops cleanly.
+
+| Flag | Default | Effect |
+| :--- | :------ | :----- |
+| `-n, --lines <n>` | `20` | Past events to show first |
+| `--interval <ms>` | `5000` | Poll interval (minimum 2000 ms) |
+
+---
+
+## `wait` — CI/CD deployment gate
+
+```text
+pulse wait <id> [--timeout <seconds>] [--interval <seconds>] [--json]
+```
+
+Blocks until the monitor is `UP`, then exits `0`. On timeout (default 300 s,
+max 600 s) it exits `1` with a link to the monitor — failing the CI job.
+
+| Flag | Default | Effect |
+| :--- | :------ | :----- |
+| `--timeout <seconds>` | `300` | Max wait (hard cap 600) |
+| `--interval <seconds>` | `15` | Poll interval (minimum 5) |
+| `--json` | — | Print a result object on completion (success or timeout) |
+
+GitHub Actions example:
+
+```yaml
+- name: Deploy
+  run: ./deploy.sh
+
+- name: Wait for production to be healthy
+  run: pulse wait "$MONITOR_ID" --timeout 300
+  env:
+    MONITOR_ID: ${{ vars.PROD_HEALTH_MONITOR_ID }}
+```
+
+---
+
+## `import` — migrate from other platforms
+
+```text
+pulse import kuma <file> [--dry-run] [--overwrite] [-t <tags>]
+```
+
+Imports monitors from an Uptime Kuma JSON backup. Type mapping is automatic
+(`http`/`keyword`/`json-query` → HTTP, `port`/`steam`/`mqtt` → PORT, `ping` →
+PING, `dns` → DNS, `push` → HEARTBEAT, `postgres`/`mysql`/`redis`/`mongodb`/
+`sqlserver` → DATABASE, `real-browser` → BROWSER). Keyword and status-code
+expectations carry over, `maxretries` maps to `alertThreshold` (minimum 30 s
+interval enforced), and every imported monitor is tagged `imported`,
+`uptime-kuma` plus anything from `-t`.
+
+| Flag | Effect |
+| :--- | :----- |
+| `--dry-run` | Parse and print the summary table without creating anything |
+| `--overwrite` | Update existing monitors with the same name instead of skipping |
+| `-t, --tags <tags>` | Extra comma-separated tags for all imported monitors |
+
+```bash
+pulse import kuma kuma-backup.json --dry-run   # preview
+pulse import kuma kuma-backup.json -t prod,eu  # apply
+```
+
+---
+
+## Environment variables
+
+| Variable | Purpose |
+| :------- | :------ |
+| `STEADYSTACK_LOCALE` | Output language, overridden by `--locale` |
+| `LC_ALL` / `LC_MESSAGES` / `LANG` | Fallback locale detection |
+
+---
+
+## Exit codes
+
+| Code | Meaning |
+| :--- | :------ |
+| `0` | Success — including `wait` resolving UP and `trigger` reporting UP |
+| `1` | Failure — check DOWN, wait timeout, auth error, unknown command |
