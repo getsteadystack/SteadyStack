@@ -402,8 +402,8 @@
 - [x] Add product demo mode with pre-seeded data (no signup required to explore)
 - [x] Improve landing page hero with animated monitor status visualization
 - [x] Add feature comparison table: SteadyStack vs UptimeRobot vs Checkly vs Better Uptime
-- [ ] Add "Testimonials" section with customer quotes and logos
-- [ ] Add pricing page with feature matrix and FAQ
+- [x] Add "Testimonials" section with customer quotes and logos
+- [x] Add pricing page with feature matrix and FAQ
 - [x] Add use-case pages: DevOps, E-commerce, SaaS, API Monitoring
 - [x] Add integration directory page listing all supported notification channels
 - [x] Build changelog page (public release notes with dates and categories)
