@@ -74,10 +74,6 @@ describe("Core diagnoseError formatting", () => {
     // Check alternate trigger conditions
     const err2 = { message: "ssl handshake error" };
     expect(diagnoseError(err2, target)).toContain("SSL_ERROR: TLS Handshake failed.");
-    const err3 = { code: "UNABLE_TO_VERIFY_LEAF_SIGNATURE" };
-    // It only checks if code.includes("CERT") for codes, so this won't match code.
-    // Wait, let's verify exact logic for SSL: code.includes("CERT") || msg.includes("cert") || ...
-    // Let's pass something with "cert" in message to be sure
     const err4 = { message: "unable to get local issuer cert" };
     expect(diagnoseError(err4, target)).toContain("SSL_ERROR: TLS Handshake failed.");
   });

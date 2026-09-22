@@ -123,6 +123,42 @@ async function claimDueMonitors(now: Date, take: number): Promise<DueMonitor[]> 
   return claimed;
 }
 
+/**
+ * Confirmation retry before a DOWN is persisted.
+ *
+ * A single failed check is not proof of an outage: DNS blips, TLS
+ * renegotiations, and slow origins routinely produce one-off failures. To keep
+ * those from flipping a healthy monitor DOWN, a first-attempt failure is
+ * re-checked after a short pause; only a confirmed failure persists DOWN.
+ */
+const DOWN_CONFIRMATION_RETRY_DELAY_MS = 2_000;
+
+/** Re-runs the appropriate check for the monitor's scheme. */
+async function recheck(
+  monitor: DueMonitor,
+  start: number,
+): Promise<{ status: "UP" | "DOWN"; latency: number; errorReason: string | undefined }> {
+  await new Promise((resolve) => setTimeout(resolve, DOWN_CONFIRMATION_RETRY_DELAY_MS));
+  try {
+    if (
+      monitor.url.startsWith("ping://") ||
+      monitor.url.startsWith("tcp://") ||
+      monitor.type === "PING"
+    ) {
+      const latency = await checkPingMonitor(monitor, start);
+      return { status: "UP", latency, errorReason: undefined };
+    }
+    return await checkHttpMonitor(monitor, Date.now());
+  } catch (retryErr) {
+    const error = retryErr instanceof Error ? retryErr : new Error(String(retryErr));
+    return {
+      status: "DOWN",
+      latency: Math.round(Date.now() - start),
+      errorReason: error.message ? error.message.substring(0, 100) : "UNKNOWN_ERROR",
+    };
+  }
+}
+
 async function checkHttpMonitor(monitor: DueMonitor, start: number) {
   let currentStatus: "UP" | "DOWN" = "DOWN";
   let latency = 0;
@@ -332,6 +368,14 @@ export async function runDueChecks(take = 50): Promise<DueCheckResult[]> {
           currentStatus = result.status;
           latency = result.latency;
           errorReason = result.errorReason;
+          // A bad status code is not confirmed on the first attempt either —
+          // 502/503 blips behind proxies are the classic false DOWN.
+          if (currentStatus === "DOWN") {
+            const confirmed = await recheck(monitor, start);
+            currentStatus = confirmed.status;
+            latency = confirmed.latency;
+            errorReason = confirmed.errorReason;
+          }
         } else {
           errorReason = `Unsupported monitor type for web engine: ${monitor.type}`;
         }
@@ -340,6 +384,21 @@ export async function runDueChecks(take = 50): Promise<DueCheckResult[]> {
         currentStatus = "DOWN";
         const error = err instanceof Error ? err : new Error(String(err));
         errorReason = error.message ? error.message.substring(0, 100) : "UNKNOWN_ERROR";
+
+        // Thrown errors (fetch failures, timeouts) are the most common source
+        // of transient false DOWNs — confirm before persisting.
+        if (
+          monitor.url.startsWith("http://") ||
+          monitor.url.startsWith("https://") ||
+          monitor.url.startsWith("ping://") ||
+          monitor.url.startsWith("tcp://") ||
+          monitor.type === "PING"
+        ) {
+          const confirmed = await recheck(monitor, start);
+          currentStatus = confirmed.status;
+          latency = confirmed.latency;
+          errorReason = confirmed.errorReason;
+        }
       }
 
       const previousStatus = monitor.status;

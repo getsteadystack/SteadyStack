@@ -1649,7 +1649,10 @@ export async function checkSmtp(
     }
 
     if (config.username) {
-      const authResponse = responses[2] || "";
+      // Command order: EHLO, AUTH LOGIN, username, [password]. The final 235
+      // acceptance is the reply to the LAST command sent, not the one after
+      // AUTH LOGIN (which is the 334 username prompt).
+      const authResponse = responses[responses.length - 1] || "";
       const authCode = parseInt(authResponse.slice(0, 3), 10);
       if (authCode !== 235) {
         return {
