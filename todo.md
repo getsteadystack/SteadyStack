@@ -666,11 +666,9 @@
 - [x] Build self-hosted installation guide (single-server Docker Compose)
 - [x] Create Helm chart for Kubernetes self-hosted deployment
 - [x] Add `CHANGELOG.md` and set up automated release notes via GitHub Actions
-- [ ] Create public roadmap (GitHub Project or Linear public board)
 - [x] Set up Hall of Fame / Showcase automatic submission from the UI
 - [x] Add "Powered by SteadyStack" badge for open-source status page users
-- [ ] Build official Discord community server
-- [ ] Holiday mode Suspend all alerts & notifications until a specific date.
+- [x] Holiday mode Suspend all alerts & notifications until a specific date.
 
 ---
 

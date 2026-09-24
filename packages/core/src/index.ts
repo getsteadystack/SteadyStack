@@ -1940,3 +1940,127 @@ export async function checkIcmpPing(
     banner: portResult.isOpen ? "TCP_FALLBACK" : "",
   };
 }
+
+// ===========================================================================
+// DOWN-CONFIRMATION GATE (shared false-positive prevention primitives)
+//
+// A single failed check is not proof of an outage: DNS blips, TLS
+// renegotiations, proxy hiccups, and slow origins routinely produce one-off
+// failures. Industry-standard prevention (UptimeRobot, Hyperping, Better
+// Stack) always re-verifies a first failure from a second attempt before
+// declaring downtime, and most products only flip status after N consecutive
+// failed rounds. These helpers give every engine the same two-layer gate:
+//
+//   1. confirmDownWithRetries — immediate in-pass re-verification of a
+//      first-attempt DOWN (fast retries, no waiting for the next schedule).
+//   2. classifyAttemptOutcome — consecutive-failure threshold so a DOWN only
+//      replaces the recorded status once the monitor's alertThreshold is met.
+// ===========================================================================
+
+export type AttemptTransport = "http" | "ping" | "worker";
+
+/** Result of a single check attempt (any transport). */
+export type CheckAttempt = {
+  status: "UP" | "DOWN";
+  latency: number;
+  errorReason?: string;
+  transport: AttemptTransport;
+};
+
+/**
+ * What the engine should do with an attempt, given the monitor's currently
+ * recorded status and how many consecutive failures have now been observed.
+ */
+export type AttemptOutcome =
+  | "UP" // apply UP (works for recovery from DOWN and staying UP)
+  | "CONFIRMED_DOWN" // persist DOWN
+  | "UNCONFIRMED_DOWN" // not enough consecutive failures — keep previous status
+  | "HOLD_DOWN"; // already DOWN and still failing — persist DOWN, no new alert
+
+/**
+ * Classify a check attempt against the monitor's current recorded status.
+ *
+ * @param attemptStatus      outcome of the (possibly retried) check attempt
+ * @param previousStatus     status currently recorded for the monitor
+ * @param consecutiveFailures consecutive failed checks observed for this
+ *                            monitor including the current attempt
+ * @param downThreshold      monitor-level confirmation threshold (the stored
+ *                           alertThreshold field); falls back to 1 so an
+ *                           unconfigured monitor keeps strict behavior
+ */
+export function classifyAttemptOutcome(
+  attemptStatus: "UP" | "DOWN",
+  previousStatus: string,
+  consecutiveFailures: number,
+  downThreshold?: number,
+): AttemptOutcome {
+  if (attemptStatus === "UP") return "UP";
+
+  const threshold = downThreshold && downThreshold > 0 ? Math.floor(downThreshold) : 1;
+  if (previousStatus === "DOWN") return "HOLD_DOWN";
+  if (consecutiveFailures >= threshold) return "CONFIRMED_DOWN";
+  return "UNCONFIRMED_DOWN";
+}
+
+/**
+ * Re-verify a first-attempt DOWN with immediate retries.
+ *
+ * The first failure is confirmed with one quick retry; if both fail a third
+ * attempt runs before giving up. Any success converts the verdict back to UP,
+ * which is exactly the "repeat the check from a second attempt before
+ * alerting" behavior UptimeRobot applies on their first failed check.
+ *
+ * @param first   the failed first attempt
+ * @param rerun   performs one fresh check attempt at the given start timestamp
+ * @param delayMs pause between retries (keep it short — this blocks the check)
+ */
+// ===========================================================================
+// HOLIDAY MODE (account-wide alert suspension)
+//
+// Users going on vacation need the same “quiet period” status pages and PagerD
+// offer: monitoring keeps running and incidents keep being recorded, but no
+// alert may fire until a chosen date. One pure predicate shared by every
+// dispatch path (web actions, worker queue consumer) keeps the rule identical
+// everywhere.
+// ===========================================================================
+
+/**
+ * Whether the account is currently in holiday mode (all alerts suspended).
+ *
+ * @param holidayModeUntil the user's suspension deadline (Date, ISO string or null)
+ * @param now              evaluation time; defaults to the current time
+ */
+export function isHolidayModeActive(
+  holidayModeUntil?: Date | string | null,
+  now: Date = new Date(),
+): boolean {
+  if (!holidayModeUntil) return false;
+  const until = holidayModeUntil instanceof Date ? holidayModeUntil : new Date(holidayModeUntil);
+  if (Number.isNaN(until.getTime())) return false;
+  return until.getTime() > now.getTime();
+}
+
+/**
+ * Re-verify a first-attempt DOWN with immediate retries.
+ *
+ * The first failure is confirmed with one quick retry; if both fail a third
+ * attempt runs before giving up. Any success converts the verdict back to UP,
+ * which is exactly the "repeat the check from a second attempt before
+ * alerting" behavior UptimeRobot applies on their first failed check.
+ *
+ * @param first   the failed first attempt
+ * @param rerun   performs one fresh check attempt at the given start timestamp
+ * @param delayMs pause between retries (keep it short — this blocks the check)
+ */
+export async function confirmDownWithRetries(
+  first: CheckAttempt,
+  rerun: (start: number) => Promise<CheckAttempt>,
+  delayMs: number,
+): Promise<CheckAttempt> {
+  for (let i = 0; i < 2; i++) {
+    await new Promise((resolve) => setTimeout(resolve, delayMs));
+    const retry = await rerun(Date.now());
+    if (retry.status === "UP") return retry;
+  }
+  return first;
+}

@@ -65,6 +65,19 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
   // Sync Live Events to Query Cache
   useEffect(() => {
     if (lastEvent) {
+      // The WebSocket reconnect replays the last event it saw. Trusting that
+      // blindly made the monitor flip DOWN on screen the moment the user
+      // returned to this tab (refetchOnWindowFocus fetched the fresh DB
+      // status, then a stale live event overwrote it). Only apply live events
+      // that are newer than what the database already shows.
+      const eventTime = new Date(lastEvent.timestamp).getTime();
+      const latestKnown = monitor?.events?.[0]?.timestamp
+        ? new Date(monitor.events[0].timestamp).getTime()
+        : 0;
+      if (Number.isFinite(eventTime) && eventTime < latestKnown) {
+        return; // stale replay — the DB is already more recent
+      }
+
       console.log("Received Live Event:", lastEvent);
       queryClient.setQueryData(["monitor", initialMonitor.id], (oldData: any) => {
         if (!oldData) return oldData;
@@ -72,7 +85,7 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
         const newEvent = {
           id: `live-${Date.now()}`,
           status: lastEvent.status,
-          latency: lastEvent.latency,
+          latency: lastEvent.latency ?? 0,
           timestamp: new Date(lastEvent.timestamp).toISOString(),
           errorReason: null,
           region: lastEvent.region,
@@ -88,12 +101,12 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
       // Optional: Toast for major status changes
       if (monitor?.status !== lastEvent.status) {
         toast(lastEvent.status === "UP" ? "Monitor Recovered" : "Monitor Down", {
-          description: `Latency: ${lastEvent.latency}ms`,
+          description: `Latency: ${lastEvent.latency ?? 0}ms`,
           action: { label: "Dismiss", onClick: () => {} },
         });
       }
     }
-  }, [lastEvent, initialMonitor.id, queryClient, monitor?.status]);
+  }, [lastEvent, initialMonitor.id, queryClient, monitor?.status, monitor?.events]);
 
   const [isLoading, startTransition] = useTransition();
   const { trigger } = useHaptic();

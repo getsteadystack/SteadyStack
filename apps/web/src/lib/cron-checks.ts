@@ -1,8 +1,12 @@
 import prisma, { MonitorType } from "@steadystack/db";
 import {
   DEFAULT_CHECK_TIMEOUT_SECONDS,
+  classifyAttemptOutcome,
+  confirmDownWithRetries,
   decryptSecret,
+  isHolidayModeActive,
   isPrivateOrInternalUrlAsync,
+  type CheckAttempt,
 } from "@steadystack/core";
 import { STEADYSTACK_CANONICAL_USER_AGENT } from "@steadystack/shared";
 import { sendMonitorAlert } from "@steadystack/email";
@@ -46,7 +50,9 @@ interface DueMonitor {
   expectation: unknown;
   interval: number;
   status: string;
+  alertThreshold: number | null;
   maintenanceWindows: unknown[];
+  user?: { holidayModeUntil: Date | null } | null;
   alertRules: Array<{
     channels: Array<{
       id: string;
@@ -114,6 +120,9 @@ async function claimDueMonitors(now: Date, take: number): Promise<DueMonitor[]> 
           where: { startAt: { lte: now }, endAt: { gte: now } },
           take: 1,
         },
+        user: {
+          select: { holidayModeUntil: true },
+        },
       },
     })) as DueMonitor | null;
 
@@ -124,21 +133,98 @@ async function claimDueMonitors(now: Date, take: number): Promise<DueMonitor[]> 
 }
 
 /**
- * Confirmation retry before a DOWN is persisted.
+ * DOWN-confirmation settings.
  *
- * A single failed check is not proof of an outage: DNS blips, TLS
- * renegotiations, and slow origins routinely produce one-off failures. To keep
- * those from flipping a healthy monitor DOWN, a first-attempt failure is
- * re-checked after a short pause; only a confirmed failure persists DOWN.
+ * Two layers keep one-off blips (DNS hiccups, TLS renegotiation, a proxy 502,
+ * a Wi-Fi/power pause on self-hosted engines) from flipping a healthy monitor
+ * DOWN — the same policy UptimeRobot applies (immediate re-check on first
+ * failure, then alerting only after repeated consecutive failures):
+ *
+ *   Layer 1: a first-attempt DOWN is re-verified immediately within the same
+ *   pass (confirmDownWithRetries).
+ *   Layer 2: the consecutive-failure gate below only replaces a non-DOWN
+ *   status once `alertThreshold` failed rounds are observed; unconfirmed
+ *   failures hold the previous status instead of persisting DOWN.
  */
-const DOWN_CONFIRMATION_RETRY_DELAY_MS = 2_000;
+const CONFIRMATION_RETRY_DELAY_MS = 1_500;
+export { CONFIRMATION_RETRY_DELAY_MS };
 
-/** Re-runs the appropriate check for the monitor's scheme. */
-async function recheck(
-  monitor: DueMonitor,
-  start: number,
-): Promise<{ status: "UP" | "DOWN"; latency: number; errorReason: string | undefined }> {
-  await new Promise((resolve) => setTimeout(resolve, DOWN_CONFIRMATION_RETRY_DELAY_MS));
+/**
+ * Minimum failed rounds required before a non-DOWN monitor flips DOWN.
+ * Monitors that explicitly raised alertThreshold get their stricter value;
+ * everyone else gets the UptimeRobot-style default of 2 consecutive
+ * failures, because a single surviving attempt still is not proof of an
+ * outage when all attempts share one network path (the common self-hosted
+ * setup, where the engine runs on the same machine as the dashboard).
+ */
+const DEFAULT_DOWN_CONFIRMATIONS = 2;
+
+function effectiveDownThreshold(monitor: Pick<DueMonitor, "alertThreshold">): number {
+  return monitor.alertThreshold && monitor.alertThreshold > 1
+    ? monitor.alertThreshold
+    : DEFAULT_DOWN_CONFIRMATIONS;
+}
+
+/** Count consecutive DOWN events currently recorded for a monitor. */
+export async function countRecentConsecutiveFailures(monitorId: string, limit = 6): Promise<number> {
+  try {
+    const recent = await prisma.monitorEvent.findMany({
+      where: { monitorId, status: { in: ["UP", "DOWN"] } },
+      orderBy: { timestamp: "desc" },
+      take: limit,
+      select: { status: true },
+    });
+    let count = 0;
+    for (const event of recent) {
+      if (event.status !== "DOWN") break;
+      count++;
+    }
+    return count;
+  } catch {
+    return 0;
+  }
+}
+
+/**
+ * Pure persist-decision gate shared by the scheduled engine and the manual
+ * check action. Given the verified attempt, the monitor's currently recorded
+ * status and its consecutive-failure history, decide what should actually be
+ * persisted. Kept pure so the DOWN-confirmation policy is directly testable.
+ */
+export function resolvePersistenceDecision(input: {
+  attempt: { status: "UP" | "DOWN"; latency: number; errorReason?: string };
+  previousStatus: string;
+  priorConsecutiveFailures: number;
+  downThreshold: number;
+}): { persistedStatus: "UP" | "DOWN"; latency: number; errorReason?: string; unconfirmed: boolean } {
+  const { attempt, previousStatus, priorConsecutiveFailures, downThreshold } = input;
+
+  if (attempt.status === "UP") {
+    return { persistedStatus: "UP", latency: attempt.latency, errorReason: attempt.errorReason, unconfirmed: false };
+  }
+
+  // Already recorded as DOWN and still failing: keep DOWN (no re-alert).
+  if (previousStatus === "DOWN") {
+    return { persistedStatus: "DOWN", latency: attempt.latency, errorReason: attempt.errorReason, unconfirmed: false };
+  }
+
+  // Healthy monitor failing: only flip to DOWN once the threshold is met.
+  if (priorConsecutiveFailures + 1 < downThreshold) {
+    return {
+      persistedStatus: previousStatus as "UP" | "DOWN",
+      latency: attempt.latency,
+      errorReason: `Unconfirmed failure (${priorConsecutiveFailures + 1} of ${downThreshold}): ${
+        attempt.errorReason || "check failed"
+      }`,
+      unconfirmed: true,
+    };
+  }
+
+  return { persistedStatus: "DOWN", latency: attempt.latency, errorReason: attempt.errorReason, unconfirmed: false };
+}
+
+/** One check attempt over the right transport for this monitor. */
+async function performCheckAttempt(monitor: DueMonitor, start: number): Promise<CheckAttempt> {
   try {
     if (
       monitor.url.startsWith("ping://") ||
@@ -146,15 +232,35 @@ async function recheck(
       monitor.type === "PING"
     ) {
       const latency = await checkPingMonitor(monitor, start);
-      return { status: "UP", latency, errorReason: undefined };
+      return { status: "UP", latency, errorReason: undefined, transport: "ping" };
     }
-    return await checkHttpMonitor(monitor, Date.now());
-  } catch (retryErr) {
-    const error = retryErr instanceof Error ? retryErr : new Error(String(retryErr));
+    if (monitor.url.startsWith("http://") || monitor.url.startsWith("https://")) {
+      const result = await checkHttpMonitor(monitor, start);
+      return {
+        status: result.status,
+        latency: result.latency,
+        errorReason: result.errorReason,
+        transport: "http",
+      };
+    }
+    return {
+      status: "DOWN",
+      latency: Math.round(Date.now() - start),
+      errorReason: `Unsupported monitor type for web engine: ${monitor.type}`,
+      transport: "http",
+    };
+  } catch (err) {
+    const error = err instanceof Error ? err : new Error(String(err));
     return {
       status: "DOWN",
       latency: Math.round(Date.now() - start),
       errorReason: error.message ? error.message.substring(0, 100) : "UNKNOWN_ERROR",
+      transport:
+        monitor.url.startsWith("ping://") ||
+        monitor.url.startsWith("tcp://") ||
+        monitor.type === "PING"
+          ? "ping"
+          : "http",
     };
   }
 }
@@ -287,6 +393,13 @@ async function dispatchAlerts(
 ) {
   if (previousStatus !== "UP" || currentStatus !== "DOWN") return;
 
+  // Holiday mode: the owner suspended all alerts until a date. Checks and
+  // incidents continue, but nothing is delivered.
+  if (isHolidayModeActive(monitor.user?.holidayModeUntil)) {
+    console.log(`[CronChecks] Holiday mode active — suppressing alert for ${monitor.name}`);
+    return;
+  }
+
   for (const rule of monitor.alertRules) {
     for (const channel of rule.channels) {
       try {
@@ -355,53 +468,44 @@ export async function runDueChecks(take = 50): Promise<DueCheckResult[]> {
   await Promise.all(
     checks.map(async (monitor) => {
       const start = Date.now();
-      let currentStatus: "UP" | "DOWN" = "DOWN";
-      let latency = 0;
-      let errorReason: string | undefined;
+      const previousStatus = monitor.status;
 
-      try {
-        if (monitor.url.startsWith("ping://") || monitor.url.startsWith("tcp://") || monitor.type === "PING") {
-          latency = await checkPingMonitor(monitor, start);
-          currentStatus = "UP";
-        } else if (monitor.url.startsWith("http://") || monitor.url.startsWith("https://")) {
-          const result = await checkHttpMonitor(monitor, start);
-          currentStatus = result.status;
-          latency = result.latency;
-          errorReason = result.errorReason;
-          // A bad status code is not confirmed on the first attempt either —
-          // 502/503 blips behind proxies are the classic false DOWN.
-          if (currentStatus === "DOWN") {
-            const confirmed = await recheck(monitor, start);
-            currentStatus = confirmed.status;
-            latency = confirmed.latency;
-            errorReason = confirmed.errorReason;
-          }
-        } else {
-          errorReason = `Unsupported monitor type for web engine: ${monitor.type}`;
-        }
-      } catch (err: unknown) {
-        latency = 0;
-        currentStatus = "DOWN";
-        const error = err instanceof Error ? err : new Error(String(err));
-        errorReason = error.message ? error.message.substring(0, 100) : "UNKNOWN_ERROR";
+      // First attempt (throws are normalized inside performCheckAttempt).
+      let attempt = await performCheckAttempt(monitor, start);
 
-        // Thrown errors (fetch failures, timeouts) are the most common source
-        // of transient false DOWNs — confirm before persisting.
-        if (
-          monitor.url.startsWith("http://") ||
-          monitor.url.startsWith("https://") ||
-          monitor.url.startsWith("ping://") ||
-          monitor.url.startsWith("tcp://") ||
-          monitor.type === "PING"
-        ) {
-          const confirmed = await recheck(monitor, start);
-          currentStatus = confirmed.status;
-          latency = confirmed.latency;
-          errorReason = confirmed.errorReason;
-        }
+      // Layer 1: never trust a first-attempt DOWN — re-verify immediately.
+      if (attempt.status === "DOWN") {
+        console.warn(
+          `[CronChecks] First attempt failed for ${monitor.name} (${attempt.errorReason}) — verifying before persisting`,
+        );
+        attempt = await confirmDownWithRetries(
+          attempt,
+          (retryStart) => performCheckAttempt(monitor, retryStart),
+          CONFIRMATION_RETRY_DELAY_MS,
+        );
       }
 
-      const previousStatus = monitor.status;
+      // Layer 2: consecutive-failure gate. A DOWN only replaces a healthy
+      // status once alertThreshold failed rounds are observed.
+      const downThreshold = effectiveDownThreshold(monitor);
+      const priorFailures =
+        attempt.status === "DOWN" && previousStatus !== "DOWN"
+          ? await countRecentConsecutiveFailures(monitor.id)
+          : 0;
+      const decision = resolvePersistenceDecision({
+        attempt,
+        previousStatus,
+        priorConsecutiveFailures: priorFailures,
+        downThreshold,
+      });
+      const persistedStatus = decision.persistedStatus;
+      const { latency, errorReason } = decision;
+      if (decision.unconfirmed) {
+        console.log(
+          `[CronChecks] Unconfirmed DOWN for ${monitor.name} — holding status ${persistedStatus}`,
+        );
+      }
+
       const nextCheck = new Date(Date.now() + (monitor.interval || 60) * 1000);
 
       try {
@@ -409,7 +513,7 @@ export async function runDueChecks(take = 50): Promise<DueCheckResult[]> {
           prisma.monitorEvent.create({
             data: {
               monitorId: monitor.id,
-              status: currentStatus,
+              status: persistedStatus as any,
               latency,
               errorReason,
               timestamp: new Date(),
@@ -418,7 +522,7 @@ export async function runDueChecks(take = 50): Promise<DueCheckResult[]> {
           prisma.monitor.update({
             where: { id: monitor.id },
             data: {
-              status: currentStatus,
+              status: persistedStatus as any,
               lastCheck: new Date(),
               nextCheck,
             },
@@ -430,9 +534,9 @@ export async function runDueChecks(take = 50): Promise<DueCheckResult[]> {
         console.error(`[CronChecks] Failed to persist result for ${monitor.id}:`, dbErr);
       }
 
-      await dispatchAlerts(monitor, previousStatus, currentStatus, errorReason);
+      await dispatchAlerts(monitor, previousStatus, persistedStatus, errorReason);
 
-      results.push({ id: monitor.id, name: monitor.name, status: currentStatus, latency });
+      results.push({ id: monitor.id, name: monitor.name, status: persistedStatus, latency });
     }),
   );
 

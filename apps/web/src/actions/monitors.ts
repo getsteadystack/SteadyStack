@@ -16,7 +16,16 @@ import {
   isEncrypted,
   inspectRedirectChain,
   createMtlsDispatcher,
+  classifyAttemptOutcome,
+  confirmDownWithRetries,
+  isHolidayModeActive,
+  type CheckAttempt,
 } from "@steadystack/core";
+import {
+  CONFIRMATION_RETRY_DELAY_MS,
+  countRecentConsecutiveFailures,
+  resolvePersistenceDecision,
+} from "@/lib/cron-checks";
 import { STEADYSTACK_CANONICAL_USER_AGENT } from "@steadystack/shared";
 import {
   assertMonitorLimits,
@@ -901,6 +910,7 @@ export async function checkMonitor(
       user: {
         select: {
           email: true,
+          holidayModeUntil: true,
         },
       },
     },
@@ -935,11 +945,28 @@ export async function checkMonitor(
   }
 
   const start = Date.now();
-  let currentStatus: "UP" | "DOWN" = "DOWN";
-  let latency = 0;
-  let errorReason: string | undefined = undefined;
 
-  try {
+  const isWorkerCheckedType = (type: string) =>
+    type === "BROWSER" ||
+    type === "SEQUENCE" ||
+    type === "SSL" ||
+    type === "GRPC" ||
+    type === "SMTP" ||
+    type === "FTP" ||
+    type === "ICMP" ||
+    type === "MAIL";
+
+  // One full check attempt (worker-backed protocols run via the Cloudflare
+  // worker, everything else runs locally). Throws are normalized to DOWN.
+  const runAttempt = async (): Promise<CheckAttempt> => {
+    let currentStatus: "UP" | "DOWN" = "DOWN";
+    let latency = 0;
+    let errorReason: string | undefined = undefined;
+    let transport: CheckAttempt["transport"] = isWorkerCheckedType(monitor.type)
+      ? "worker"
+      : "http";
+
+    try {
     if (
       monitor.type === "BROWSER" ||
       monitor.type === "SEQUENCE" ||
@@ -981,6 +1008,7 @@ export async function checkMonitor(
       }
     } else {
       if (monitor.url.startsWith("ping://") || monitor.url.startsWith("tcp://")) {
+        transport = "ping";
         const isPing = monitor.url.startsWith("ping://");
         const part = monitor.url.replace(isPing ? "ping://" : "tcp://", "");
         const [hostname, portStr] = part.split(":");
@@ -1115,11 +1143,51 @@ export async function checkMonitor(
         throw new Error(`Unsupported protocol in URL: ${monitor.url}`);
       }
     }
-  } catch (err: any) {
-    console.error(`Error checking ${monitor.url}:`, err);
-    latency = 0;
-    currentStatus = "DOWN";
-    errorReason = err.message ? err.message.substring(0, 100) : "UNKNOWN_ERROR";
+    } catch (err: any) {
+      console.error(`Error checking ${monitor.url}:`, err);
+      latency = 0;
+      currentStatus = "DOWN";
+      errorReason = err.message ? err.message.substring(0, 100) : "UNKNOWN_ERROR";
+    }
+
+    return { status: currentStatus, latency, errorReason, transport };
+  };
+
+  // Layer 1: a first-attempt DOWN is re-verified immediately — manual checks
+  // run from the server's own network, so one dropped connection is not proof
+  // of an outage (the same immediate second check UptimeRobot runs).
+  let attempt = await runAttempt();
+  if (attempt.status === "DOWN") {
+    console.warn(
+      `[ManualCheck] First attempt failed for ${monitor.name} (${attempt.errorReason}) — verifying before persisting`,
+    );
+    attempt = await confirmDownWithRetries(attempt, () => runAttempt(), CONFIRMATION_RETRY_DELAY_MS);
+  }
+
+  // Layer 2: consecutive-failure gate — a DOWN only replaces a healthy status
+  // once the monitor's confirmation threshold is met (shared with the
+  // scheduled engine's resolvePersistenceDecision gate).
+  const monitorAlertThreshold = (monitor as any).alertThreshold as number | null | undefined;
+  const downThreshold =
+    monitorAlertThreshold && monitorAlertThreshold > 1 ? monitorAlertThreshold : 2;
+  const priorFailures =
+    attempt.status === "DOWN" && monitor.status !== "DOWN"
+      ? await countRecentConsecutiveFailures(monitor.id)
+      : 0;
+  const decision = resolvePersistenceDecision({
+    attempt,
+    previousStatus: monitor.status,
+    priorConsecutiveFailures: priorFailures,
+    downThreshold,
+  });
+
+  const currentStatus: "UP" | "DOWN" = decision.persistedStatus as "UP" | "DOWN";
+  const latency = decision.latency;
+  const errorReason: string | undefined = decision.errorReason;
+  if (decision.unconfirmed) {
+    console.log(
+      `[ManualCheck] Unconfirmed DOWN for ${monitor.name} — holding status ${currentStatus}`,
+    );
   }
 
   try {
@@ -1351,6 +1419,13 @@ async function dispatchNotifications(
   console.log(
     `[Notification] Dispatching for ${monitor.name} (${status}). Found ${matchingRules.length} rules.`,
   );
+
+  // Holiday mode: the owner suspended all alerts until a date. Checks and
+  // incidents continue, but nothing is delivered.
+  if (isHolidayModeActive(monitor.user?.holidayModeUntil)) {
+    console.log(`[Notification] Holiday mode active — suppressing alert for ${monitor.name}`);
+    return;
+  }
 
   if (matchingRules.length === 0) {
     console.log("[Notification] No alert rules found.");

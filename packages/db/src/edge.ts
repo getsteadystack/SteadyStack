@@ -64,9 +64,34 @@ export function createPrisma(databaseUrl?: string) {
   let adapter: any;
 
   if (isNeon) {
-    // Neon database connection string requires SSL, which @neondatabase/serverless handles natively via WebSockets
-    pool = new NeonPool({ connectionString: cleanUrl });
-    adapter = new PrismaNeon(pool);
+    // Escape hatch for local wrangler dev: the Neon serverless driver's
+    // WebSocket tunnel crashes inside the local workerd build (its connects
+    // surface as workerd "internal error; reference = ..." floods and the
+    // adapter throws "No database host or connection string was set"), while
+    // the standard pg driver connects fine via pg-cloudflare. Set
+    // DB_USE_PG_DRIVER=true in apps/worker/.dev.vars to use it locally.
+    // Production keeps the Neon WebSocket driver, which is the recommended
+    // path on the deployed Workers runtime.
+    const usePgDriver =
+      (typeof process !== "undefined" &&
+        String(process.env.DB_USE_PG_DRIVER ?? "").trim().toLowerCase() === "true") ||
+      (globalThis as any).DB_USE_PG_DRIVER === "true";
+
+    if (usePgDriver) {
+      pool = new Pool({
+        ...poolConfig,
+        // The cron fan-out runs many queries concurrently; a 1-connection
+        // pool makes queued waits trip connectionTimeoutMillis in local dev.
+        max: 10,
+        connectionString: cleanUrl,
+        ssl: { rejectUnauthorized: false },
+      });
+      adapter = new PrismaPg(pool);
+    } else {
+      // Neon database connection string requires SSL, which @neondatabase/serverless handles natively via WebSockets
+      pool = new NeonPool({ connectionString: cleanUrl });
+      adapter = new PrismaNeon(pool);
+    }
   } else {
     // Only enable SSL if explicitly specified in the connection string (sslmode=require/verify) or provider requires it
     if (isSsl) {

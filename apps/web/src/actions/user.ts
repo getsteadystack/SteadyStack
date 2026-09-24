@@ -2,6 +2,9 @@
 
 import { auth } from "@steadystack/auth";
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
+import { isHolidayModeActive } from "@steadystack/core";
+import { z } from "zod";
 
 export async function getUserPreferences() {
   const session = await auth.api.getSession({
@@ -22,7 +25,63 @@ export async function getUserPreferences() {
     dateFormat: session.user.dateFormat || "MM/DD/YYYY",
     timeFormat: session.user.timeFormat || "HH:mm",
     locale: session.user.locale || "en",
+    holidayModeUntil: (session.user as any).holidayModeUntil ?? null,
+    holidayModeActive: isHolidayModeActive((session.user as any).holidayModeUntil),
   };
+}
+
+const holidayModeSchema = z.object({
+  /** ISO date string for the suspension deadline; null/undefined disables holiday mode. */
+  until: z.string().datetime({ offset: true }).nullable().optional(),
+});
+
+/**
+ * Enable or disable holiday mode (suspend ALL alerts until a date).
+ * Passing a future date turns it on; passing null/undefined turns it off.
+ */
+export async function setHolidayMode(data: { until?: string | null }) {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
+
+  if (!session?.user) {
+    throw new Error("Unauthorized");
+  }
+
+  const parsed = holidayModeSchema.safeParse(data);
+  if (!parsed.success) {
+    return { success: false, error: "Invalid date" };
+  }
+
+  try {
+    const prisma = (await import("@steadystack/db")).default;
+
+    let until: Date | null = null;
+    if (parsed.data.until) {
+      until = new Date(parsed.data.until);
+      if (Number.isNaN(until.getTime())) {
+        return { success: false, error: "Invalid date" };
+      }
+      // A deadline in the past would silently do nothing — reject it so the
+      // UI can tell the user to pick a future date instead.
+      if (until.getTime() <= Date.now()) {
+        return { success: false, error: "Holiday mode end must be in the future" };
+      }
+    }
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { holidayModeUntil: until },
+    });
+
+    revalidatePath("/dashboard");
+    revalidatePath("/dashboard/settings");
+
+    return { success: true, holidayModeUntil: until }; 
+  } catch (error) {
+    console.error("Failed to set holiday mode:", error);
+    return { success: false, error: "Failed to update holiday mode" };
+  }
 }
 
 export async function updateUserPreferences(data: {

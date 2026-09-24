@@ -19,6 +19,7 @@ export default function DashboardClient({
   onboardingStatus,
   usageSummary,
   userEmail,
+  holidayModeUntil,
   isDemo = false,
 }: {
   monitors: any[];
@@ -27,6 +28,7 @@ export default function DashboardClient({
   onboardingStatus: OnboardingStatus;
   usageSummary?: UsageSummary;
   userEmail?: string;
+  holidayModeUntil?: string | null;
   isDemo?: boolean;
 }) {
   return (
@@ -37,6 +39,7 @@ export default function DashboardClient({
       onboardingStatus={onboardingStatus}
       usageSummary={usageSummary}
       userEmail={userEmail}
+      holidayModeUntil={holidayModeUntil}
       isDemo={isDemo}
     />
   );

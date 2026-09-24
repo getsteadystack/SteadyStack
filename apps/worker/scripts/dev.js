@@ -8,9 +8,28 @@
  */
 
 const { spawn } = require("node:child_process");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const TICK_INTERVAL_MS = Number(process.env.CRON_INTERVAL_MS || 60000);
 const WRANGLER_URL = process.env.STEADYSTACK_WORKER_URL || "http://localhost:8787";
+
+// The Neon serverless driver's WebSocket tunnel crashes inside the local
+// workerd build ("internal error; reference = ..." floods + Prisma "No
+// database host or connection string" errors). Local dev must run Prisma on
+// the standard pg driver instead — production ignores this flag and keeps
+// the Neon driver. Ensure it's present in .dev.vars before every dev start.
+const devVarsPath = path.join(__dirname, "..", ".dev.vars");
+try {
+  let contents = fs.existsSync(devVarsPath) ? fs.readFileSync(devVarsPath, "utf8") : "";
+  if (!/^DB_USE_PG_DRIVER=\s*true\s*$/m.test(contents)) {
+    contents = contents.replace(/\r?\n$/, "") + (contents ? "\r\n" : "") + "DB_USE_PG_DRIVER=true\r\n";
+    fs.writeFileSync(devVarsPath, contents);
+    console.log("[WorkerDev] Added DB_USE_PG_DRIVER=true to .dev.vars (required for local wrangler dev)");
+  }
+} catch (err) {
+  console.warn("[WorkerDev] Could not ensure DB_USE_PG_DRIVER in .dev.vars:", err.message);
+}
 
 let wranglerExited = false;
 
