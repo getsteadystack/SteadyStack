@@ -1,0 +1,17 @@
+version: 1
+docs_paths:
+  - "docs/sdks/**/*.md"
+  - "README.md"
+never_touch:
+  - "docs/internal/**"
+changelog: "CHANGELOG.md"
+code_to_docs_map:
+  "packages/node/src/*": "docs/sdks/node-reference.md"
+  "packages/python/src/*": "docs/sdks/python-reference.md"
+what_counts_as_user_facing: |
+  New SDK exported methods, parameter changes, breaking signature updates, deprecation warnings.
+style_guide: |
+  Concise code-first documentation with typed TypeScript/Python snippets side by side.
+min_confidence: high
+max_files_per_pr: 4
+max_changed_lines_per_pr: 180
