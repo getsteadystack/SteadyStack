@@ -49,3 +49,6 @@ Release notes are generated automatically from [Conventional Commits](https://ww
 
 [Unreleased]: https://github.com/getsteadystack/SteadyStack/compare/v1.1.2...HEAD
 [1.1.2]: https://github.com/getsteadystack/SteadyStack/releases/tag/v1.1.2
+
+### Changed
+- fix(worker): accurately handle proxy infrastructure failures in multi-vector mesh ([#225](https://github.com/pulls/225)) by @alexgutscher26 - API fix: fix(worker): accurately handle proxy infrastructure failures in multi-vector mesh
