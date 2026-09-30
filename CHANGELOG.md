@@ -9,6 +9,12 @@ Release notes are generated automatically from [Conventional Commits](https://ww
 
 ---
 
+## [1.4.0] - 2026-09-30
+
+### Added
+
+- **Automated Documentation Pipeline:** Integrated DocSync AI to automatically generate and update API references, architecture overviews, and security documentation from codebase changes.
+
 ## [1.3.0] - 2026-08-19
 
 ### Added
