@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
@@ -163,6 +164,10 @@ export default async function RootLayout({
         <Providers>{children}</Providers>
         <ServiceWorkerRegistration />
         <CookieConsent />
+        <Script
+          src="https://html-to-friendly.lovable.app/api/public/embed.js?site=0b067356-8f4d-461a-addc-ccb8540505b1"
+          strategy="afterInteractive"
+        />
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>
     </html>
