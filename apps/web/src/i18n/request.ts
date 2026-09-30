@@ -33,18 +33,20 @@ export default getRequestConfig(async ({ requestLocale }) => {
 });
 
 /**
- * Read the user's saved locale preference via better-auth. Wrapped in
- * try/catch: request.ts runs for every request — including unauthenticated
- * and static-generation contexts — and must never break rendering.
+ * Read the user's saved locale preference via cookies/headers.
+ * Avoid importing server auth/database packages to ensure compatibility
+ * with Edge Middleware and avoid connection pool exhaustion.
  */
 async function userLocaleOverride(): Promise<string | undefined> {
   try {
-    const { auth } = await import("@steadystack/auth");
     const h = await headers();
-    const session = await auth.api.getSession({ headers: h });
-    const locale = (session?.user as unknown as { locale?: string } | undefined)?.locale;
-    if (locale && routing.locales.includes(locale as any)) {
-      return locale;
+    const cookieHeader = h.get("cookie") || "";
+    const match = cookieHeader.match(/(?:^|;\s*)(?:NEXT_LOCALE|locale|user_locale)=([^;]+)/);
+    if (match && match[1]) {
+      const locale = decodeURIComponent(match[1]);
+      if (routing.locales.includes(locale as any)) {
+        return locale;
+      }
     }
   } catch {
     // Unauthenticated or auth unavailable — browser/default locale applies.
