@@ -1,19 +1,31 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none">
   <defs>
-    <linearGradient id="ss-fav-grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#10B981" />
-      <stop offset="100%" stop-color="#06B6D4" />
+    <linearGradient id="ss-s-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FFF066" />
+      <stop offset="60%" stop-color="#FFD439" />
+      <stop offset="100%" stop-color="#FF9900" />
     </linearGradient>
+    <linearGradient id="ss-s-glow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10B981" />
+      <stop offset="100%" stop-color="#34D399" />
+    </linearGradient>
+    <radialGradient id="ss-bg-grad" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#23211C" />
+      <stop offset="100%" stop-color="#0E0D0C" />
+    </radialGradient>
   </defs>
-  <!-- Background Disc / Rounded Square -->
-  <rect width="32" height="32" rx="8" fill="#0B132B" />
-  
-  <!-- Base Stack Tier -->
-  <path d="M6 22L16 27L26 22L23 19.5L16 23L9 19.5L6 22Z" fill="url(#ss-fav-grad)" fill-opacity="0.5" />
-  
-  <!-- Top Stack Hex Face -->
-  <path d="M16 6L26 11L16 16L6 11L16 6Z" fill="#0E1B38" stroke="url(#ss-fav-grad)" stroke-width="1.75" stroke-linejoin="round" />
-  
-  <!-- Pulse Waveform -->
-  <path d="M10 11H13L15 8L16 14L18 9L19 12L22 11" stroke="#10B981" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" />
+
+  <!-- Container Squircle with Precision Border -->
+  <rect width="32" height="32" rx="8" fill="url(#ss-bg-grad)" />
+  <rect x="0.5" y="0.5" width="31" height="31" rx="7.5" stroke="#332F27" stroke-width="1" />
+
+  <!-- The S-Stack Monogram Mark -->
+  <!-- Top Tier Blade -->
+  <path d="M9 8.5C9 7.67 9.67 7 10.5 7H21.5C23.43 7 25 8.57 25 10.5C25 12.43 23.43 14 21.5 14H15C13.9 14 13 14.9 13 16C13 17.1 13.9 18 15 18H21.5C22.33 18 23 18.67 23 19.5C23 20.33 22.33 21 21.5 21H10.5C8.57 21 7 19.43 7 17.5C7 15.57 8.57 14 10.5 14H17C18.1 14 19 13.1 19 12C19 10.9 18.1 10 17 10H10.5C9.67 10 9 9.33 9 8.5Z" fill="url(#ss-s-gold)" />
+
+  <!-- Bottom Stabilizer Blade -->
+  <path d="M10.5 22C9.67 22 9 22.67 9 23.5C9 24.33 9.67 25 10.5 25H21.5C22.33 25 23 24.33 23 23.5C23 22.67 22.33 22 21.5 22H10.5Z" fill="url(#ss-s-gold)" fill-opacity="0.4" />
+
+  <!-- Live Quorum Beacon Dot -->
+  <circle cx="23" cy="9.5" r="1.8" fill="url(#ss-s-glow)" />
 </svg>

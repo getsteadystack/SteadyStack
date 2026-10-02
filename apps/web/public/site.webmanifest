@@ -1,5 +1,5 @@
 {
-  "name": "SteadyStack — Edge-Native Uptime Monitoring",
+  "name": "SteadyStack 2.0 — Edge-Native Uptime Monitoring",
   "short_name": "SteadyStack",
   "icons": [
     {
@@ -18,8 +18,8 @@
       "type": "image/svg+xml"
     }
   ],
-  "theme_color": "#0B132B",
-  "background_color": "#080C14",
+  "theme_color": "#181715",
+  "background_color": "#12110E",
   "display": "standalone",
   "orientation": "portrait"
 }

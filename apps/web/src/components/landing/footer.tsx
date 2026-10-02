@@ -9,11 +9,15 @@ export default function LandingFooter() {
           {/* Col 1 - Brand */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <div className="size-7 rounded-lg bg-[#ffd439] text-[#23211a] flex items-center justify-center font-serif font-bold text-sm">
-                S
+              <div className="size-7 rounded-lg overflow-hidden bg-[#181715] flex items-center justify-center">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src="/icon.svg" alt="SteadyStack 2.0" className="size-7 object-contain" />
               </div>
               <span className="text-[#23211a] font-serif font-bold tracking-tight text-lg">
                 SteadyStack
+              </span>
+              <span className="text-[10px] font-mono font-bold bg-[#ffd439]/30 text-[#23211a] px-1.5 py-0.5 rounded border border-[#ffd439]/60">
+                2.0
               </span>
             </div>
             <p className="text-[#5c5c5c] text-xs font-medium max-w-xs leading-relaxed">

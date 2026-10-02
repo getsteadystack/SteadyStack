@@ -39,11 +39,15 @@ export default function LandingHeader() {
       <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group shrink-0">
-          <div className="size-8 rounded-xl bg-[#ffd439] text-[#23211a] flex items-center justify-center font-bold font-serif text-lg shadow-xs group-hover:scale-105 transition-transform">
-            S
+          <div className="size-8 rounded-xl overflow-hidden shadow-xs group-hover:scale-105 transition-transform flex items-center justify-center bg-[#181715]">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/icon.svg" alt="SteadyStack 2.0" className="size-8 object-contain" />
           </div>
           <span className="font-serif font-semibold text-xl tracking-tight text-[#23211a]">
             SteadyStack
+          </span>
+          <span className="text-[10px] font-mono font-bold bg-[#ffd439]/30 text-[#23211a] px-1.5 py-0.5 rounded border border-[#ffd439]/60">
+            2.0
           </span>
         </Link>
 

@@ -118,15 +118,21 @@ export function Sidebar() {
           )}
         >
           <Link href="/dashboard" className="flex items-center gap-3 group">
-            <div className="relative flex items-center justify-center size-9 rounded-xl bg-[#ffd439] text-[#23211a] font-bold shadow-xs shrink-0 group-hover:scale-105 transition-transform">
-              <Activity className="size-5" />
+            <div className="relative flex items-center justify-center size-9 rounded-xl overflow-hidden bg-[#181715] shadow-xs shrink-0 group-hover:scale-105 transition-transform">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon.svg" alt="SteadyStack" className="size-9 object-contain" />
             </div>
 
             {!isCollapsed && (
               <div className="flex flex-col">
-                <span className="font-serif text-base font-semibold tracking-tight text-foreground">
-                  SteadyStack
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-serif text-base font-semibold tracking-tight text-foreground">
+                    SteadyStack
+                  </span>
+                  <span className="text-[9px] font-mono font-bold bg-[#ffd439]/30 text-amber-500 px-1 rounded border border-[#ffd439]/40">
+                    2.0
+                  </span>
+                </div>
                 <span className="font-mono text-[9px] text-muted-foreground tracking-wider uppercase">
                   Edge Monitoring
                 </span>

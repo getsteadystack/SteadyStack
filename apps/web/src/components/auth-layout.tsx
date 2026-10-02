@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { Zap } from "lucide-react";
 import LandingHeader from "@/components/landing/header";
 
 export default function AuthLayout({
@@ -38,9 +37,10 @@ export default function AuthLayout({
           <div className="mb-8 text-center flex flex-col items-center">
             <Link
               href="/"
-              className="mb-6 flex items-center justify-center size-12 rounded-2xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors"
+              className="mb-6 flex items-center justify-center size-14 rounded-2xl bg-[#181715] border border-[#2e2c26] shadow-md hover:scale-105 transition-transform overflow-hidden p-1.5"
             >
-              <Zap className="size-6" fill="currentColor" strokeWidth={1} />
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src="/icon.svg" alt="SteadyStack" className="size-full object-contain" />
             </Link>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">{displayTitle}</h1>
             <p className="text-muted-foreground mt-2 text-sm font-medium">{subtitle}</p>
