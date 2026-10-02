@@ -205,11 +205,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     }
 
     const errorMessage = result.error?.message || "Failed to send email";
-    console.error(`[SteadyStack Email] Error sending to ${to}:`, errorMessage);
+    console.error("[SteadyStack Email] Error sending to %s:", to, errorMessage);
     return { error: errorMessage };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown email error";
-    console.error(`[SteadyStack Email] Exception sending to ${to}:`, error);
+    console.error("[SteadyStack Email] Exception sending to %s:", to, error);
     return { error: errorMessage };
   }
 }
