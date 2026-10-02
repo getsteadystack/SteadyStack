@@ -134,10 +134,18 @@ export function getResendClient(apiKey?: string): Resend {
 // ============================================================================
 
 function stripHtmlTagsToPlainText(html: string): string {
-  return html
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<[^>]+>/g, " ")
+  let sanitized = html;
+  let previous: string;
+
+  do {
+    previous = sanitized;
+    sanitized = sanitized
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<[^>]+>/g, " ");
+  } while (sanitized !== previous);
+
+  return sanitized
     .replace(/&nbsp;/g, " ")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
