@@ -427,7 +427,7 @@ export async function deleteIncidentVector(
     await namespace.deleteOne({ id: incidentId });
     return { success: true };
   } catch (error) {
-    console.warn(`[Pinecone] Failed to delete vector for incident ${incidentId}:`, error);
+    console.warn("[Pinecone] Failed to delete vector for incident %s:", incidentId, error);
     return { success: false };
   }
 }
