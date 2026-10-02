@@ -83,8 +83,10 @@ export async function checkServiceLiveStatus(
 
   try {
     let parsedUrl: URL;
+    let expectedHost: string;
     try {
       parsedUrl = apiEndpoint ? new URL(apiEndpoint) : new URL(`https://${domain}`);
+      expectedHost = new URL(`https://${domain}`).hostname.toLowerCase().replace(/\.$/, "");
     } catch {
       return {
         success: false,
@@ -150,7 +152,19 @@ export async function checkServiceLiveStatus(
       };
     }
 
-    const canonicalUrl = new URL(`${parsedUrl.protocol}//${normalizedHost}`);
+    if (normalizedHost !== expectedHost) {
+      return {
+        success: false,
+        domain,
+        status: "OUTAGE",
+        latencyMs: 0,
+        checkedAt: now,
+        probes: [],
+        error: "API endpoint host must match the requested domain.",
+      };
+    }
+
+    const canonicalUrl = new URL(`https://${expectedHost}`);
     canonicalUrl.pathname = parsedUrl.pathname;
     canonicalUrl.search = parsedUrl.search;
     const targetUrl = canonicalUrl.toString();

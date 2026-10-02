@@ -130,6 +130,12 @@ export async function POST(req: NextRequest) {
   const safeUrl = validation.normalizedUrl;
 
   const regionList: string[] = Array.isArray(regions) ? regions : ["wnam", "weur", "apac"];
+  const MIN_TIMEOUT_MS = 1000;
+  const MAX_TIMEOUT_MS = 30000;
+  const numericTimeoutMs = typeof timeoutMs === "number" ? timeoutMs : Number(timeoutMs);
+  const safeTimeoutMs = Number.isFinite(numericTimeoutMs)
+    ? Math.min(MAX_TIMEOUT_MS, Math.max(MIN_TIMEOUT_MS, Math.floor(numericTimeoutMs)))
+    : 8000;
 
   // Perform multi-region parallel synthetic fetch
   const regionNames: Record<string, { name: string; flag: string }> = {
@@ -148,7 +154,7 @@ export async function POST(req: NextRequest) {
       const meta = regionNames[regionCode] || { name: regionCode, flag: "🌐" };
       try {
         const controller = new AbortController();
-        const timer = setTimeout(() => controller.abort(), timeoutMs);
+        const timer = setTimeout(() => controller.abort(), safeTimeoutMs);
 
         const res = await fetch(safeUrl, {
           method: method.toUpperCase(),

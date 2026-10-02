@@ -134,15 +134,23 @@ export function getResendClient(apiKey?: string): Resend {
 // ============================================================================
 
 function stripHtmlTagsToPlainText(html: string): string {
-  return html
-    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
-    .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
-    .replace(/<[^>]+>/g, " ")
+  let sanitized = html;
+  let previous: string;
+
+  do {
+    previous = sanitized;
+    sanitized = sanitized
+      .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, "")
+      .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, "")
+      .replace(/<[^>]+>/g, " ");
+  } while (sanitized !== previous);
+
+  return sanitized
     .replace(/&nbsp;/g, " ")
-    .replace(/&amp;/g, "&")
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, "&")
     .replace(/\s{2,}/g, " ")
     .trim();
 }
@@ -197,11 +205,11 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
     }
 
     const errorMessage = result.error?.message || "Failed to send email";
-    console.error(`[SteadyStack Email] Error sending to ${to}:`, errorMessage);
+    console.error("[SteadyStack Email] Error sending to %s:", to, errorMessage);
     return { error: errorMessage };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown email error";
-    console.error(`[SteadyStack Email] Exception sending to ${to}:`, error);
+    console.error("[SteadyStack Email] Exception sending to %s:", to, error);
     return { error: errorMessage };
   }
 }

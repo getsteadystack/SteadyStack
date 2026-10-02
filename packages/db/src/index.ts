@@ -31,6 +31,13 @@ export function createPrisma(databaseUrl?: string, poolUrlOverride?: string) {
     (typeof globalThis !== "undefined" ? globalThis.DATABASE_POOL_URL : undefined) ||
     url;
 
+  let poolHostname = "";
+  try {
+    poolHostname = new URL(poolUrl).hostname.toLowerCase();
+  } catch {
+    poolHostname = "";
+  }
+
   // Determine if SSL is needed but strip params that pg doesn't understand from the URL.
   const isSsl = poolUrl.includes("sslmode=require") || poolUrl.includes("sslmode=verify");
   // pg driver cannot handle channel_binding= or sslmode= as URL query params — it tries to use
@@ -58,11 +65,15 @@ export function createPrisma(databaseUrl?: string, poolUrlOverride?: string) {
 
   // Always enable SSL for cloud PostgreSQL providers and production
   const isCloudProvider =
-    poolUrl.includes("supabase.com") ||
-    poolUrl.includes("supabase.co") ||
-    poolUrl.includes("neon.tech") ||
-    poolUrl.includes("pooler") ||
-    poolUrl.includes("amazonaws.com");
+    poolHostname === "supabase.com" ||
+    poolHostname.endsWith(".supabase.com") ||
+    poolHostname === "supabase.co" ||
+    poolHostname.endsWith(".supabase.co") ||
+    poolHostname === "neon.tech" ||
+    poolHostname.endsWith(".neon.tech") ||
+    poolHostname.includes("pooler") ||
+    poolHostname === "amazonaws.com" ||
+    poolHostname.endsWith(".amazonaws.com");
 
   if (isSsl || isCloudProvider || process.env.NODE_ENV === "production") {
     poolConfig.ssl = { rejectUnauthorized: false };
