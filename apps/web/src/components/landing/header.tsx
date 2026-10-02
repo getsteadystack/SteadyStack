@@ -87,7 +87,7 @@ export default function LandingHeader() {
                   </div>
                   <div>
                     <div className="font-semibold text-xs text-[#23211a]">Edge Quorum Engine</div>
-                    <div className="text-[11px] text-[#78756e]">Zero false alarm verification</div>
+                    <div className="text-[11px] text-[#78756e]">Far fewer false alarms</div>
                   </div>
                 </Link>
 

@@ -13,7 +13,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
   title: "SteadyStack for Agencies | White-Label Uptime & SLA Reports",
   description:
-    "Learn why SteadyStack shifted to digital agencies. Deliver white-label status pages, automated monthly client SLA PDF reports, and zero false alarms.",
+    "Learn why SteadyStack shifted to digital agencies. Deliver white-label status pages, automated monthly client SLA PDF reports, and far fewer false alarms.",
   alternates: {
     canonical: "/agencies",
   },
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "SteadyStack for Agencies | White-Label Uptime & Client SLA Reports",
     description:
-      "Why SteadyStack shifted to agencies: white-label status pages, automated monthly PDF SLA audits, and zero 3 AM false alarms.",
+      "Why SteadyStack shifted to agencies: white-label status pages, automated monthly PDF SLA audits, and far fewer 3 AM false alarms.",
     creator: "@steadystack",
   },
 };

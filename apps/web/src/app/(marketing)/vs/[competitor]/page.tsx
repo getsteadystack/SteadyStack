@@ -25,8 +25,8 @@ const COMPETITOR_DESCRIPTIONS: Record<string, string> = {
   checkly:
     "Compare SteadyStack vs Checkly. Explore lightweight edge synthetic monitoring vs heavy browser checks, global quorum consensus, and pricing.",
   "uptime-kuma":
-    "Compare SteadyStack vs Uptime Kuma. Discover the differences between single-VPS self-hosting and global edge quorum checks for zero false alarms.",
-  kuma: "Compare SteadyStack vs Uptime Kuma. Discover the differences between single-VPS self-hosting and global edge quorum checks for zero false alarms.",
+    "Compare SteadyStack vs Uptime Kuma. Discover the differences between single-VPS self-hosting and global edge quorum checks for far fewer false alarms.",
+  kuma: "Compare SteadyStack vs Uptime Kuma. Discover the differences between single-VPS self-hosting and global edge quorum checks for far fewer false alarms.",
 };
 
 const COMPETITOR_TITLES: Record<string, string> = {

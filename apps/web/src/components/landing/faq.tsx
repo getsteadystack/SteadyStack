@@ -8,8 +8,8 @@ export default function FAQ() {
       a: `Verification checks execute natively across our global edge Durable Objects. The Free tier supports 3-minute checks for up to 50 active monitors with 3-region quorum consensus. The Pro plan supports checks down to 30 seconds across 7 global regions with 4-of-7 quorum consensus, and Enterprise Scale supports 10-second high-frequency telemetry.`,
     },
     {
-      q: "What is multi-region quorum consensus, and how does it eradicate 3 AM false alarms?",
-      a: "Internet routing glitches and localized carrier flukes often cause a single monitor probe to time out even when the website is online for 99.9% of real users. SteadyStack never pages your team on a single probe timeout; we query other edge nodes concurrently and require 4 of 7 global regions to confirm downtime before opening an incident. This voting system completely isolates transit hiccups from true global outages.",
+      q: "What is multi-region quorum consensus, and how does it prevent 3 AM false alarms?",
+      a: "Internet routing glitches and localized carrier flukes often cause a single monitor probe to time out even when the website is online for 99.9% of real users. SteadyStack never pages your team on a single probe timeout; we query other edge nodes concurrently and require 4 of 7 global regions to confirm downtime before opening an incident. This voting system filters transit hiccups from true global outages.",
     },
     {
       q: "How do white-label status pages and custom CNAME domains work for clients?",
@@ -17,7 +17,7 @@ export default function FAQ() {
     },
     {
       q: "Can I automate monthly client SLA audit reports (PDF)?",
-      a: "Yes. The Pro Agency and Enterprise tiers include automated monthly SLA PDF exports. On the 1st of each month (or on-demand), SteadyStack compiles 99.99% uptime proof, regional latency breakdowns, and resolved incident logs into a branded executive PDF you can hand over to clients during retainer renewals.",
+      a: "Yes. The Pro Agency and Enterprise tiers include automated monthly SLA PDF exports. On the 1st of each month (or on-demand), SteadyStack compiles verified proof of uptime, regional latency breakdowns, and resolved incident logs into a branded executive PDF you can hand over to clients during retainer renewals.",
     },
     {
       q: "Can I monitor private infrastructure behind corporate firewalls?",

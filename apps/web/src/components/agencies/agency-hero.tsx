@@ -22,8 +22,8 @@ export default function AgencyHero() {
         {/* Subhead */}
         <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed max-w-2xl mb-8 font-sans text-balance">
           We shifted our focus entirely to digital agencies, web studios, and dev shops. Deliver
-          white-label status pages, automated monthly SLA reports, and zero false alarms to every
-          client you manage.
+          white-label status pages, automated monthly SLA reports, and far fewer false alarms to
+          every client you manage.
         </p>
 
         {/* CTAs */}

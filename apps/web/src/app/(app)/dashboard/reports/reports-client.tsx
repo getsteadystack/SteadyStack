@@ -47,10 +47,8 @@ import {
   FileJson,
   CheckCircle2,
   AlertTriangle,
-  Clock,
   ShieldCheck,
   Building2,
-  Sparkles,
   Download,
   Copy,
   Check,
@@ -210,7 +208,7 @@ export function ReportsClient({
         description: "Your executive deliverable is downloading.",
       });
       setIsPdfModalOpen(false);
-    } catch (err) {
+    } catch {
       toast.error("Failed to generate SLA PDF report");
     } finally {
       setIsDownloadingPdf(false);
@@ -517,7 +515,7 @@ export function ReportsClient({
               </Label>
               <Select
                 value={targetSla.toString()}
-                onValueChange={(val) => setTargetSla(parseFloat(val))}
+                onValueChange={(val) => setTargetSla(Number.parseFloat(val))}
               >
                 <SelectTrigger className="h-9 font-mono text-xs rounded-xl bg-background border-border">
                   <SelectValue placeholder="Target SLA" />

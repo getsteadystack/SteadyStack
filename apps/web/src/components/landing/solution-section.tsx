@@ -57,7 +57,7 @@ export default function SolutionSection() {
       title: "Automated Monthly SLA PDFs",
       tagline: "Tangible proof of uptime for retainer renewals",
       description:
-        "Generate one-click or automated monthly SLA audit reports. Present clean, executive-ready proof of 99.99% uptime, global latency distributions, and resolved incident logs during client check-ins.",
+        "Generate one-click or automated monthly SLA audit reports. Present clean, executive-ready proof of uptime, global latency distributions, and resolved incident logs during client check-ins.",
       icon: FileText,
       badge: "Retainer Value",
       preview: (
@@ -100,13 +100,13 @@ export default function SolutionSection() {
       description:
         "Never get woken up by an isolated ISP transit fluke or localized CDN glitch. SteadyStack validates every blip across global edge regions and requires 4-of-7 quorum consensus before firing an alert.",
       icon: ShieldCheck,
-      badge: "Zero False Alarms",
+      badge: "Far Fewer False Alarms",
       preview: (
         <div className="p-4 bg-[#fbfbf9] border border-[#e8e6df] rounded-xl flex flex-col gap-3 font-sans text-left">
           <div className="flex items-center justify-between pb-2 border-b border-[#e8e6df]">
             <span className="text-xs font-bold text-[#23211a]">Quorum Confirmation Rule</span>
             <span className="text-[10px] font-mono text-emerald-700 font-semibold bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-              Byzantine Fault Tolerant
+              Multi-Region Consensus
             </span>
           </div>
           <div className="grid grid-cols-3 gap-1.5 text-[10px] font-mono text-center">

@@ -15,28 +15,29 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { LTD_CONFIG } from "@/lib/ltd-config";
 
 export default function LtdSpotlight() {
-  const [activeTier, setActiveTier] = useState<1 | 2 | 3>(3);
+  const [activeTier, setActiveTier] = useState<1 | 2 | 3>(2);
 
   const tiers = [
     {
       tier: 1,
       name: "Tier 1: Solo Pro",
       price: 49,
-      originalValue: 588,
+      originalValue: 348,
       popular: false,
-      monitors: 150,
+      monitors: 50,
       interval: "60s",
-      portals: "3 Portals",
-      seats: "3 Seats",
+      portals: "2 Portals",
+      seats: "1 Seat",
       quorum: "3-Region Quorum (2-of-3)",
       description: "For freelance developers, solo founders, and side-project builders.",
       highlights: [
-        "150 Active Edge Monitors",
+        "50 Active Edge Endpoints",
         "60s check intervals",
-        "3 Custom CNAME Status Portals",
-        "3 Team Seats",
+        "2 Custom CNAME Status Portals",
+        "1 Team Seat",
         "Email, Discord & Slack alerts",
         "30-day telemetry retention",
         "Lifetime access — zero recurring fees",
@@ -47,19 +48,19 @@ export default function LtdSpotlight() {
       tier: 2,
       name: "Tier 2: Growth Agency",
       price: 99,
-      originalValue: 1188,
-      popular: false,
-      monitors: 250,
-      interval: "30s",
-      portals: "10 Portals",
-      seats: "10 Seats",
+      originalValue: 588,
+      popular: true,
+      monitors: 120,
+      interval: "60s",
+      portals: "5 Portals",
+      seats: "3 Seats",
       quorum: "7-Region Quorum (4-of-7)",
-      description: "For digital agencies and studios managing up to 10 retainer clients.",
+      description: "For digital agencies and studios managing up to 5 retainer clients.",
       highlights: [
-        "250 Active Edge Monitors",
-        "30s check intervals",
-        "10 100% White-Label Status Portals",
-        "10 Team Seats",
+        "120 Active Edge Endpoints",
+        "60s check intervals",
+        "5 100% White-Label Status Portals",
+        "3 Team Seats",
         "Automated Monthly Client SLA PDFs",
         "45-day metrics & telemetry retention",
         "Lifetime access — zero recurring fees",
@@ -68,25 +69,24 @@ export default function LtdSpotlight() {
     },
     {
       tier: 3,
-      name: "Tier 3: Agency Founder Edition",
+      name: "Tier 3: Agency Fleet",
       price: 199,
-      originalValue: 2388,
-      popular: true,
-      monitors: 1500,
-      interval: "10s",
-      portals: "100 Portals",
-      seats: "50 Seats",
+      originalValue: 1188,
+      popular: false,
+      monitors: 250,
+      interval: "30s",
+      portals: "15 Portals",
+      seats: "5 Seats",
       quorum: "7-Region Quorum (4-of-7)",
-      description: "The ultimate unlimited toolkit for scaling agencies, MSPs, and SaaS fleets.",
+      description: "The scale fleet tier for established agencies and multi-client retainers.",
       highlights: [
-        "1,500 Active Edge Monitors",
-        "10s high-frequency checks",
-        "100 White-Label Portals (Unlimited CNAMEs)",
-        "50 Team Seats & Role Permissions",
+        "250 Active Edge Endpoints",
+        "30s high-frequency checks",
+        "15 White-Label Portals (Custom CNAMEs)",
+        "5 Team Seats & Role Permissions",
         "Automated Monthly Client PDF SLA Sign-offs",
-        "Unlimited Manual Run Checks (0 rate limit)",
         "Priority probe queue execution",
-        "1-Year Full Telemetry Retention",
+        "90-Day Full Telemetry Retention",
         "Lifetime access — zero recurring fees",
       ],
       ctaHref: "/signup?deal=ltd-tier-3",
@@ -103,7 +103,12 @@ export default function LtdSpotlight() {
         <div className="max-w-3xl mx-auto text-center mb-14 md:mb-18">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-[11px] font-mono font-bold uppercase tracking-wider mb-5 shadow-xs whitespace-nowrap">
             <Sparkles className="size-3.5 text-[#ffd439]" />
-            <span>Lifetime Deal Pricing</span>
+            <span>
+              Lifetime Deal Pricing •{" "}
+              {LTD_CONFIG.isGloballySoldOut
+                ? "Sold Out"
+                : `${LTD_CONFIG.claimedCount}/${LTD_CONFIG.totalCap} Claimed`}
+            </span>
           </div>
 
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-medium tracking-tight text-[#23211a] mb-6 leading-[1.08] text-balance">
@@ -111,8 +116,8 @@ export default function LtdSpotlight() {
           </h2>
 
           <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed max-w-xl mx-auto text-balance">
-            Get up to 1,500 monitors, 7-region edge quorum, white-label client portals, and
-            automated SLA PDFs for a single one-time payment.
+            Get up to 250 endpoints, 7-region edge quorum, white-label client portals, and automated
+            SLA PDFs for a capped founder allocation.
           </p>
         </div>
 
@@ -173,7 +178,7 @@ export default function LtdSpotlight() {
                   {/* Key Stats Grid */}
                   <div className="grid grid-cols-2 gap-2 mb-6 text-xs font-mono">
                     <div className="p-2.5 rounded-xl bg-[#faf8f5] border border-[#e8e6df]">
-                      <span className="text-[10px] text-[#868279] block">MONITORS</span>
+                      <span className="text-[10px] text-[#868279] block">ENDPOINTS</span>
                       <strong className="text-[#23211a] text-sm">{tier.monitors}</strong>
                     </div>
                     <div className="p-2.5 rounded-xl bg-[#faf8f5] border border-[#e8e6df]">
@@ -198,18 +203,28 @@ export default function LtdSpotlight() {
 
                 {/* Bottom CTA */}
                 <div className="p-7 sm:p-8 pt-0">
-                  <Link
-                    href={tier.ctaHref as any}
-                    className={cn(
-                      "w-full inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold py-3.5 transition-all",
-                      tier.popular
-                        ? "bg-[#23211a] text-white shadow-md hover:bg-[#373428]"
-                        : "border border-[#e8e6df] bg-[#fbfbf9] text-[#23211a] hover:bg-[#f4f2eb]",
-                    )}
-                  >
-                    <span>Get Lifetime Access (${tier.price})</span>
-                    <ArrowRight className="size-3.5" />
-                  </Link>
+                  {LTD_CONFIG.isGloballySoldOut ? (
+                    <button
+                      type="button"
+                      disabled
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold py-3.5 bg-[#e8e6df] text-[#868279] cursor-not-allowed"
+                    >
+                      <span>Sold Out</span>
+                    </button>
+                  ) : (
+                    <Link
+                      href={tier.ctaHref as any}
+                      className={cn(
+                        "w-full inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold py-3.5 transition-all",
+                        tier.popular
+                          ? "bg-[#23211a] text-white shadow-md hover:bg-[#373428]"
+                          : "border border-[#e8e6df] bg-[#fbfbf9] text-[#23211a] hover:bg-[#f4f2eb]",
+                      )}
+                    >
+                      <span>Get Lifetime Access (${tier.price})</span>
+                      <ArrowRight className="size-3.5" />
+                    </Link>
+                  )}
                 </div>
               </div>
             );
@@ -227,8 +242,8 @@ export default function LtdSpotlight() {
                 60-Day Money-Back Guarantee
               </h4>
               <p className="text-xs text-[#5c5c5c] leading-relaxed">
-                Test SteadyStack on all your client domains. If you&apos;re not blown away by zero
-                false alarms, get a 100% refund.
+                Test SteadyStack on all your client domains. If you&apos;re not blown away by far
+                fewer false alarms, get a 100% refund.
               </p>
             </div>
           </div>

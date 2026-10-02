@@ -20,7 +20,7 @@ Product documentation: setup, architecture, alerting, and API reference.
 - [Hosted Status Pages](https://steadystack.dev/docs/status-pages): Build public and private cyberpunk-themed status pages with custom domains.
 - [Customizing Status Pages](https://steadystack.dev/docs/status-page-customization): Themes, branding, custom domains, SEO, access control, localization, and per-monitor display options for hosted status pages.
 - [Status Badges & Widgets](https://steadystack.dev/docs/status-badges): Embed dynamic real-time SVG status badges in your READMEs, dashboards, and websites.
-- [SLA & Audit Reports](https://steadystack.dev/docs/sla-reports): SLA availability mathematics, maintenance window exclusions, and SOC2 audit exports.
+- [SLA & Audit Reports](https://steadystack.dev/docs/sla-reports): SLA availability mathematics, maintenance window exclusions, and monthly SLA audit exports.
 - [Teams & RBAC](https://steadystack.dev/docs/teams-rbac): Invite teammates, assign roles, and control who can edit monitors, view incidents, and manage billing.
 - [SLA Calculation Methodology](https://steadystack.dev/docs/sla-methodology): How SteadyStack computes SLA ratios, uptime percentages, and what counts as downtime — exactly.
 - [Monitoring as Code](https://steadystack.dev/docs/monitoring-as-code): Define monitors in steadystack.yaml, review diffs, and apply them idempotently with the pulse CLI — GitOps for your uptime checks.

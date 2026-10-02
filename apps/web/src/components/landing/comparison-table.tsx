@@ -9,7 +9,7 @@ export default function ComparisonTable() {
       feature: "Outage Verification",
       description: "How failures are validated before waking up your on-call engineers",
       steadystack: "Multi-region quorum (2-of-3 free, 4-of-7 paid)",
-      steadystackHighlight: "Zero false alarms",
+      steadystackHighlight: "Far fewer false alarms",
       legacy: "Single-region check (pages on transit blips)",
       steadystackCheck: true,
       legacyCheck: false,

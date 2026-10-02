@@ -1,6 +1,7 @@
 import Stripe from "stripe";
 import db from "@steadystack/db";
 import { PLANS, type PlanTier } from "./billing";
+import { LTD_CONFIG } from "./ltd-config";
 
 // Initialize Stripe SDK instance
 export const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "sk_test_mock_steadystack_key", {
@@ -256,10 +257,16 @@ export async function createCheckoutSession({
   promoCode?: string;
   deal?: string;
 }): Promise<{ url: string }> {
-  let customerId = await getOrCreateStripeCustomer(userId, email);
-
   // If a Lifetime Deal is requested
   const isLifetimeDeal = Boolean(deal);
+
+  if (isLifetimeDeal && LTD_CONFIG.isGloballySoldOut) {
+    throw new Error(
+      "The SteadyStack Founder Lifetime Deal allocation is currently sold out. Please select a monthly or annual plan.",
+    );
+  }
+
+  let customerId = await getOrCreateStripeCustomer(userId, email);
   const dealTier = deal?.includes("3") ? 3 : deal?.includes("2") ? 2 : 1;
   const dealPrice = dealTier === 3 ? 199 : dealTier === 2 ? 99 : 49;
   const effectivePlan: PlanTier = isLifetimeDeal
@@ -291,10 +298,10 @@ export async function createCheckoutSession({
               name: `SteadyStack Founder Lifetime Deal Tier ${dealTier}`,
               description: `Lifetime access to SteadyStack Tier ${dealTier} (${
                 dealTier === 3
-                  ? "1,500 monitors, 100 status pages, 10s checks"
+                  ? "250 endpoints, 15 white-label portals, 30s checks"
                   : dealTier === 2
-                    ? "250 monitors, 10 status pages, 30s checks"
-                    : "150 monitors, 3 status pages, 60s checks"
+                    ? "120 endpoints, 5 white-label portals, 60s checks"
+                    : "50 endpoints, 2 white-label portals, 60s checks"
               })`,
               metadata: {
                 deal: deal || `ltd-tier-${dealTier}`,

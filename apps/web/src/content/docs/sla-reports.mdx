@@ -1,9 +1,9 @@
 ---
 title: "SLA & Audit Reports"
-description: "SLA availability mathematics, maintenance window exclusions, and SOC2 audit exports."
+description: "SLA availability mathematics, maintenance window exclusions, and monthly SLA audit exports."
 section: "Status Pages & Reporting"
 order: 18
-badge: "SOC2"
+badge: "SLA"
 lastUpdated: "2026-08-22"
 ---
 
@@ -36,7 +36,7 @@ To prevent routine database migrations or server upgrades from harming your SLA 
 2. Schedule the start and end timestamp.
 3. Select which monitors are affected.
 
-During the active maintenance window, checks continue to collect telemetry, but any failures are excluded from your public status page and SOC2 SLA audit reports.
+During the active maintenance window, checks continue to collect telemetry, but any failures are excluded from your public status page and monthly SLA audit reports.
 
 ---
 
@@ -44,5 +44,5 @@ During the active maintenance window, checks continue to collect telemetry, but 
 
 Under **Dashboard -> Reports -> SLA Reports**, you can export:
 
-- **Cryptographically Signed PDF Summary**: Suitable for enterprise procurement and SOC2 Type II auditors.
+- **Signed PDF Summary**: Suitable for client retainers and executive compliance reviews.
 - **Raw CSV Time-Series**: Full second-by-second incident timestamps and quorum logs.

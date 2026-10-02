@@ -200,9 +200,8 @@ export default function Hero() {
 
         {/* Subtitle */}
         <p className="text-[#5c5c5c] text-base sm:text-lg max-w-[38rem] text-balance leading-relaxed mb-8">
-          Monitor all your client websites and APIs across 7 global regions. Eliminate 3 AM false
-          alarms with multi-region quorum consensus, deliver branded white-label status portals, and
-          generate monthly SLA reports that prove your retainer value.
+          Monitor client websites across 7 edge regions, filter false alarms with multi-region
+          quorum consensus, and deliver branded monthly SLA reports that prove your retainer value.
         </p>
 
         {/* Action Buttons */}

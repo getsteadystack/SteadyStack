@@ -19,12 +19,12 @@ export default function CTA() {
 
         {/* Serif Headline (Twin.so Style) */}
         <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-medium tracking-tight text-white leading-[1.06] mb-6 max-w-3xl text-balance">
-          Give your clients 99.99% reliability on autopilot.
+          Show clients the uptime you deliver on autopilot.
         </h2>
 
         <p className="text-white/80 text-base sm:text-lg max-w-2xl mb-10 font-sans leading-relaxed text-balance">
-          Join digital agencies and dev studios monitoring client infrastructure with multi-region
-          consensus, branded white-label status portals, and automated monthly SLA reports.
+          Monitor client infrastructure with multi-region quorum consensus, branded white-label
+          status portals, and automated monthly SLA reports.
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full relative z-10">

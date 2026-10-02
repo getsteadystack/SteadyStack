@@ -34,7 +34,7 @@ export default function HowItWorks() {
       badge: "Instant Discovery",
       title: "Add client domains and let SteadyStack discover critical endpoints",
       description:
-        "Input any client website or API URL. SteadyStack auto-discovers health routes, SSL certificates, DNS configurations, and background queues, proposing the monitors worth deploying first.",
+        "Input any client website or API URL. SteadyStack auto-discovers health routes, SSL certificates, and DNS configurations, proposing the monitors worth deploying first.",
       details: [
         "HTTP/HTTPS, TCP, DNS & WebSocket endpoints",
         "Automatic TLS/SSL certificate transparency discovery",
@@ -116,7 +116,7 @@ export default function HowItWorks() {
       description:
         "When an isolated node experiences a dropped packet or routing flap, SteadyStack instantly triggers a 3-way multi-region verification. Alerts only fire when 4 of 7 regions independently reach quorum.",
       details: [
-        "4-of-7 Byzantine fault-tolerant quorum threshold",
+        "4-of-7 multi-region edge quorum threshold",
         "Prevents spurious 3 AM pagers from carrier drops",
         "Complete consensus audit trail attached to every notification",
       ],
@@ -148,7 +148,7 @@ export default function HowItWorks() {
       badge: "Retainer Value",
       title: "Deliver white-label status pages & automated monthly SLA PDFs",
       description:
-        "Each client gets a dedicated status portal on their custom CNAME domain with zero vendor watermarks. Automated monthly executive PDFs provide tangible proof of 99.99% uptime at renewal time.",
+        "Each client gets a dedicated status portal on their custom CNAME domain with zero vendor watermarks. Automated monthly executive PDFs provide tangible proof of uptime at renewal time.",
       details: [
         "Dedicated status portals on custom CNAME domains",
         "Zero vendor watermarks · 100% agency white-labeled",

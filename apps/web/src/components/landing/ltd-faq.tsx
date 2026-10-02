@@ -10,7 +10,7 @@ export default function LtdFaq() {
   const faqs = [
     {
       q: "How does the Lifetime Deal work?",
-      a: "You pay once and get permanent access to SteadyStack with no monthly or annual subscription fees ever. Your account receives the full feature set corresponding to your purchased tier (150, 250, or 1,500 monitors, white-label portals, and automated SLA reports).",
+      a: "You pay once and get permanent access to SteadyStack with no monthly or annual subscription fees ever. Your account receives the full feature set corresponding to your purchased tier (50, 120, or 250 endpoints, white-label portals, and automated SLA reports).",
     },
     {
       q: "Can I stack codes later to upgrade my tier?",

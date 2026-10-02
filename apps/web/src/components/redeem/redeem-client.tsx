@@ -300,7 +300,7 @@ export function RedeemClient({
                       <span>
                         {detectedTier === 1
                           ? "3-Region 2-of-3 Quorum Consensus"
-                          : "7-Region 4-of-7 Quorum Consensus (Zero False Alarms)"}
+                          : "7-Region 4-of-7 Quorum Consensus (Far Fewer False Alarms)"}
                       </span>
                     </li>
                   </ul>

@@ -1,38 +1,51 @@
 "use client";
 
 import Link from "next/link";
-import { Check, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
+import { Check, Sparkles, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { LTD_CONFIG } from "@/lib/ltd-config";
 
 export default function Pricing() {
   const [billing, setBilling] = useState<"monthly" | "yearly" | "lifetime">("monthly");
+  const isSoldOut = LTD_CONFIG.isGloballySoldOut || LTD_CONFIG.claimedCount >= LTD_CONFIG.totalCap;
 
   const plans = [
     {
       id: "free",
-      tag: billing === "lifetime" ? "Lifetime Tier 1" : "Community",
-      name: billing === "lifetime" ? "Solo Pro Lifetime" : "Starter / Free",
+      tag: billing === "lifetime" ? "Lifetime Tier 1 • Starter" : "Community",
+      name: billing === "lifetime" ? "Solo Founder Lifetime" : "Starter / Free",
       description:
         billing === "lifetime"
-          ? "Essential lifetime edge monitoring for solo developers and freelancers."
+          ? "Lifetime edge monitoring for solo developers and freelancers (Maps to Starter tier)."
           : "Essential edge monitoring for developers and small side projects.",
       priceMonthly: 0,
       priceYearly: 0,
       priceLifetime: 49,
       period: billing === "lifetime" ? "one-time payment" : "forever",
-      ctaLabel: billing === "lifetime" ? "Claim $49 Lifetime Deal" : "Start Free",
-      ctaHref: billing === "lifetime" ? "/signup?deal=ltd-tier-1" : "/signup",
+      ctaLabel:
+        billing === "lifetime"
+          ? isSoldOut
+            ? "Sold Out (100/100 Claimed)"
+            : "Claim $49 Founder License"
+          : "Start Free",
+      ctaHref:
+        billing === "lifetime"
+          ? isSoldOut
+            ? "/signup?plan=pro"
+            : "/signup?deal=ltd-tier-1"
+          : "/signup",
       highlighted: false,
+      isSoldOut: billing === "lifetime" && isSoldOut,
       features:
         billing === "lifetime"
           ? [
-              "150 Endpoints included",
-              "60-second check frequency",
+              "50 Endpoints included",
+              "1-minute check frequency",
               "3 Global edge probe regions",
               "2-of-3 Quorum consensus",
-              "3 Custom CNAME status portals",
-              "3 Team seats",
+              "2 Custom CNAME status portals",
+              "1 Team seat",
               "Slack & Discord webhook alerts",
               "30-day metrics retention",
             ]
@@ -48,27 +61,40 @@ export default function Pricing() {
     },
     {
       id: "pro",
-      tag: billing === "lifetime" ? "Lifetime Tier 2" : "Growth & Agencies",
-      name: billing === "lifetime" ? "Growth Agency Lifetime" : "Pro Agency",
+      tag: billing === "lifetime" ? "Lifetime Tier 2 • Pro Agency" : "Growth & Agencies",
+      name: billing === "lifetime" ? "Agency Growth Lifetime" : "Pro Agency",
       description:
-        "Complete reliability toolkit with white-label status portals and automated SLA reports.",
+        billing === "lifetime"
+          ? "Reliability suite with 5 white-label portals for boutique agencies (Maps to Pro Agency tier)."
+          : "Complete reliability toolkit with white-label status portals and automated SLA reports.",
       priceMonthly: 29,
       priceYearly: 22,
       priceLifetime: 99,
       period: billing === "lifetime" ? "one-time payment" : "/ month",
-      ctaLabel: billing === "lifetime" ? "Claim $99 Lifetime Deal" : "Start 7-Day Free Trial",
-      ctaHref: billing === "lifetime" ? "/signup?deal=ltd-tier-2" : "/signup?plan=pro",
+      ctaLabel:
+        billing === "lifetime"
+          ? isSoldOut
+            ? "Sold Out (100/100 Claimed)"
+            : "Claim $99 Agency License"
+          : "Start 7-Day Free Trial",
+      ctaHref:
+        billing === "lifetime"
+          ? isSoldOut
+            ? "/signup?plan=pro"
+            : "/signup?deal=ltd-tier-2"
+          : "/signup?plan=pro",
       highlighted: billing !== "lifetime",
       badge: "★ Most Popular",
+      isSoldOut: billing === "lifetime" && isSoldOut,
       features:
         billing === "lifetime"
           ? [
-              "250 Endpoints included",
-              "30-second check frequency",
+              "120 Endpoints included",
+              "60-second check frequency",
               "All 7 Global edge probe regions",
               "4-of-7 Quorum consensus verification",
-              "10 White-label status portals",
-              "10 Team seats",
+              "5 White-label client status portals",
+              "3 Team seats",
               "Automated monthly client SLA PDFs",
               "45-day telemetry retention",
             ]
@@ -86,30 +112,53 @@ export default function Pricing() {
     },
     {
       id: "enterprise",
-      tag: billing === "lifetime" ? "Lifetime Tier 3 • Best Value" : "Scale",
-      name: billing === "lifetime" ? "Founder Fleet Edition" : "Enterprise Scale",
+      tag: billing === "lifetime" ? "Lifetime Tier 3 • Scale Fleet" : "Scale",
+      name: billing === "lifetime" ? "Scale Fleet Lifetime" : "Enterprise Scale",
       description:
         billing === "lifetime"
-          ? "1,500 monitors, 10s high-frequency checks, and 100 white-label client portals forever."
+          ? "High-capacity fleet with 15 white-label portals for scaling dev shops (Maps to Enterprise tier)."
           : "Dedicated consensus infrastructure with custom webhook pipelines and SLA guarantees.",
       priceMonthly: 79,
       priceYearly: 62,
       priceLifetime: 199,
       period: billing === "lifetime" ? "one-time payment" : "/ month",
-      ctaLabel: billing === "lifetime" ? "Claim $199 Founder LTD" : "Start Free Trial",
-      ctaHref: billing === "lifetime" ? "/signup?deal=ltd-tier-3" : "/signup?plan=enterprise",
+      ctaLabel:
+        billing === "lifetime"
+          ? isSoldOut
+            ? "Sold Out (100/100 Claimed)"
+            : "Claim $199 Scale License"
+          : "Start Free Trial",
+      ctaHref:
+        billing === "lifetime"
+          ? isSoldOut
+            ? "/signup?plan=enterprise"
+            : "/signup?deal=ltd-tier-3"
+          : "/signup?plan=enterprise",
       highlighted: billing === "lifetime",
       badge: billing === "lifetime" ? "★ Best Value • Founder Edition" : "★ Scale Choice",
-      features: [
-        "1,500 Endpoints included (LTD)",
-        "10-second check frequency",
-        "100 White-Label Client Status Portals",
-        "50 Team Seats & Role Permissions",
-        "Automated monthly client SLA PDFs",
-        "Unlimited manual run-checks",
-        "Priority probe execution queue",
-        "1-Year Telemetry Retention",
-      ],
+      isSoldOut: billing === "lifetime" && isSoldOut,
+      features:
+        billing === "lifetime"
+          ? [
+              "250 Endpoints included",
+              "30-second check frequency",
+              "All 7 Global edge probe regions",
+              "4-of-7 Quorum consensus",
+              "15 White-label client status portals",
+              "5 Team seats & role permissions",
+              "Automated monthly client SLA PDFs",
+              "90-day telemetry retention",
+            ]
+          : [
+              "1,500 Endpoints included",
+              "10-second check frequency",
+              "100 White-Label Client Status Portals",
+              "50 Team Seats & Role Permissions",
+              "Automated monthly client SLA PDFs",
+              "Unlimited manual run-checks",
+              "Priority probe execution queue",
+              "1-Year Telemetry Retention",
+            ],
     },
   ];
 
@@ -123,16 +172,29 @@ export default function Pricing() {
         <div className="max-w-3xl mx-auto text-center mb-14 md:mb-18">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-[11px] font-mono font-bold uppercase tracking-wider mb-5 shadow-xs">
             <Sparkles className="size-3.5 text-[#ffd439]" />
-            <span>Transparent Pricing</span>
+            <span>
+              {billing === "lifetime"
+                ? isSoldOut
+                  ? "🔴 Founder Batch 1 · 100/100 Sold Out"
+                  : `Founder Batch • ${LTD_CONFIG.claimedCount}/${LTD_CONFIG.totalCap} Claimed`
+                : "Transparent Pricing"}
+            </span>
           </div>
 
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-medium tracking-tight text-[#23211a] mb-6 leading-[1.08] text-balance">
-            Simple, predictable plans for growing teams.
+            {billing === "lifetime"
+              ? isSoldOut
+                ? "Founder lifetime deals are currently sold out."
+                : "Capped lifetime deals for early agency partners."
+              : "Simple, predictable plans for growing teams."}
           </h2>
 
           <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed max-w-xl mx-auto text-balance">
-            Start free with 50 monitors. Upgrade to unlock 7-region edge quorum, white-label client
-            portals, or lock in lifetime access with no recurring bills.
+            {billing === "lifetime"
+              ? isSoldOut
+                ? "All 100 founder licenses have been claimed. Monthly and annual agency subscription plans remain active with 7-day free trials."
+                : `Strictly capped at ${LTD_CONFIG.totalCap} licenses (${LTD_CONFIG.totalCap - LTD_CONFIG.claimedCount} remaining) before transitioning exclusively to monthly subscriptions.`
+              : "Start free with 50 monitors. Upgrade to unlock 7-region edge quorum, white-label client portals, or lock in lifetime access with no recurring bills."}
           </p>
 
           {/* Billing Switcher (Twin.so Style with Lifetime Option) */}
@@ -176,10 +238,33 @@ export default function Pricing() {
             >
               <span>⚡ Lifetime Deal</span>
               <span className="text-[10px] font-bold bg-[#ffd439] text-[#23211a] px-1.5 py-0.2 rounded-full">
-                Pay Once
+                {isSoldOut ? "Sold Out" : "Pay Once"}
               </span>
             </button>
           </div>
+
+          {/* Scarcity Progress bar in Lifetime mode */}
+          {billing === "lifetime" && (
+            <div className="max-w-xs mx-auto mt-6 p-3 rounded-2xl bg-white border border-[#e8e6df] shadow-xs">
+              <div className="flex items-center justify-between text-xs font-mono mb-1.5">
+                <span className="text-[#868279]">Founder Batch Allocation</span>
+                <span className="font-bold text-[#23211a]">
+                  {LTD_CONFIG.claimedCount} / {LTD_CONFIG.totalCap}
+                </span>
+              </div>
+              <div className="w-full h-2 rounded-full bg-[#f4f2eb] overflow-hidden">
+                <div
+                  className={cn(
+                    "h-full transition-all duration-500",
+                    isSoldOut ? "bg-red-500" : "bg-[#ffd439]",
+                  )}
+                  style={{
+                    width: `${Math.min(100, (LTD_CONFIG.claimedCount / LTD_CONFIG.totalCap) * 100)}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Pricing Cards Grid */}
@@ -255,10 +340,12 @@ export default function Pricing() {
                   <Link
                     href={plan.ctaHref as any}
                     className={cn(
-                      "w-full inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold py-3.5 transition-all",
-                      plan.highlighted
-                        ? "bg-[#23211a] text-white shadow-md hover:bg-[#373428]"
-                        : "border border-[#e8e6df] bg-[#fbfbf9] text-[#23211a] hover:bg-[#f4f2eb]",
+                      "w-full inline-flex items-center justify-center gap-2 rounded-xl text-xs font-semibold py-3.5 transition-all cursor-pointer",
+                      plan.isSoldOut
+                        ? "bg-[#f4f2eb] text-[#868279] border border-[#e8e6df] hover:bg-[#eae8df]"
+                        : plan.highlighted
+                          ? "bg-[#23211a] text-white shadow-md hover:bg-[#373428]"
+                          : "border border-[#e8e6df] bg-[#fbfbf9] text-[#23211a] hover:bg-[#f4f2eb]",
                     )}
                   >
                     <span>{plan.ctaLabel}</span>
@@ -279,8 +366,8 @@ export default function Pricing() {
                 Need a custom enterprise SLA or on-premise private probe clusters?
               </strong>
               <div className="text-[#5c5c5c]">
-                We support custom contract agreements, dedicated subnets, and SOC2 compliance
-                documents.
+                We support custom contract agreements, custom check frequencies, and dedicated
+                technical onboarding.
               </div>
             </div>
           </div>

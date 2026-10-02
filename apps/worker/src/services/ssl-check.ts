@@ -49,7 +49,7 @@ export async function checkSSL(targetUrl: string): Promise<SSLResult> {
 
   const hstsHeader = response?.headers.get("Strict-Transport-Security");
   const hasHSTS = !!hstsHeader && hstsHeader.includes("max-age");
-  const maxAge = hasHSTS ? parseInt(hstsHeader.split("max-age=")[1] || "0", 10) : 0;
+  const maxAge = hasHSTS ? Number.parseInt(hstsHeader.split("max-age=")[1] || "0", 10) : 0;
   const isLongHSTS = maxAge >= 15552000; // > 6 months
 
   // 2. Fetch Deep SSL details from External API

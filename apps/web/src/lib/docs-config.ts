@@ -139,7 +139,7 @@ export const DOCS_NAVIGATION: NavSection[] = [
         title: "SLA & Audit Reports",
         slug: "sla-reports",
         href: "/docs/sla-reports",
-        badge: "SOC2",
+        badge: "SLA",
       },
     ],
   },

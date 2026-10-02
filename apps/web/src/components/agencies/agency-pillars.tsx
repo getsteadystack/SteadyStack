@@ -55,15 +55,15 @@ export default function AgencyPillars() {
     {
       number: "04",
       title: "4-of-7 Quorum Verification",
-      badge: "Zero False Alarms",
-      tagline: "Alerts only fire when an outage is mathematically confirmed.",
+      badge: "Far Fewer False Alarms",
+      tagline: "Alerts only fire when an outage is confirmed across multiple edge nodes.",
       description:
         "Single pollers wake engineers up over local ISP routing hiccups. SteadyStack cross-checks every failure across 7 global regions. An incident is only declared when 4 or more sovereign regions agree.",
       icon: ShieldCheck,
       highlights: [
         "7 global regions: US West, US East, EU West, APAC & more",
-        "Out-of-band sentinel verification eliminates edge outages",
-        "Zero embarrassing false alarm emails to clients",
+        "Out-of-band sentinel verification eliminates edge blindspots",
+        "Far fewer false alarm notifications to clients",
       ],
     },
     {

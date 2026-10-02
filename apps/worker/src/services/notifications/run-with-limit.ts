@@ -6,7 +6,7 @@
  * @returns The results of all tasks in input order.
  */
 export async function runWithLimit<T>(tasks: (() => Promise<T>)[], limit: number): Promise<T[]> {
-  const results: T[] = new Array(tasks.length);
+  const results: T[] = Array.from<T>({ length: tasks.length });
   let currentIndex = 0;
 
   async function worker() {

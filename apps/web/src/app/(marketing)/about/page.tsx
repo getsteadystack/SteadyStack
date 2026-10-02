@@ -41,7 +41,7 @@ const values = [
     icon: Shield,
     title: "Multi-Region Quorum Verification",
     description:
-      "Distributed consensus ensures alerts are mathematically verified. Zero single-probe false alarms, zero wasted midnight callouts.",
+      "Distributed consensus ensures alerts are independently verified. Multi-probe consensus prevents wasted midnight callouts.",
   },
   {
     icon: Bell,
@@ -73,7 +73,7 @@ const stats = [
   { label: "Quorum Regions", value: "7" },
   { label: "Free Monitors", value: "50" },
   { label: "Check Interval", value: "60s" },
-  { label: "False Alarm Rate", value: "0.0%" },
+  { label: "Quorum Threshold", value: "4 of 7" },
 ];
 
 export default function AboutPage() {
@@ -214,7 +214,7 @@ export default function AboutPage() {
 
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 bg-white/10 text-white text-[11px] font-mono font-semibold uppercase tracking-wider mb-6 backdrop-blur-md">
             <Activity className="size-3.5 text-[#ffd439]" />
-            <span>Ready for Zero False Alarms</span>
+            <span>Ready for High-Confidence Alerts</span>
           </div>
 
           <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-medium tracking-tight text-white leading-[1.06] mb-6 max-w-3xl text-balance">

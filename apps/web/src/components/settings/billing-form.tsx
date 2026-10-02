@@ -19,48 +19,29 @@ import {
 import { PLANS, type PlanTier, type UsageSummary } from "@/lib/billing";
 import { toast } from "@/components/ui/sonner";
 import { syncStripeSubscriptionAction } from "@/actions/user";
+import { LTD_CONFIG } from "@/lib/ltd-config";
 
 interface BillingFormProps {
   initialUsage?: UsageSummary;
 }
 
-const LTD_TIERS = [
-  {
-    id: "ltd-tier-1",
-    name: "Founder Tier 1",
-    price: 49,
-    monitors: "150 Active Monitors",
-    interval: "60-second checks",
-    statusPages: "3 Status Pages",
-    seats: "3 Team Seats",
-    whiteLabel: "Custom Domain Included",
-    description: "Ideal for freelancers and solo agencies managing starter client sites.",
-  },
-  {
-    id: "ltd-tier-2",
-    name: "Founder Tier 2",
-    price: 99,
-    monitors: "250 Active Monitors",
-    interval: "30-second checks",
-    statusPages: "10 Status Pages",
-    seats: "10 Team Seats",
-    whiteLabel: "Custom Domains + White-label",
-    description:
-      "Built for growing agencies requiring high check frequencies and multi-client portals.",
-  },
-  {
-    id: "ltd-tier-3",
-    name: "Founder Tier 3",
-    price: 199,
-    popular: true,
-    monitors: "1,500 Active Monitors",
-    interval: "10-second checks",
-    statusPages: "100 Status Pages",
-    seats: "50 Team Seats",
-    whiteLabel: "100% White-Label + Automated SLA Reports",
-    description: "The ultimate lifetime monitoring power stack for agencies and enterprise teams.",
-  },
-];
+const LTD_TIERS = LTD_CONFIG.tiers.map((t) => ({
+  id: t.id,
+  name: t.name,
+  price: t.price,
+  popular: t.tier === 2,
+  monitors: `${t.monitors} Endpoints`,
+  interval: `${t.interval} checks`,
+  statusPages: `${t.statusPortals} White-Label Portals`,
+  seats: `${t.seats} Team Seat${t.seats > 1 ? "s" : ""}`,
+  whiteLabel: t.tier === 1 ? "Custom Domain Included" : "Full White-Label Branding",
+  description:
+    t.tier === 1
+      ? "Ideal for freelancers and solo dev shops monitoring starter client sites."
+      : t.tier === 2
+        ? "Built for growing agencies requiring multi-region quorum consensus and white-label portals."
+        : "The scale fleet tier for established agencies and multi-client retainers.",
+}));
 
 export function BillingForm({ initialUsage }: BillingFormProps) {
   const searchParams = useSearchParams();
@@ -246,13 +227,18 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
           <div className="space-y-2">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border text-foreground text-xs font-mono font-semibold uppercase tracking-wider">
               <Sparkles className="size-3.5 text-[#ffd439]" />
-              <span>Founder Lifetime Deal • Pay Once, Use Forever</span>
+              <span>
+                Founder Lifetime Deal •{" "}
+                {LTD_CONFIG.isGloballySoldOut
+                  ? "Sold Out"
+                  : `${LTD_CONFIG.claimedCount}/${LTD_CONFIG.totalCap} Claimed`}
+              </span>
             </div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground font-serif">
               Lock in Lifetime Multi-Region Monitoring
             </h2>
             <p className="text-xs text-muted-foreground max-w-xl leading-relaxed">
-              Never pay monthly recurring fees. Get unlimited client workspaces, automated SLA
+              Pay once and never pay monthly recurring fees. Capped client workspaces, automated SLA
               sign-off reports, and Cloudflare edge quorum consensus.
             </p>
           </div>
@@ -268,11 +254,17 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
             <button
               type="button"
               onClick={() => handleLifetimeCheckout(selectedLtdTier)}
-              disabled={loadingPlan === selectedLtdTier}
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-foreground hover:bg-foreground/90 text-background text-xs font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+              disabled={loadingPlan === selectedLtdTier || LTD_CONFIG.isGloballySoldOut}
+              className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
+                LTD_CONFIG.isGloballySoldOut
+                  ? "bg-muted text-muted-foreground cursor-not-allowed border border-border"
+                  : "bg-foreground hover:bg-foreground/90 text-background hover:scale-[1.02] active:scale-[0.98]"
+              }`}
             >
               {loadingPlan === selectedLtdTier ? (
                 <Loader2 className="size-4 animate-spin" />
+              ) : LTD_CONFIG.isGloballySoldOut ? (
+                <span>Batch Sold Out</span>
               ) : (
                 <>
                   <span>
@@ -353,18 +345,24 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    setSelectedLtdTier(tier.id);
-                    handleLifetimeCheckout(tier.id);
+                    if (!LTD_CONFIG.isGloballySoldOut) {
+                      setSelectedLtdTier(tier.id);
+                      handleLifetimeCheckout(tier.id);
+                    }
                   }}
-                  disabled={loadingPlan === tier.id}
+                  disabled={loadingPlan === tier.id || LTD_CONFIG.isGloballySoldOut}
                   className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    isSelected
-                      ? "bg-foreground text-background hover:bg-foreground/90 shadow-xs"
-                      : "bg-muted text-foreground hover:bg-muted/80 border border-border"
+                    LTD_CONFIG.isGloballySoldOut
+                      ? "bg-muted text-muted-foreground cursor-not-allowed border border-border"
+                      : isSelected
+                        ? "bg-foreground text-background hover:bg-foreground/90 shadow-xs"
+                        : "bg-muted text-foreground hover:bg-muted/80 border border-border"
                   }`}
                 >
                   {loadingPlan === tier.id ? (
                     <Loader2 className="size-3.5 animate-spin" />
+                  ) : LTD_CONFIG.isGloballySoldOut ? (
+                    "Sold Out"
                   ) : isSelected ? (
                     "Proceed with this tier"
                   ) : (

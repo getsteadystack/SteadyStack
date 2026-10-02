@@ -88,7 +88,7 @@ export default function AgencyBenefits() {
       description:
         "Never get woken up at 3 AM for a transient local routing blip. SteadyStack probes endpoints concurrently from 7 global edge regions and requires quorum consensus before triggering an alert.",
       icon: ShieldCheck,
-      badge: "Zero False Alarms",
+      badge: "Far Fewer False Alarms",
       preview: (
         <div className="p-4 bg-muted/40 border border-border/80 rounded-xl flex flex-col gap-3 font-sans">
           <div className="flex items-center justify-between pb-2 border-b border-border/60">
@@ -112,7 +112,8 @@ export default function AgencyBenefits() {
             </div>
           </div>
           <p className="text-[10px] text-muted-foreground font-mono leading-tight">
-            Transient 1-node drop filtered out. 0 false alarms dispatched to Slack or PagerDuty.
+            Transient 1-node drop filtered out. Phantom alerts suppressed before notifying your
+            team.
           </p>
         </div>
       ),

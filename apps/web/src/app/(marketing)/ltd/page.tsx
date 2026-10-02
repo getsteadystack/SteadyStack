@@ -21,13 +21,14 @@ import {
 import LtdSpotlight from "@/components/landing/ltd-spotlight";
 import LtdSavingsCalculator from "@/components/landing/ltd-savings-calculator";
 import LtdFaq from "@/components/landing/ltd-faq";
+import { LTD_CONFIG } from "@/lib/ltd-config";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Lifetime Deal (LTD) — Pay Once, Monitor Forever | SteadyStack",
   description:
-    "Exclusive Founder Lifetime Deal for SteadyStack. Get up to 1,500 edge monitors, 7-region quorum consensus, 100% white-label status portals, and automated monthly SLA reports for a single one-time payment starting at $49.",
+    "Exclusive Founder Lifetime Deal for SteadyStack. Get up to 250 edge endpoints, 7-region quorum consensus, 100% white-label status portals, and automated monthly SLA reports for a capped founder allocation starting at $49.",
   alternates: {
     canonical: "https://steadystack.dev/ltd",
   },
@@ -44,16 +45,16 @@ export const metadata: Metadata = {
 export default function LtdPage() {
   const comparisonRows = [
     {
-      feature: "Active Edge Monitors",
-      tier1: "150 Monitors",
-      tier2: "250 Monitors",
-      tier3: "1,500 Monitors",
+      feature: "Active Edge Endpoints",
+      tier1: "50 Endpoints",
+      tier2: "120 Endpoints",
+      tier3: "250 Endpoints",
     },
     {
       feature: "Check Frequency",
       tier1: "60 seconds",
-      tier2: "30 seconds",
-      tier3: "10 seconds (High Frequency)",
+      tier2: "60 seconds",
+      tier3: "30 seconds",
     },
     {
       feature: "Edge Quorum Consensus",
@@ -69,21 +70,21 @@ export default function LtdPage() {
     },
     {
       feature: "White-Label Status Portals",
-      tier1: "3 Portals",
-      tier2: "10 Portals",
-      tier3: "100 Portals (Unlimited CNAMEs)",
+      tier1: "2 Portals",
+      tier2: "5 Portals",
+      tier3: "15 Portals",
     },
     {
       feature: "Custom Domains (CNAME + SSL)",
-      tier1: "Yes (3 Domains)",
-      tier2: "Yes (10 Domains)",
-      tier3: "Yes (Unlimited)",
+      tier1: "Yes (2 Domains)",
+      tier2: "Yes (5 Domains)",
+      tier3: "Yes (15 Domains)",
     },
     {
       feature: "Team Seats",
-      tier1: "3 Seats",
-      tier2: "10 Seats",
-      tier3: "50 Seats + RBAC Permissions",
+      tier1: "1 Seat",
+      tier2: "3 Seats",
+      tier3: "5 Seats",
     },
     {
       feature: "Automated Monthly Client SLA PDFs",
@@ -95,19 +96,19 @@ export default function LtdPage() {
       feature: "Telemetry & Metric Retention",
       tier1: "30 Days",
       tier2: "45 Days",
-      tier3: "365 Days (1 Full Year)",
+      tier3: "90 Days",
     },
     {
       feature: "Manual Run-Checks Limit",
       tier1: "5 per 5-min window",
       tier2: "10 per 5-min window",
-      tier3: "Unlimited (0 rate limit)",
+      tier3: "25 per 5-min window",
     },
     {
       feature: "Alert Channels (Slack, Discord, Webhooks, Email)",
-      tier1: "10 Channels",
-      tier2: "25 Channels",
-      tier3: "250 Channels",
+      tier1: "5 Channels",
+      tier2: "15 Channels",
+      tier3: "50 Channels",
     },
     {
       feature: "Future Core Roadmap Upgrades",
@@ -128,7 +129,12 @@ export default function LtdPage() {
               <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#ffd439] opacity-75" />
               <span className="relative inline-flex rounded-full h-2 w-2 bg-[#ffd439]" />
             </span>
-            <span>Founder Cohort 1 • Limited Lifetime Launch</span>
+            <span>
+              Founder Cohort 1 •{" "}
+              {LTD_CONFIG.isGloballySoldOut
+                ? "Sold Out"
+                : `${LTD_CONFIG.claimedCount}/${LTD_CONFIG.totalCap} Claimed`}
+            </span>
           </div>
 
           <h1 className="text-4xl sm:text-6xl md:text-7xl font-serif font-medium tracking-tight text-[#23211a] mb-6 leading-[1.06] text-balance max-w-4xl mx-auto">
@@ -141,13 +147,23 @@ export default function LtdPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
-            <Link
-              href="/signup?deal=ltd-tier-3"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#23211a] text-white text-sm font-semibold px-6 py-4 shadow-md hover:bg-[#373428] transition-all"
-            >
-              <span>Claim Founder Lifetime Deal ($199)</span>
-              <ArrowRight className="size-4" />
-            </Link>
+            {LTD_CONFIG.isGloballySoldOut ? (
+              <button
+                type="button"
+                disabled
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#e8e6df] text-[#868279] text-sm font-semibold px-6 py-4 cursor-not-allowed"
+              >
+                <span>Batch Sold Out</span>
+              </button>
+            ) : (
+              <Link
+                href="/signup?deal=ltd-tier-3"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl bg-[#23211a] text-white text-sm font-semibold px-6 py-4 shadow-md hover:bg-[#373428] transition-all"
+              >
+                <span>Claim Founder Lifetime Deal ($199)</span>
+                <ArrowRight className="size-4" />
+              </Link>
+            )}
             <Link
               href="/redeem"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 rounded-xl border border-[#e8e6df] bg-white text-[#23211a] text-sm font-semibold px-6 py-4 hover:bg-[#f4f2eb] transition-all"
@@ -236,24 +252,40 @@ export default function LtdPage() {
 
             {/* Table Footer Action Row */}
             <div className="p-6 bg-[#faf8f5] border-t border-[#e8e6df] grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Link
-                href="/signup?deal=ltd-tier-1"
-                className="py-3 rounded-xl border border-[#e8e6df] bg-white hover:bg-[#f4f2eb] text-[#23211a] font-semibold text-xs text-center transition-all shadow-xs"
-              >
-                Get Tier 1 ($49)
-              </Link>
-              <Link
-                href="/signup?deal=ltd-tier-2"
-                className="py-3 rounded-xl border border-[#e8e6df] bg-white hover:bg-[#f4f2eb] text-[#23211a] font-semibold text-xs text-center transition-all shadow-xs"
-              >
-                Get Tier 2 ($99)
-              </Link>
-              <Link
-                href="/signup?deal=ltd-tier-3"
-                className="py-3 rounded-xl bg-[#23211a] hover:bg-[#373428] text-white font-semibold text-xs text-center transition-all shadow-md"
-              >
-                Get Tier 3 ($199)
-              </Link>
+              {LTD_CONFIG.isGloballySoldOut ? (
+                <>
+                  <div className="py-3 rounded-xl border border-[#e8e6df] bg-[#e8e6df] text-[#868279] font-semibold text-xs text-center cursor-not-allowed">
+                    Tier 1 (Sold Out)
+                  </div>
+                  <div className="py-3 rounded-xl border border-[#e8e6df] bg-[#e8e6df] text-[#868279] font-semibold text-xs text-center cursor-not-allowed">
+                    Tier 2 (Sold Out)
+                  </div>
+                  <div className="py-3 rounded-xl bg-[#e8e6df] text-[#868279] font-semibold text-xs text-center cursor-not-allowed">
+                    Tier 3 (Sold Out)
+                  </div>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/signup?deal=ltd-tier-1"
+                    className="py-3 rounded-xl border border-[#e8e6df] bg-white hover:bg-[#f4f2eb] text-[#23211a] font-semibold text-xs text-center transition-all shadow-xs"
+                  >
+                    Get Tier 1 ($49)
+                  </Link>
+                  <Link
+                    href="/signup?deal=ltd-tier-2"
+                    className="py-3 rounded-xl border border-[#e8e6df] bg-white hover:bg-[#f4f2eb] text-[#23211a] font-semibold text-xs text-center transition-all shadow-xs"
+                  >
+                    Get Tier 2 ($99)
+                  </Link>
+                  <Link
+                    href="/signup?deal=ltd-tier-3"
+                    className="py-3 rounded-xl bg-[#23211a] hover:bg-[#373428] text-white font-semibold text-xs text-center transition-all shadow-md"
+                  >
+                    Get Tier 3 ($199)
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -278,18 +310,28 @@ export default function LtdPage() {
           </h2>
 
           <p className="text-white/80 text-base sm:text-lg max-w-2xl mb-10 font-sans leading-relaxed text-balance">
-            Join agencies and engineering teams who have replaced recurring monthly SaaS bills with
-            SteadyStack&apos;s edge quorum monitoring platform.
+            Replace recurring monthly SaaS fees with SteadyStack&apos;s edge quorum monitoring
+            platform and deliver verified SLA reports to your clients on autopilot.
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full relative z-10">
-            <Link
-              href="/signup?deal=ltd-tier-3"
-              className="inline-flex items-center justify-center gap-2 h-12 px-7 bg-[#ffd439] hover:bg-[#ffe066] text-[#23211a] font-semibold text-sm rounded-xl transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto"
-            >
-              <span>Get Founder Lifetime Deal ($199)</span>
-              <ArrowRight className="size-4" />
-            </Link>
+            {LTD_CONFIG.isGloballySoldOut ? (
+              <button
+                type="button"
+                disabled
+                className="inline-flex items-center justify-center gap-2 h-12 px-7 bg-white/20 text-white/60 font-semibold text-sm rounded-xl cursor-not-allowed w-full sm:w-auto"
+              >
+                <span>Batch Sold Out</span>
+              </button>
+            ) : (
+              <Link
+                href="/signup?deal=ltd-tier-3"
+                className="inline-flex items-center justify-center gap-2 h-12 px-7 bg-[#ffd439] hover:bg-[#ffe066] text-[#23211a] font-semibold text-sm rounded-xl transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto"
+              >
+                <span>Get Founder Lifetime Deal ($199)</span>
+                <ArrowRight className="size-4" />
+              </Link>
+            )}
 
             <Link
               href="/redeem"
