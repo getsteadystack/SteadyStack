@@ -1,37 +1,68 @@
 ---
-title: "Status Badges & Widgets"
-description: "Embed dynamic real-time SVG status badges in your READMEs, dashboards, and websites."
-section: "Status Pages"
+title: "Status Badges & Live Embed Widgets"
+description: "Embed real-time SVG status badges, uptime percentages, response latency pills, and dynamic widgets directly into GitHub READMEs, web footers, and customer dashboards."
+section: "Status Pages & Reporting"
 order: 9
-badge: "Badges"
-lastUpdated: "2026-08-22"
+badge: "Widgets"
+lastUpdated: "2026-10-02"
 ---
 
-SteadyStack provides dynamic SVG status badges generated at Cloudflare edge nodes with zero origin overhead and sub-5ms response caching.
+SteadyStack provides edge-rendered, cache-optimized **SVG Status Badges** and embeddable widgets that update in real time with zero external JavaScript dependencies.
 
 ---
 
-## Badge URL Format
+## 1. Markdown & HTML Embeds
 
-Embed directly into GitHub READMEs, docs, or web applications:
+Embed a live uptime badge into your GitHub README or project documentation:
 
-```html
-<!-- Markdown badge embed -->
-![SteadyStack Status](https://steadystack.dev/api/badge/your-slug.svg?style=flat&theme=dark)
+### System Operational Badge
+
+```markdown
+[![Status](https://app.steadystack.dev/api/badge/acme-corp/status)](https://status.acmecorp.com)
 ```
 
-### Style Options
+### 30-Day Uptime Percentage Badge
 
-- `style`: `flat`, `for-the-badge`, `plastic`, `cyber`
-- `theme`: `dark`, `light`, `neon`
-- `size`: `sm`, `md`, `lg`
+```markdown
+[![Uptime](https://app.steadystack.dev/api/badge/acme-corp/uptime)](https://status.acmecorp.com)
+```
+
+### Live Average Latency Badge
+
+```markdown
+[![Latency](https://app.steadystack.dev/api/badge/acme-corp/latency)](https://status.acmecorp.com)
+```
 
 ---
 
-## Embeddable Web Widget
+## 2. Badge Customization Parameters
 
-Embed a live status widget in your web application:
+You can customize badge appearance via query parameters:
+
+| Query Param | Values                                          | Default  | Description                    |
+| :---------- | :---------------------------------------------- | :------- | :----------------------------- |
+| `style`     | `flat`, `flat-square`, `for-the-badge`, `cyber` | `flat`   | Visual styling format          |
+| `label`     | String                                          | `uptime` | Custom left-hand label text    |
+| `color`     | Hex string (e.g. `23211a`, `ffd439`)            | Dynamic  | Custom right-hand accent color |
+| `period`    | `7d`, `30d`, `90d`                              | `30d`    | Calculation lookback window    |
 
 ```html
-<script src="https://steadystack.dev/widget.js" data-slug="your-slug" async></script>
+<!-- Example custom styled badge -->
+<img src="https://app.steadystack.dev/api/badge/acme-corp/uptime?style=for-the-badge&label=ACME+SLA" alt="Acme Uptime" />
+```
+
+---
+
+## 3. JavaScript Micro-Widget
+
+For web apps and client dashboards, embed an asynchronous status pill:
+
+```html
+<script
+  src="https://app.steadystack.dev/widget.js"
+  data-status-page="acme-corp"
+  data-theme="auto"
+  async>
+</script>
+<div id="steadystack-widget"></div>
 ```

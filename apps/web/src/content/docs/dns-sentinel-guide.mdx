@@ -1,0 +1,32 @@
+---
+title: "DNS Propagation & Record Sentinel"
+description: "Verify worldwide DNS record propagation across authoritative Anycast resolvers and configure automated DNS watchdog alerts."
+section: "Free Tools & Diagnostics"
+order: 15
+badge: "Tools"
+lastUpdated: "2026-10-02"
+---
+
+**DNS Sentinel** (`/tools/dns-sentinel`) performs global authoritative DNS queries across 20+ geographically diverse recursive resolvers (Cloudflare, Google, OpenDNS, Quad9, and regional ISPs).
+
+---
+
+## Supported Record Types
+
+- **A / AAAA**: IPv4 and IPv6 endpoint routing records.
+- **CNAME**: Canonical name aliases and CDN edge mappings.
+- **MX**: Mail exchange records and priority routing.
+- **TXT**: Domain ownership, SPF (`v=spf1`), DKIM, and DMARC security policies.
+- **NS**: Authoritative nameserver assignments.
+- **SOA**: Start of Authority, zone serial numbers, and refresh timers.
+- **CAA**: Certificate Authority Authorization rules.
+
+---
+
+## Automated DNS Watchdog
+
+In SteadyStack, you can turn any DNS record check into an automated surveillance monitor:
+
+- **Record Hijack Detection**: Alerts immediately if an `A` or `CNAME` record is modified unexpectedly.
+- **Propagation Verification**: Verifies 100% global propagation before cutting over DNS traffic for a client.
+- **SPF/DMARC Protection**: Detects accidental deletion of critical email deliverability TXT records.

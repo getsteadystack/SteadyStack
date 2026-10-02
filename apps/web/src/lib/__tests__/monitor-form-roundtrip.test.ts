@@ -60,7 +60,10 @@ describe("resolveClientCertWrite (keep-on-empty update contract)", () => {
 
   test("empty-string fields keep the stored certificate", async () => {
     // The form used to always post empty hidden inputs — this must not wipe.
-    const result = await resolveClientCertWrite({ clientCertPem: "", clientKeyPem: "" });
+    const result = await resolveClientCertWrite({
+      clientCertPem: "",
+      clientKeyPem: "",
+    });
     expect(result).toBeUndefined();
   });
 
@@ -137,7 +140,10 @@ describe("resolveProtocolHeadersWrite (keep-on-empty credentials contract)", () 
 
   test("plaintext credentials are encrypted", async () => {
     const result = await resolveProtocolHeadersWrite({
-      headers: JSON.stringify({ username: "user@example.com", password: "hunter2" }),
+      headers: JSON.stringify({
+        username: "user@example.com",
+        password: "hunter2",
+      }),
     });
     expect(typeof result).toBe("string");
     expect(result!.startsWith("enc:v1:")).toBe(true);
@@ -161,7 +167,9 @@ describe("resolveProtocolHeadersWrite (keep-on-empty credentials contract)", () 
 
   test("posted username with blank password keeps the stored password (merge)", async () => {
     const { encryptSecret, decryptSecret } = await import("@steadystack/core");
-    const stored = await encryptSecret(JSON.stringify({ username: "old@x.com", password: "hunter2" }));
+    const stored = await encryptSecret(
+      JSON.stringify({ username: "old@x.com", password: "hunter2" }),
+    );
     const result = await resolveProtocolHeadersWrite(
       { headers: JSON.stringify({ username: "new@x.com" }) },
       stored,
@@ -221,12 +229,16 @@ describe("resolveProtocolHeadersWrite (keep-on-empty credentials contract)", () 
   });
 
   test("removal flag clears the stored credentials", async () => {
-    const result = await resolveProtocolHeadersWrite({ removeProtocolCredentials: "1" });
+    const result = await resolveProtocolHeadersWrite({
+      removeProtocolCredentials: "1",
+    });
     expect(result).toBeNull();
   });
 
   test("unchecked removal flag posts empty string and keeps the stored credentials", async () => {
-    const result = await resolveProtocolHeadersWrite({ removeProtocolCredentials: "" });
+    const result = await resolveProtocolHeadersWrite({
+      removeProtocolCredentials: "",
+    });
     expect(result).toBeUndefined();
   });
 

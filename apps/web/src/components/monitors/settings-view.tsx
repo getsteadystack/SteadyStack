@@ -17,29 +17,29 @@ export function MonitorSettingsView({
   const [activeTab, setActiveTab] = useState<"general" | "maintenance">("general");
 
   return (
-    <div className="w-full max-w-4xl mx-auto">
+    <div className="w-full max-w-4xl mx-auto space-y-6">
       {/* Tabs */}
-      <div className="flex items-center gap-1 mb-8 border-b border-primary/20">
+      <div className="flex items-center gap-1.5 p-1 bg-muted/60 border border-border rounded-xl w-fit">
         <button
           onClick={() => setActiveTab("general")}
-          className={`flex items-center gap-2 px-6 py-3 text-xs font-bold font-mono uppercase tracking-wider transition-all border-b-2 ${
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold font-mono uppercase tracking-wider transition-all rounded-lg cursor-pointer ${
             activeTab === "general"
-              ? "border-primary text-primary bg-primary/5"
-              : "border-transparent text-primary/50 hover:text-primary hover:bg-primary/5"
+              ? "bg-card text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Settings className="size-4" />
+          <Settings className="size-3.5" />
           General
         </button>
         <button
           onClick={() => setActiveTab("maintenance")}
-          className={`flex items-center gap-2 px-6 py-3 text-xs font-bold font-mono uppercase tracking-wider transition-all border-b-2 ${
+          className={`flex items-center gap-2 px-4 py-2 text-xs font-semibold font-mono uppercase tracking-wider transition-all rounded-lg cursor-pointer ${
             activeTab === "maintenance"
-              ? "border-amber-500 text-amber-500 bg-amber-500/5"
-              : "border-transparent text-primary/50 hover:text-amber-500 hover:bg-amber-500/5"
+              ? "bg-card text-foreground shadow-xs"
+              : "text-muted-foreground hover:text-foreground"
           }`}
         >
-          <Construction className="size-4" />
+          <Construction className="size-3.5" />
           Maintenance
         </button>
       </div>

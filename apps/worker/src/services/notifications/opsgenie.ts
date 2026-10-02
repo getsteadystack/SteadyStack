@@ -58,8 +58,8 @@ export async function sendOpsgenieAlert(
         Authorization: `GenieKey ${parsedConfig.apiKey}`,
       },
       body: JSON.stringify({
-        user: "SteadyStack",
-        source: "SteadyStack Edge Monitor",
+        user: "Edge Monitor",
+        source: "Edge Monitor",
         note: `Resolved: ${data.monitorName} recovered at ${data.timestamp}. ${data.downtimeDuration ? `Downtime: ${data.downtimeDuration}` : ""}`,
       }),
     });
@@ -73,11 +73,11 @@ export async function sendOpsgenieAlert(
   }
 
   // Trigger alert
-  let message = `[SteadyStack] ${data.monitorName} is DOWN`;
+  let message = `[ALERT] ${data.monitorName} is DOWN`;
   if (type === NotificationType.HIGH_LATENCY) {
-    message = `[SteadyStack] High Latency Warning: ${data.monitorName}`;
+    message = `[WARNING] High Latency: ${data.monitorName}`;
   } else if (type === NotificationType.SSL_EXPIRY) {
-    message = `[SteadyStack] SSL Expiry Warning: ${data.monitorName}`;
+    message = `[WARNING] SSL Expiry: ${data.monitorName}`;
   }
 
   const payload = {
@@ -85,7 +85,7 @@ export async function sendOpsgenieAlert(
     alias,
     description: `Target: ${data.url}\nReason: ${data.reason || "Health check failed"}\nRegions Failed: ${(data.failedRegions || []).join(", ") || "Global"}`,
     priority: mapPriority(type),
-    source: "SteadyStack Edge Monitor",
+    source: "Edge Monitor",
     details: {
       monitorId: data.monitorId,
       url: data.url,

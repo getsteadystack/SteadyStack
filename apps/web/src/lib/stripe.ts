@@ -242,20 +242,32 @@ export async function createStripeRenewalDiscountCode({
 export async function createCheckoutSession({
   userId,
   email,
-  plan,
-  interval,
+  plan = "NETRUNNER",
+  interval = "monthly",
   returnUrl,
   promoCode,
+  deal,
 }: {
   userId: string;
   email: string;
-  plan: PlanTier;
-  interval: "monthly" | "annual";
+  plan?: PlanTier;
+  interval?: "monthly" | "annual";
   returnUrl: string;
   promoCode?: string;
+  deal?: string;
 }): Promise<{ url: string }> {
   let customerId = await getOrCreateStripeCustomer(userId, email);
-  const planDetails = PLANS[plan];
+
+  // If a Lifetime Deal is requested
+  const isLifetimeDeal = Boolean(deal);
+  const dealTier = deal?.includes("3") ? 3 : deal?.includes("2") ? 2 : 1;
+  const dealPrice = dealTier === 3 ? 199 : dealTier === 2 ? 99 : 49;
+  const effectivePlan: PlanTier = isLifetimeDeal
+    ? dealTier === 3
+      ? "CONSTRUCT"
+      : "NETRUNNER"
+    : plan;
+  const planDetails = PLANS[effectivePlan];
 
   const priceId =
     interval === "annual" ? planDetails.stripePriceIdAnnual : planDetails.stripePriceIdMonthly;
@@ -265,13 +277,37 @@ export async function createCheckoutSession({
 
     // Check if the price ID is a real pre-configured Stripe price ID or placeholder
     const isPreconfiguredPriceId =
+      !isLifetimeDeal &&
       Boolean(priceId) &&
       (priceId?.startsWith("price_") ?? false) &&
       !priceId?.includes("netrunner") &&
       !priceId?.includes("construct");
 
-    const lineItem: Stripe.Checkout.SessionCreateParams.LineItem =
-      isPreconfiguredPriceId && priceId
+    const lineItem: Stripe.Checkout.SessionCreateParams.LineItem = isLifetimeDeal
+      ? {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: `SteadyStack Founder Lifetime Deal Tier ${dealTier}`,
+              description: `Lifetime access to SteadyStack Tier ${dealTier} (${
+                dealTier === 3
+                  ? "1,500 monitors, 100 status pages, 10s checks"
+                  : dealTier === 2
+                    ? "250 monitors, 10 status pages, 30s checks"
+                    : "150 monitors, 3 status pages, 60s checks"
+              })`,
+              metadata: {
+                deal: deal || `ltd-tier-${dealTier}`,
+                dealTier: String(dealTier),
+                plan: effectivePlan,
+                isLifetime: "true",
+              },
+            },
+            unit_amount: dealPrice * 100,
+          },
+          quantity: 1,
+        }
+      : isPreconfiguredPriceId && priceId
         ? { price: priceId, quantity: 1 }
         : {
             price_data: {
@@ -280,7 +316,7 @@ export async function createCheckoutSession({
                 name: `SteadyStack ${planDetails.name}`,
                 description: planDetails.description,
                 metadata: {
-                  plan,
+                  plan: effectivePlan,
                 },
               },
               unit_amount:
@@ -388,34 +424,38 @@ export async function createCheckoutSession({
       custId: string,
       includeDiscount: boolean = true,
     ): Stripe.Checkout.SessionCreateParams => {
+      const metadata = {
+        userId,
+        plan: effectivePlan,
+        interval,
+        promoCode: cleanPromo || "",
+        deal: deal || "",
+        isLifetime: isLifetimeDeal ? "true" : "false",
+        dealTier: isLifetimeDeal ? String(dealTier) : "",
+      };
+
       const params: Stripe.Checkout.SessionCreateParams = {
         customer: custId,
         payment_method_types: ["card"],
         customer_update: { name: "auto", address: "auto" },
         line_items: [lineItem],
-        mode: "subscription",
-        subscription_data: {
-          metadata: {
-            userId,
-            plan,
-            interval,
-            promoCode: cleanPromo || "",
-          },
-        },
+        mode: isLifetimeDeal ? "payment" : "subscription",
         success_url: appendQueryParams(returnUrl, {
           session_id: "{CHECKOUT_SESSION_ID}",
           success: "true",
+          deal: deal || "",
         }),
         cancel_url: appendQueryParams(returnUrl, {
           canceled: "true",
         }),
-        metadata: {
-          userId,
-          plan,
-          interval,
-          promoCode: cleanPromo || "",
-        },
+        metadata,
       };
+
+      if (!isLifetimeDeal) {
+        params.subscription_data = {
+          metadata,
+        };
+      }
 
       if (includeTax) {
         params.automatic_tax = { enabled: true };
@@ -496,9 +536,12 @@ export async function createCheckoutSession({
   // Fallback demo/mock mode response when STRIPE_SECRET_KEY is not configured
   const mockParams: Record<string, string> = {
     mock_checkout: "true",
-    plan,
+    plan: effectivePlan,
     interval,
   };
+  if (deal) {
+    mockParams.deal = deal;
+  }
   if (promoCode) {
     mockParams.promo_code = promoCode;
   }
@@ -807,7 +850,16 @@ export async function verifyAndApplyCheckoutSession({
       return { success: false, error: "Session does not belong to this user" };
     }
 
-    let plan: PlanTier = "CONSTRUCT";
+    const isLifetime = session.metadata?.isLifetime === "true" || Boolean(session.metadata?.deal);
+    const dealTier = session.metadata?.dealTier
+      ? Number.parseInt(session.metadata.dealTier)
+      : session.metadata?.deal?.includes("3")
+        ? 3
+        : session.metadata?.deal?.includes("2")
+          ? 2
+          : 1;
+
+    let plan: PlanTier = isLifetime ? (dealTier === 3 ? "CONSTRUCT" : "NETRUNNER") : "CONSTRUCT";
     const rawPlan = session.metadata?.plan?.toUpperCase();
     if (rawPlan && rawPlan in PLANS) {
       plan = rawPlan as PlanTier;
@@ -821,7 +873,7 @@ export async function verifyAndApplyCheckoutSession({
       typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
 
     console.log(
-      `[Stripe] Syncing checkout session ${sessionId} for user ${userId} -> Plan: ${plan}`,
+      `[Stripe] Syncing checkout session ${sessionId} for user ${userId} -> Plan: ${plan} (Lifetime: ${isLifetime})`,
     );
 
     const oneYearFromNow = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000);
@@ -834,20 +886,24 @@ export async function verifyAndApplyCheckoutSession({
         stripeSubscriptionId: subscriptionId || undefined,
         plan,
         status: "ACTIVE",
+        isLifetime,
+        appsumoTier: isLifetime ? dealTier : null,
+        tierVersion: isLifetime ? `appsumo_tier_${dealTier}` : "stripe_live",
         trialEndsAt: null,
         currentPeriodStart: new Date(),
-        currentPeriodEnd: oneYearFromNow,
-        tierVersion: "stripe_live",
+        currentPeriodEnd: isLifetime ? null : oneYearFromNow,
       },
       update: {
         stripeCustomerId: customerId || undefined,
         stripeSubscriptionId: subscriptionId || undefined,
         plan,
         status: "ACTIVE",
+        isLifetime,
+        appsumoTier: isLifetime ? dealTier : null,
+        tierVersion: isLifetime ? `appsumo_tier_${dealTier}` : "stripe_live",
         trialEndsAt: null,
         currentPeriodStart: new Date(),
-        currentPeriodEnd: oneYearFromNow,
-        tierVersion: "stripe_live",
+        currentPeriodEnd: isLifetime ? null : oneYearFromNow,
       },
     });
 

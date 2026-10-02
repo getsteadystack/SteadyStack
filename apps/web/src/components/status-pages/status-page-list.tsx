@@ -16,65 +16,59 @@ export function StatusPageList({ initialPages }: { initialPages: any[] }) {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border/80">
         <div>
-          <h1 className="text-2xl font-bold font-mono tracking-tight text-foreground">
+          <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground">
             Status Pages
           </h1>
-          <p className="text-muted-foreground font-mono text-sm mt-1">
-            Manage your public status pages and subscribers.
+          <p className="text-sm text-muted-foreground mt-1">
+            Manage your branded public status portals, subscribers, and uptime widgets.
           </p>
         </div>
         <button
           onClick={() => setIsCreateOpen(true)}
-          className="bg-primary hover:bg-primary/90 text-black font-bold font-mono uppercase text-sm px-4 py-2 flex items-center gap-2 transition-colors rounded-sm"
+          className="bg-foreground hover:bg-foreground/90 text-background font-medium text-xs px-4 py-2.5 flex items-center gap-2 transition-colors rounded-xl shadow-xs cursor-pointer self-start sm:self-auto"
         >
-          <Plus className="size-4" />
-          Create Page
+          <Plus className="size-4 text-[#ffd439]" />
+          Create Status Page
         </button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
         {initialPages.map((page) => (
           <div
             key={page.id}
-            className="group relative bg-[#0A0A0A] border border-primary/20 hover:border-primary/50 transition-all p-5 flex flex-col gap-4 overflow-hidden"
+            className="group relative bg-card border border-border hover:border-foreground/20 rounded-2xl p-5 flex flex-col gap-4 shadow-xs transition-all"
           >
-            {/* Hover Effect */}
-            <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-
             <div className="flex items-start justify-between relative z-10">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-sm">
-                  <Globe className="size-5 text-primary" />
+                <div className="p-2.5 bg-muted rounded-xl border border-border text-foreground">
+                  <Globe className="size-5" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-foreground font-mono">{page.title}</h3>
+                  <h3 className="font-serif text-base font-medium text-foreground">{page.title}</h3>
                   <p className="text-xs text-muted-foreground font-mono">/{page.slug}</p>
                 </div>
               </div>
               {page.requiresAuth && (
-                <div className="px-1.5 py-0.5 border border-yellow-500/30 bg-yellow-500/10 text-yellow-500 text-[10px] font-mono uppercase rounded-sm">
+                <div className="px-2 py-0.5 border border-amber-500/30 bg-amber-500/10 text-amber-700 dark:text-amber-400 text-[10px] font-mono uppercase tracking-wider rounded-full font-medium">
                   Private
                 </div>
               )}
             </div>
 
             <div className="flex items-center gap-4 text-xs font-mono text-muted-foreground relative z-10">
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-1.5">
                 <span className="text-foreground font-bold">{page._count?.monitors || 0}</span>{" "}
-                Monitors
+                monitors linked
               </div>
-              {/* Future: <div className="flex items-center gap-1">
-                    <span className="text-foreground font-bold">100%</span> Uptime
-                </div> */}
             </div>
 
-            <div className="flex items-center gap-2 mt-auto pt-2 border-t border-primary/10 relative z-10">
+            <div className="flex items-center gap-2 mt-auto pt-3 border-t border-border relative z-10">
               <Link
                 href={`/dashboard/pages/${page.id}`}
-                className="flex-1 flex items-center justify-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary text-xs font-bold font-mono uppercase py-2 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 bg-muted hover:bg-muted/80 text-foreground text-xs font-medium py-2 rounded-xl border border-border transition-colors"
               >
                 <Settings className="size-3.5" />
                 Configure
@@ -83,28 +77,30 @@ export function StatusPageList({ initialPages }: { initialPages: any[] }) {
                 href={getPublicLink(page)}
                 target="_blank"
                 rel="noreferrer"
-                className="flex-1 flex items-center justify-center gap-2 border border-primary/20 hover:border-primary/40 text-muted-foreground hover:text-foreground text-xs font-bold font-mono uppercase py-2 transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 border border-border hover:bg-muted/50 text-muted-foreground hover:text-foreground text-xs font-medium py-2 rounded-xl transition-colors"
               >
                 <ExternalLink className="size-3.5" />
-                View
+                Live Page
               </a>
             </div>
           </div>
         ))}
 
         {initialPages.length === 0 && (
-          <div className="col-span-full py-12 flex flex-col items-center justify-center text-center border border-dashed border-primary/20 bg-primary/5 rounded-sm">
-            <div className="p-4 bg-primary/10 rounded-full mb-4">
-              <Globe className="size-8 text-primary" />
+          <div className="col-span-full py-16 flex flex-col items-center justify-center text-center border border-dashed border-border bg-card rounded-2xl p-8">
+            <div className="p-4 bg-muted rounded-2xl mb-4 border border-border text-foreground">
+              <Globe className="size-8" />
             </div>
-            <h3 className="text-lg font-bold text-foreground font-mono">No Status Pages Yet</h3>
-            <p className="text-sm text-muted-foreground max-w-sm mt-2 font-mono mb-6">
-              Create a public status page to communicate system reliability to your users.
+            <h3 className="text-xl font-serif font-medium text-foreground">No Status Pages Yet</h3>
+            <p className="text-sm text-muted-foreground max-w-sm mt-2 mb-6">
+              Create a branded public status page to communicate system reliability directly to your
+              users and clients.
             </p>
             <button
               onClick={() => setIsCreateOpen(true)}
-              className="bg-primary hover:bg-primary/90 text-black font-bold font-mono uppercase text-sm px-6 py-2 transition-colors rounded-sm"
+              className="bg-foreground hover:bg-foreground/90 text-background font-medium text-xs px-5 py-2.5 transition-colors rounded-xl shadow-xs cursor-pointer flex items-center gap-2"
             >
+              <Plus className="size-4 text-[#ffd439]" />
               Create Your First Page
             </button>
           </div>

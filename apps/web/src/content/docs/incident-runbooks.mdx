@@ -1,41 +1,47 @@
 ---
-title: "Incident Runbooks & Postmortems"
-description: "Equip on-call engineers with instant runbook links and automated postmortem summaries."
+title: "Incident Runbooks & Automated Diagnostics"
+description: "Attach interactive diagnostic runbooks, remediation scripts, and context payloads directly to automated on-call alerts."
 section: "Alerting & Incidents"
-order: 17
+order: 8
 badge: "SRE"
-lastUpdated: "2026-08-22"
+lastUpdated: "2026-10-02"
 ---
 
-When production goes down at 3:00 AM, engineers shouldn't have to search Notion or Confluence for how to triage an issue. SteadyStack embeds executable incident runbooks directly into every alert.
+When an outage strikes at 3:00 AM, every minute spent searching for documentation increases downtime. SteadyStack **Incident Runbooks** attach remediation playbooks, debug endpoints, and context directly into incident payloads, Slack alerts, and PagerDuty notifications.
 
 ---
 
-## Attaching Runbooks to Monitors
+## What to Include in a Runbook
 
-You can attach a Markdown URL or inline runbook instructions directly to any synthetic monitor:
+A production-ready runbook should contain:
 
-```hcl
-resource "steadystack_monitor" "checkout" {
-  name        = "Stripe Checkout Worker"
-  url         = "https://checkout.example.com/health"
-  type        = "HTTP"
-  interval    = 15
+1. **Service Architecture Diagram**: Summary of dependencies (e.g. Origin Server $\rightarrow$ Redis Cache $\rightarrow$ PostgreSQL DB).
+2. **First-Response Checklist**:
+   - Verify cloud provider status (AWS, Cloudflare, Vercel).
+   - Check origin error logs (`tail -f /var/log/nginx/error.log` or Datadog log queries).
+   - Test internal origin health endpoint directly via curl.
+3. **Escalation Contacts**: Primary and secondary domain experts and third-party vendor contact numbers.
+4. **Rollback & Failover Procedures**: Step-by-step CLI commands to trigger DNS failover or redeploy previous release tags.
 
-  # Embedded Runbook URL
-  description = "Runbook: https://wiki.example.com/sre/checkout-triage"
-}
+---
+
+## 1. Linking Runbooks to Monitors
+
+1. Navigate to **Dashboard → Monitors → Edit Monitor**.
+2. Under **Incident Management**, paste your Markdown Runbook or external documentation URL (e.g. `https://wiki.youragency.com/runbooks/payment-api`).
+3. Whenever an incident opens, the runbook link and summary instructions are immediately injected into all outgoing alert notifications.
+
+---
+
+## 2. Example Markdown Runbook Template
+
+```markdown
+### 🚨 Triaging Payment Gateway Outages
+
+1. **Test Origin Health Directly**:
+   `curl -svo /dev/null -H "Host: api.acme.com" http://10.0.1.50/health`
+2. **Check Database Connection Pool**:
+   Ensure active connection count is below max limit in PgBouncer.
+3. **Trigger Read-Only Mode**:
+   If DB is unresponsive, set `MAINTENANCE_READ_ONLY=true` in Cloudflare Worker KV.
 ```
-
-When an alert is dispatched to **Slack**, **Discord**, or **PagerDuty**, the runbook link is formatted as a primary one-click action button.
-
----
-
-## Automated Postmortem Generation
-
-Following any resolved incident exceeding 5 minutes of downtime, SteadyStack compiles a structured postmortem draft:
-
-- **Incident Duration**: Exact timestamp of first quorum failure to full 7-region recovery.
-- **Root Cause Classification**: Status code response, TLS certificate handshake error, or timeout breakdown.
-- **Regional Impact Matrix**: Which geographies observed downtime vs which remained healthy.
-- **Export Formats**: One-click export to Markdown, PDF, or Jira issue templates.

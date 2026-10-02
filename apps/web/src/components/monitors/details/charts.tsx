@@ -70,17 +70,17 @@ export function MonitorCharts({ monitor }: { monitor: any }) {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Uptime Bar Chart */}
-      <div className="flex flex-col gap-4 rounded-sm border border-primary/20 bg-card/40 p-6 backdrop-blur-sm shadow-sm relative overflow-hidden">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-xs relative overflow-hidden">
         <div className="flex justify-between items-center">
-          <h3 className="text-foreground text-lg font-bold font-mono uppercase tracking-tight">
+          <h3 className="text-foreground text-sm font-bold font-mono uppercase tracking-wider">
             Uptime History
           </h3>
-          <select className="bg-primary/5 border border-primary/20 rounded-sm text-xs font-bold text-primary py-1 pl-3 pr-8 focus:outline-none focus:border-primary/50 appearance-none font-mono">
-            <option>Last 24 Hours</option>
-          </select>
+          <span className="bg-accent/60 border border-border rounded-lg text-[10px] font-bold text-muted-foreground px-2.5 py-1 font-mono uppercase">
+            Last 24 Hours
+          </span>
         </div>
         <div className="flex items-baseline gap-2">
-          <p className="text-foreground text-3xl font-bold font-mono tracking-tighter">
+          <p className="text-foreground text-3xl font-bold font-mono tracking-tight">
             {displayEvents.length > 0
               ? (
                   (displayEvents.filter((e) => e.status === "UP").length / displayEvents.length) *
@@ -89,60 +89,60 @@ export function MonitorCharts({ monitor }: { monitor: any }) {
               : "100"}
             %
           </p>
-          <p className="text-primary/60 text-xs font-mono">Current Average</p>
+          <p className="text-muted-foreground text-xs font-mono">Current Average</p>
         </div>
 
-        <div className="grid min-h-[160px] grid-flow-col gap-1 items-end pt-4">
+        <div className="grid min-h-[140px] grid-flow-col gap-1 items-end pt-4">
           {bars.map((bar, i) => (
             <div
               key={i}
-              className={`w-full rounded-t-sm border-t-2 transition-all hover:opacity-80 ${
+              className={`w-full rounded-t-sm transition-all hover:opacity-80 ${
                 bar.status === "UP"
-                  ? "bg-primary/20 border-primary h-full"
+                  ? "bg-emerald-500/30 hover:bg-emerald-500/50 h-full"
                   : bar.status === "DOWN"
-                    ? "bg-red-500/20 border-red-500 h-2/5"
-                    : "bg-primary/5 border-primary/10 h-full opacity-20" // Unknown/Empty
+                    ? "bg-red-500/50 hover:bg-red-500/70 h-2/5"
+                    : "bg-muted h-full opacity-40" // Unknown/Empty
               }`}
             ></div>
           ))}
         </div>
 
-        <div className="flex justify-between mt-2">
-          <p className="text-primary/40 text-[10px] font-bold uppercase tracking-widest font-mono">
+        <div className="flex justify-between mt-2 pt-2 border-t border-border/40">
+          <p className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider font-mono">
             Oldest
           </p>
-          <p className="text-primary/40 text-[10px] font-bold uppercase tracking-widest font-mono">
+          <p className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider font-mono">
             Now
           </p>
         </div>
       </div>
 
       {/* Response Time - Dynamic SVG */}
-      <div className="flex flex-col gap-4 rounded-sm border border-primary/20 bg-card/40 p-6 backdrop-blur-sm shadow-sm relative overflow-hidden">
+      <div className="flex flex-col gap-4 rounded-2xl border border-border bg-card p-6 shadow-xs relative overflow-hidden">
         <div className="flex justify-between items-center">
-          <h3 className="text-foreground text-lg font-bold font-mono uppercase tracking-tight">
+          <h3 className="text-foreground text-sm font-bold font-mono uppercase tracking-wider">
             Response Time (ms)
           </h3>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={downloadSVG}
-              className="p-1 hover:bg-primary/10 rounded-sm text-primary/60 hover:text-primary transition-colors"
+              className="p-1.5 hover:bg-accent rounded-lg text-muted-foreground hover:text-foreground transition-colors"
               title="Export SVG"
             >
-              <Download className="size-4" />
+              <Download className="size-3.5" />
             </button>
-            <button className="p-1 hover:bg-primary/10 rounded-sm text-primary/60 hover:text-primary transition-colors">
-              <Fullscreen className="size-4" />
+            <button className="p-1.5 hover:bg-accent rounded-lg text-muted-foreground hover:text-foreground transition-colors">
+              <Fullscreen className="size-3.5" />
             </button>
           </div>
         </div>
         <div className="flex items-baseline gap-2">
-          <p className="text-foreground text-3xl font-bold font-mono tracking-tighter">
+          <p className="text-foreground text-3xl font-bold font-mono tracking-tight">
             {avgLatency}ms
           </p>
-          <p className="text-primary/60 text-xs font-mono">Last 50 Events Average</p>
+          <p className="text-muted-foreground text-xs font-mono">Last 50 Events Average</p>
         </div>
-        <div className="flex flex-1 flex-col pt-4 min-h-[160px]">
+        <div className="flex flex-1 flex-col pt-4 min-h-[140px]">
           {latencies.length > 0 ? (
             <svg
               ref={svgRef}
@@ -153,13 +153,7 @@ export function MonitorCharts({ monitor }: { monitor: any }) {
               width="100%"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path
-                d={pathD}
-                stroke="currentColor"
-                className="text-primary"
-                strokeLinecap="round"
-                strokeWidth="2"
-              ></path>
+              <path d={pathD} stroke="#10b981" strokeLinecap="round" strokeWidth="2"></path>
               <path d={areaPath} fill="url(#latency_grad)"></path>
               <defs>
                 <linearGradient
@@ -170,28 +164,23 @@ export function MonitorCharts({ monitor }: { monitor: any }) {
                   y1="0"
                   y2="150"
                 >
-                  <stop stopColor="currentColor" className="text-primary" stopOpacity="0.2"></stop>
-                  <stop
-                    offset="1"
-                    stopColor="currentColor"
-                    className="text-primary"
-                    stopOpacity="0"
-                  ></stop>
+                  <stop stopColor="#10b981" stopOpacity="0.2"></stop>
+                  <stop offset="1" stopColor="#10b981" stopOpacity="0.0"></stop>
                 </linearGradient>
               </defs>
             </svg>
           ) : (
-            <div className="flex h-full items-center justify-center border border-dashed border-primary/20 bg-primary/5 rounded-sm">
-              <p className="text-primary/40 font-mono text-xs uppercase tracking-widest">
+            <div className="flex h-full items-center justify-center border border-dashed border-border bg-accent/20 rounded-xl">
+              <p className="text-muted-foreground font-mono text-xs uppercase tracking-wider">
                 No data available
               </p>
             </div>
           )}
-          <div className="flex justify-between mt-2">
-            <p className="text-primary/40 text-[10px] font-bold uppercase tracking-widest font-mono">
+          <div className="flex justify-between mt-2 pt-2 border-t border-border/40">
+            <p className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider font-mono">
               Oldest
             </p>
-            <p className="text-primary/40 text-[10px] font-bold uppercase tracking-widest font-mono">
+            <p className="text-muted-foreground text-[10px] font-semibold uppercase tracking-wider font-mono">
               Now
             </p>
           </div>

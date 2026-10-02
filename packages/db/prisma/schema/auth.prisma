@@ -30,7 +30,7 @@ model User {
   invitations          Invitation[]
   auditLogs            AuditLog[]
   appSumoLicenses      AppSumoLicense[]
-
+  clients              Client[]
 
   @@unique([email])
   @@map("user")

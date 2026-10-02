@@ -41,7 +41,9 @@ function parseArgs(): SmokeArgs {
   const webUrl = get("--web-url") ?? process.env.SMOKE_WEB_URL;
   const workerUrl = get("--worker-url") ?? process.env.SMOKE_WORKER_URL;
   if (!webUrl) {
-    console.error("Usage: smoke-test.ts --web-url <url> [--worker-url <url>] [--timeout-ms 10000] [--retries 3]");
+    console.error(
+      "Usage: smoke-test.ts --web-url <url> [--worker-url <url>] [--timeout-ms 10000] [--retries 3]",
+    );
     process.exit(2);
   }
   return {
@@ -89,7 +91,9 @@ async function fetchWithRetry(
     } catch (err) {
       lastErr = err;
       if (attempt < retries) {
-        console.log(`    attempt ${attempt} failed (${err instanceof Error ? err.message : err}), retrying in ${delayMs / 1000}s…`);
+        console.log(
+          `    attempt ${attempt} failed (${err instanceof Error ? err.message : err}), retrying in ${delayMs / 1000}s…`,
+        );
         await new Promise((r) => setTimeout(r, delayMs));
       }
     }
@@ -126,7 +130,12 @@ async function main() {
   // ── Web: landing page ──────────────────────────────────────────────────────
   results.push(
     await check("web: GET / returns 200", true, async () => {
-      const res = await fetchWithRetry(`${args.webUrl}/`, args.timeoutMs, args.retries, args.retryDelayMs);
+      const res = await fetchWithRetry(
+        `${args.webUrl}/`,
+        args.timeoutMs,
+        args.retries,
+        args.retryDelayMs,
+      );
       return {
         passed: res.status === 200,
         detail: `status ${res.status}`,
@@ -137,7 +146,12 @@ async function main() {
   // ── Web: health endpoint (db + scheduler visibility) ───────────────────────
   results.push(
     await check("web: GET /api/health reports db connected", true, async () => {
-      const res = await fetchWithRetry(`${args.webUrl}/api/health`, args.timeoutMs, args.retries, args.retryDelayMs);
+      const res = await fetchWithRetry(
+        `${args.webUrl}/api/health`,
+        args.timeoutMs,
+        args.retries,
+        args.retryDelayMs,
+      );
       let body: any = null;
       try {
         body = await res.json();
@@ -145,12 +159,13 @@ async function main() {
         return { passed: false, detail: `status ${res.status}, non-JSON body` };
       }
       // Hard failure: the app cannot reach its database at all.
-      // Tolerated (non-required pass): degraded-but-alive states like a stale
-      // worker heartbeat right after a deploy or Redis hiccups.
-      const dbOk = body.db === "connected";
+      // Tolerated: degraded-but-alive states like a stale worker heartbeat
+      // right after a deploy or Redis hiccups (HTTP 503 with status: "degraded").
+      const dbOk = body?.db === "connected";
+      const isAlive = res.status === 200 || (res.status === 503 && body?.status === "degraded");
       return {
-        passed: res.status === 200 && dbOk,
-        detail: `status ${res.status}, db=${body.db}, scheduler=${body.scheduler}, redis=${body.redis}`,
+        passed: isAlive && dbOk,
+        detail: `status ${res.status}, db=${body?.db}, scheduler=${body?.scheduler}, redis=${body?.redis}`,
       };
     }),
   );
@@ -158,7 +173,12 @@ async function main() {
   // ── Web: static asset pipeline (llms.txt is served from public/) ──────────
   results.push(
     await check("web: GET /llms.txt serves static assets", false, async () => {
-      const res = await fetchWithRetry(`${args.webUrl}/llms.txt`, args.timeoutMs, args.retries, args.retryDelayMs);
+      const res = await fetchWithRetry(
+        `${args.webUrl}/llms.txt`,
+        args.timeoutMs,
+        args.retries,
+        args.retryDelayMs,
+      );
       return { passed: res.status === 200, detail: `status ${res.status}` };
     }),
   );
@@ -167,7 +187,12 @@ async function main() {
   if (args.workerUrl) {
     results.push(
       await check("worker: GET / returns running banner", args.requireWorker, async () => {
-        const res = await fetchWithRetry(`${args.workerUrl}/`, args.timeoutMs, args.retries, args.retryDelayMs);
+        const res = await fetchWithRetry(
+          `${args.workerUrl}/`,
+          args.timeoutMs,
+          args.retries,
+          args.retryDelayMs,
+        );
         const text = await res.text();
         return {
           passed: res.status === 200 && text.includes("SteadyStack Worker"),
@@ -179,14 +204,26 @@ async function main() {
     // ── Worker: region registry (exercises DO fan-out) ──────────────────────
     results.push(
       await check("worker: GET /api/locations returns regions", args.requireWorker, async () => {
-        const res = await fetchWithRetry(`${args.workerUrl}/api/locations`, args.timeoutMs, args.retries, args.retryDelayMs);
+        const res = await fetchWithRetry(
+          `${args.workerUrl}/api/locations`,
+          args.timeoutMs,
+          args.retries,
+          args.retryDelayMs,
+        );
         let body: any = null;
         try {
           body = await res.json();
         } catch {
-          return { passed: false, detail: `status ${res.status}, non-JSON body` };
+          return {
+            passed: false,
+            detail: `status ${res.status}, non-JSON body`,
+          };
         }
-        const regions = Array.isArray(body?.regions) ? body.regions.length : Array.isArray(body) ? body.length : 0;
+        const regions = Array.isArray(body?.regions)
+          ? body.regions.length
+          : Array.isArray(body)
+            ? body.length
+            : 0;
         return {
           passed: res.status === 200 && regions > 0,
           detail: `status ${res.status}, regions: ${regions}`,
@@ -207,10 +244,14 @@ async function main() {
 
   const optional = results.filter((r) => !r.required && !r.passed).length;
   if (failed > 0) {
-    console.error(`\n✖ Smoke tests failed: ${failed} required check(s) failed${optional ? `, ${optional} optional warning(s)` : ""}`);
+    console.error(
+      `\n✖ Smoke tests failed: ${failed} required check(s) failed${optional ? `, ${optional} optional warning(s)` : ""}`,
+    );
     process.exit(1);
   }
-  console.log(`\n✔ All required smoke tests passed${optional ? ` (${optional} optional warning(s))` : ""}`);
+  console.log(
+    `\n✔ All required smoke tests passed${optional ? ` (${optional} optional warning(s))` : ""}`,
+  );
   process.exit(0);
 }
 

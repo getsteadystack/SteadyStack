@@ -119,31 +119,29 @@ export const MonitorGridCard = memo(function MonitorGridCard({
           : "gray";
 
   const statusGlow = {
-    emerald:
-      "shadow-[0_0_15px_rgba(16,185,129,0.15)] border-emerald-500/20 bg-emerald-500/5 hover:border-emerald-500/40",
-    red: "shadow-[0_0_15px_rgba(239,68,68,0.15)] border-red-500/20 bg-red-500/5 hover:border-red-500/40",
-    amber:
-      "shadow-[0_0_15px_rgba(245,158,11,0.15)] border-amber-500/20 bg-amber-500/5 hover:border-amber-500/40",
-    gray: "border-zinc-800 bg-zinc-950/20",
+    emerald: "border-emerald-500/20 bg-card hover:border-emerald-500/40",
+    red: "border-red-500/25 bg-red-500/[0.02] hover:border-red-500/40",
+    amber: "border-amber-500/25 bg-amber-500/[0.02] hover:border-amber-500/40",
+    gray: "border-border bg-card",
   }[statusColor];
 
   const badgeColor = {
-    emerald: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-    red: "bg-red-500/10 text-red-500 border-red-500/20 animate-pulse",
-    amber: "bg-amber-500/10 text-amber-500 border-amber-500/20",
-    gray: "bg-zinc-800 text-zinc-400 border-zinc-700",
+    emerald: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/20",
+    red: "bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/20 animate-pulse",
+    amber: "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/20",
+    gray: "bg-muted text-muted-foreground border-border",
   }[statusColor];
 
   const dotColor = {
-    emerald: "bg-emerald-500 shadow-[0_0_8px_#10b981]",
-    red: "bg-red-500 shadow-[0_0_8px_#ef4444]",
-    amber: "bg-amber-500 shadow-[0_0_8px_#f59e0b]",
-    gray: "bg-zinc-500",
+    emerald: "bg-emerald-500",
+    red: "bg-red-500",
+    amber: "bg-amber-500",
+    gray: "bg-muted-foreground",
   }[statusColor];
 
   return (
     <div
-      className={`relative flex flex-col justify-between rounded-xl border p-5 backdrop-blur-md transition-all duration-300 ${statusGlow} ${
+      className={`relative flex flex-col justify-between rounded-2xl border p-5 shadow-xs transition-all duration-200 ${statusGlow} ${
         size === "1x1"
           ? "col-span-1 row-span-1 min-h-[160px]"
           : size === "2x1"
@@ -153,11 +151,11 @@ export const MonitorGridCard = memo(function MonitorGridCard({
     >
       {/* Edit Mode Resize & Drag Controls */}
       {isEditMode && (
-        <div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-black/60 border border-zinc-800 rounded-md p-1 backdrop-blur-sm">
+        <div className="absolute top-2 right-2 z-20 flex items-center gap-1 bg-card/90 border border-border rounded-xl p-1 shadow-xs">
           {/* Drag Handle */}
           <div
             {...dragHandleProps}
-            className="p-1 text-zinc-500 hover:text-zinc-300 cursor-grab active:cursor-grabbing"
+            className="p-1 text-muted-foreground hover:text-foreground cursor-grab active:cursor-grabbing"
             title="Drag to reorder"
           >
             <svg className="size-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -173,7 +171,7 @@ export const MonitorGridCard = memo(function MonitorGridCard({
           {size !== "1x1" && (
             <button
               onClick={() => onResize(monitor.id, "1x1")}
-              className="p-1 text-zinc-500 hover:text-zinc-300 rounded hover:bg-zinc-800"
+              className="p-1 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"
               title="Resize Standard (1x1)"
             >
               <Minimize2 className="size-3.5" />
@@ -182,7 +180,7 @@ export const MonitorGridCard = memo(function MonitorGridCard({
           {size !== "2x1" && (
             <button
               onClick={() => onResize(monitor.id, "2x1")}
-              className="p-1 text-zinc-500 hover:text-zinc-300 rounded hover:bg-zinc-800"
+              className="p-1 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"
               title="Resize Wide (2x1)"
             >
               <Maximize2 className="size-3.5 rotate-90" />
@@ -191,7 +189,7 @@ export const MonitorGridCard = memo(function MonitorGridCard({
           {size !== "2x2" && (
             <button
               onClick={() => onResize(monitor.id, "2x2")}
-              className="p-1 text-zinc-500 hover:text-zinc-300 rounded hover:bg-zinc-800"
+              className="p-1 text-muted-foreground hover:text-foreground rounded-lg hover:bg-muted"
               title="Resize Large (2x2)"
             >
               <Maximize2 className="size-3.5" />
@@ -205,17 +203,19 @@ export const MonitorGridCard = memo(function MonitorGridCard({
         <div className="flex flex-col gap-1 max-w-[70%]">
           <Link
             href={`/dashboard/monitors/${monitor.id}`}
-            className="text-sm font-bold text-foreground hover:text-primary transition-colors flex items-center gap-1.5"
+            className="text-sm font-semibold text-foreground hover:text-primary transition-colors flex items-center gap-1.5"
           >
             {monitor.name}
             <ExternalLink className="size-3 opacity-0 group-hover:opacity-60 transition-opacity" />
           </Link>
-          <span className="text-[10px] text-zinc-500 font-mono truncate">{monitor.url}</span>
+          <span className="text-[11px] text-muted-foreground font-mono truncate">
+            {monitor.url}
+          </span>
         </div>
 
         {!isEditMode && (
           <span
-            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[9px] font-mono font-bold uppercase tracking-wider rounded-full border ${badgeColor}`}
+            className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider rounded-full border ${badgeColor}`}
           >
             <span className={`size-1.5 rounded-full ${dotColor}`}></span>
             {monitor.status}
@@ -227,16 +227,16 @@ export const MonitorGridCard = memo(function MonitorGridCard({
       {size === "1x1" && (
         <div className="flex justify-between items-end mt-4">
           <div className="flex flex-col">
-            <span className="text-zinc-500 text-[10px] font-mono uppercase tracking-wider">
+            <span className="text-muted-foreground text-[10px] font-mono uppercase tracking-wider">
               Uptime
             </span>
-            <span className="text-xl font-mono font-extrabold text-zinc-200">{uptime}%</span>
+            <span className="text-2xl font-mono font-bold text-foreground">{uptime}%</span>
           </div>
           <div className="flex flex-col items-end">
-            <span className="text-zinc-500 text-[10px] font-mono uppercase tracking-wider">
+            <span className="text-muted-foreground text-[10px] font-mono uppercase tracking-wider">
               Latency
             </span>
-            <span className="text-xl font-mono font-extrabold text-zinc-200">{avgLatency}ms</span>
+            <span className="text-2xl font-mono font-bold text-foreground">{avgLatency}ms</span>
           </div>
         </div>
       )}
@@ -280,7 +280,7 @@ export const MonitorGridCard = memo(function MonitorGridCard({
                 />
               </svg>
             ) : (
-              <div className="w-full h-full flex items-center justify-center border border-dashed border-zinc-800 rounded bg-zinc-950/20 text-[9px] text-zinc-600 font-mono">
+              <div className="w-full h-full flex items-center justify-center border border-dashed border-border rounded-xl bg-muted/30 text-[10px] text-muted-foreground font-mono">
                 No Data
               </div>
             )}
@@ -288,16 +288,16 @@ export const MonitorGridCard = memo(function MonitorGridCard({
 
           <div className="flex items-end gap-6 text-right">
             <div className="flex flex-col">
-              <span className="text-zinc-500 text-[9px] font-mono uppercase tracking-wider">
+              <span className="text-muted-foreground text-[10px] font-mono uppercase tracking-wider">
                 Uptime
               </span>
-              <span className="text-lg font-mono font-extrabold text-zinc-200">{uptime}%</span>
+              <span className="text-xl font-mono font-bold text-foreground">{uptime}%</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-zinc-500 text-[9px] font-mono uppercase tracking-wider">
+              <span className="text-muted-foreground text-[10px] font-mono uppercase tracking-wider">
                 Avg Response
               </span>
-              <span className="text-lg font-mono font-extrabold text-zinc-200">{avgLatency}ms</span>
+              <span className="text-xl font-mono font-bold text-foreground">{avgLatency}ms</span>
             </div>
           </div>
         </div>
@@ -342,33 +342,31 @@ export const MonitorGridCard = memo(function MonitorGridCard({
                 />
               </svg>
             ) : (
-              <div className="w-full h-full flex items-center justify-center border border-dashed border-zinc-800 rounded bg-zinc-950/20 text-xs text-zinc-600 font-mono">
+              <div className="w-full h-full flex items-center justify-center border border-dashed border-border rounded-xl bg-muted/30 text-xs text-muted-foreground font-mono">
                 No history metrics recorded
               </div>
             )}
           </div>
 
           {/* Stats Grid */}
-          <div className="grid grid-cols-3 gap-3 border-t border-zinc-900 pt-3">
+          <div className="grid grid-cols-3 gap-3 border-t border-border pt-3">
             <div className="flex flex-col">
-              <span className="text-zinc-500 text-[9px] font-mono uppercase tracking-wider">
+              <span className="text-muted-foreground text-[10px] font-mono uppercase tracking-wider">
                 Uptime
               </span>
-              <span className="text-base font-mono font-extrabold text-zinc-200">{uptime}%</span>
+              <span className="text-lg font-mono font-bold text-foreground">{uptime}%</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-zinc-500 text-[9px] font-mono uppercase tracking-wider">
+              <span className="text-muted-foreground text-[10px] font-mono uppercase tracking-wider">
                 Avg Latency
               </span>
-              <span className="text-base font-mono font-extrabold text-zinc-200">
-                {avgLatency}ms
-              </span>
+              <span className="text-lg font-mono font-bold text-foreground">{avgLatency}ms</span>
             </div>
             <div className="flex flex-col">
-              <span className="text-zinc-500 text-[9px] font-mono uppercase tracking-wider">
+              <span className="text-muted-foreground text-[10px] font-mono uppercase tracking-wider">
                 Interval
               </span>
-              <span className="text-base font-mono font-extrabold text-zinc-200">
+              <span className="text-lg font-mono font-bold text-foreground">
                 {monitor.interval || 60}s
               </span>
             </div>
@@ -377,14 +375,14 @@ export const MonitorGridCard = memo(function MonitorGridCard({
       )}
 
       {/* Footer controls */}
-      <div className="flex justify-between items-center border-t border-zinc-900/60 pt-3 mt-3 relative z-10">
+      <div className="flex justify-between items-center border-t border-border pt-3 mt-3 relative z-10">
         <div className="flex gap-2">
           <Link
             href={`/dashboard/monitors/${monitor.id}`}
-            className="inline-flex items-center text-[10px] uppercase font-bold text-zinc-400 hover:text-primary tracking-wider"
+            className="inline-flex items-center text-xs font-semibold text-muted-foreground hover:text-foreground tracking-wide transition-colors"
           >
             <BarChart2 className="size-3.5 mr-1" />
-            Insights
+            Insights →
           </Link>
         </div>
 
@@ -394,7 +392,7 @@ export const MonitorGridCard = memo(function MonitorGridCard({
             size="sm"
             onClick={handleRunCheck}
             disabled={checking}
-            className="min-h-[44px] md:h-7 px-4 md:px-2 text-zinc-400 hover:text-primary hover:bg-primary/5 text-[9px] uppercase font-bold tracking-wider flex items-center justify-center"
+            className="h-8 px-3 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted text-[11px] font-mono uppercase font-bold tracking-wider flex items-center justify-center cursor-pointer transition-colors"
           >
             {checking ? (
               <Loader2 className="size-3 mr-1 animate-spin" />

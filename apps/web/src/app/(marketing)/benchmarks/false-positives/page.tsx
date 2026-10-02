@@ -136,35 +136,50 @@ export default function FalsePositivesBenchmarkPage() {
         <ReproduceHarness />
 
         {/* Bottom CTA Banner */}
-        <section className="py-20 md:py-28 bg-gradient-to-b from-background to-muted/20 relative overflow-hidden">
-          <div className="max-w-4xl mx-auto px-6 text-center flex flex-col items-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1 border border-primary/20 bg-primary/5 text-primary text-[10px] font-bold font-mono uppercase tracking-widest mb-6">
-              <Activity className="size-3" />
-              Stop 3 AM Phantom Pages
+        <section className="py-24 md:py-32 bg-[#fbfbf9] text-[#23211a] relative overflow-hidden flex justify-center px-4 sm:px-6 lg:px-8 border-b border-[#e8e6df]">
+          <div className="w-full max-w-5xl rounded-3xl border border-black/[0.1] bg-[#23211a] text-white p-8 sm:p-14 md:p-20 flex flex-col items-center text-center relative overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.14)]">
+            {/* Soft Warm Radial Glow */}
+            <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[700px] h-[350px] bg-[#ffd439]/20 rounded-full blur-[100px] pointer-events-none" />
+
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 bg-white/10 text-white text-[11px] font-mono font-semibold uppercase tracking-wider mb-6 backdrop-blur-md">
+              <Activity className="size-3.5 text-[#ffd439]" />
+              <span>Stop 3 AM Phantom Pages</span>
             </div>
 
-            <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground mb-4 leading-tight">
+            <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-medium tracking-tight text-white leading-[1.06] mb-6 max-w-3xl text-balance">
               Ready to eliminate false alarms forever?
             </h2>
 
-            <p className="text-muted-foreground text-sm sm:text-base leading-relaxed max-w-xl mb-8">
+            <p className="text-white/80 text-base sm:text-lg max-w-2xl mb-10 font-sans leading-relaxed text-balance">
               Start monitoring your services with multi-region edge quorum consensus (2-of-3 on free
               and 4-of-7 on paid tiers). Zero credit card required.
             </p>
 
-            <div className="flex flex-wrap items-center justify-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full relative z-10">
               <Link
                 href="/signup"
-                className="h-11 px-8 inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold text-sm rounded-lg border border-primary hover:bg-primary/90 transition-all duration-300 shadow-md"
+                className="inline-flex items-center justify-center gap-2 h-12 px-7 bg-[#ffd439] hover:bg-[#ffe066] text-[#23211a] font-semibold text-sm rounded-xl transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto"
               >
-                Start Free Monitoring <ArrowRight className="size-4" />
+                <span>Start Free Monitoring</span>
+                <ArrowRight className="size-4" />
               </Link>
               <Link
                 href="/comparison"
-                className="h-11 px-6 inline-flex items-center gap-2 text-muted-foreground hover:text-foreground font-semibold text-xs rounded-lg border border-border hover:border-primary/30 transition-all duration-300"
+                className="inline-flex items-center justify-center gap-2 h-12 px-6 bg-white/10 hover:bg-white/15 border border-white/20 text-white font-semibold text-sm rounded-xl transition-all w-full sm:w-auto backdrop-blur-sm"
               >
-                Full Feature Matrix
+                <span>Full Feature Matrix</span>
               </Link>
+            </div>
+
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 text-xs font-mono text-white/60">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="size-3.5 text-emerald-400" />
+                <span>50 monitors free forever</span>
+              </div>
+              <span>·</span>
+              <span>No credit card required</span>
+              <span>·</span>
+              <span>Instant quorum setup</span>
             </div>
           </div>
         </section>

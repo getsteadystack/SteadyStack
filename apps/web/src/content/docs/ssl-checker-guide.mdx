@@ -1,0 +1,30 @@
+---
+title: "SSL Certificate & Trust Chain Inspector"
+description: "Inspect X.509 certificate trust chains, SAN names, cipher suites, TLS protocol support, and configure automated 30-day expiry notifications."
+section: "Free Tools & Diagnostics"
+order: 16
+badge: "Tools"
+lastUpdated: "2026-10-02"
+---
+
+The **SSL / TLS Certificate Inspector** (`/tools/ssl-checker`) performs cryptographic handshakes against any target host to validate certificate integrity, chain of trust, and cryptographic cipher safety.
+
+---
+
+## What It Evaluates
+
+1. **Validity Window**: Exact expiration date and remaining days until certificate renewal is required.
+2. **Chain of Trust**: Validates Intermediate CA and Root CA anchor (e.g. DigiCert, Let's Encrypt, Sectigo).
+3. **Subject Alternative Names (SANs)**: Complete list of hostnames and wildcard domains covered by the certificate.
+4. **Cipher Suite & Protocol Safety**: Checks for deprecated protocols (SSL 3.0, TLS 1.0, TLS 1.1) and enforces modern TLS 1.2 / TLS 1.3 standards.
+5. **Revocation Status**: Verifies OCSP Stapling and CRL revocation endpoints.
+
+---
+
+## Automated Expiry Alerts
+
+SteadyStack monitors can be configured to alert on upcoming certificate expiration:
+
+- **30 Days Remaining**: Initial email warning to agency technical team.
+- **14 Days Remaining**: Escalation alert in agency Slack.
+- **7 Days Remaining**: Urgent priority paging to on-call engineers.

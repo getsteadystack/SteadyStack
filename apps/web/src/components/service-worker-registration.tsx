@@ -30,12 +30,29 @@ export function ServiceWorkerRegistration() {
     window.addEventListener("online", goOnline);
     if (!navigator.onLine) goOffline();
 
-    // Register only over secure contexts; skip on localhost http where SWs
-    // behave inconsistently behind the dev proxy.
-    if ("serviceWorker" in navigator && window.isSecureContext) {
-      navigator.serviceWorker.register("/sw.js").catch((error) => {
-        console.warn("Service worker registration failed:", error);
-      });
+    // Register only in production over secure contexts; in development, unregister
+    // any existing SW to avoid caching dev Turbopack chunks and breaking HMR.
+    if ("serviceWorker" in navigator) {
+      if (process.env.NODE_ENV === "production" && window.isSecureContext) {
+        navigator.serviceWorker.register("/sw.js").catch((error) => {
+          console.warn("Service worker registration failed:", error);
+        });
+      } else if (process.env.NODE_ENV !== "production") {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          for (const registration of registrations) {
+            registration.unregister();
+          }
+        });
+        if ("caches" in window) {
+          caches.keys().then((keys) => {
+            for (const key of keys) {
+              if (key.startsWith("steadystack-")) {
+                caches.delete(key);
+              }
+            }
+          });
+        }
+      }
     }
 
     return () => {

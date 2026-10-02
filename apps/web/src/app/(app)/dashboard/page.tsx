@@ -29,7 +29,9 @@ export default async function DashboardPage() {
     getUserUsageSummary(session.user.id),
   ]);
 
-  const dbUser = await (await import("@steadystack/db")).default.user.findUnique({
+  const dbUser = await (
+    await import("@steadystack/db")
+  ).default.user.findUnique({
     where: { id: session.user.id },
     select: { holidayModeUntil: true },
   });

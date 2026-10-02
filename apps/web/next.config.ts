@@ -10,6 +10,9 @@ const nextConfig: NextConfig = {
   ...(!isVercel ? { output: "standalone" } : {}),
   typedRoutes: true,
   reactCompiler: false,
+  experimental: {
+    optimizePackageImports: ["lucide-react", "framer-motion"],
+  },
   images: {
     unoptimized: true,
     formats: ["image/avif", "image/webp"],
@@ -84,6 +87,15 @@ const nextConfig: NextConfig = {
             value: "/",
           },
         ],
+      },
+    ];
+  },
+  async redirects() {
+    return [
+      {
+        source: "/status/:slug*",
+        destination: "/status-page/:slug*",
+        permanent: false,
       },
     ];
   },

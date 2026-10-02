@@ -13,6 +13,7 @@ import { ServiceStatusCard } from "@/components/is-down/service-status-card";
 import { ConversionCta } from "@/components/is-down/conversion-cta";
 import { ServiceDiagnostics } from "@/components/is-down/service-diagnostics";
 import { ServiceFaq } from "@/components/is-down/service-faq";
+import { AgencyOutageCta } from "@/components/is-down/agency-outage-cta";
 import { Badge } from "@/components/ui/badge";
 
 export const dynamic = "force-dynamic";
@@ -177,51 +178,52 @@ export default async function ServiceDownPage({
   };
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#fbfbf9] text-[#23211a] pt-28 pb-20 px-4 sm:px-6 lg:px-8 font-sans">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <div className="max-w-6xl mx-auto space-y-12">
+      <div className="max-w-5xl mx-auto space-y-10">
         {/* Breadcrumb Navigation */}
         <nav
           aria-label="Breadcrumb"
-          className="flex items-center gap-2 text-xs text-muted-foreground"
+          className="flex items-center gap-2 text-xs font-mono text-[#868279] uppercase tracking-wider"
         >
           <Link
             href="/"
-            className="hover:text-foreground transition-colors flex items-center gap-1"
+            className="hover:text-[#23211a] transition-colors flex items-center gap-1.5"
           >
             <Home className="h-3.5 w-3.5" />
             <span>Home</span>
           </Link>
-          <ChevronRight className="h-3.5 w-3.5" />
-          <Link href={"/is-down" as any} className="hover:text-foreground transition-colors">
+          <ChevronRight className="h-3.5 w-3.5 text-[#868279]/50" />
+          <Link href={"/is-down" as any} className="hover:text-[#23211a] transition-colors">
             Outage Directory
           </Link>
-          <ChevronRight className="h-3.5 w-3.5" />
-          <span className="text-foreground font-semibold">Is {service.name} Down?</span>
+          <ChevronRight className="h-3.5 w-3.5 text-[#868279]/50" />
+          <span className="text-[#23211a] font-semibold">Is {service.name} Down?</span>
         </nav>
 
         {/* Hero Title Section */}
         <div className="space-y-4">
           <div className="flex flex-wrap items-center gap-2.5">
-            <Badge variant="secondary" className="text-xs">
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-mono font-semibold uppercase tracking-wider bg-[#ffd439]/20 text-[#23211a] border border-[#ffd439]/40">
               {CATEGORY_LABELS[service.category]}
-            </Badge>
-            <Badge variant="outline" className="font-mono text-xs text-muted-foreground">
+            </span>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-mono text-xs text-[#868279] border border-[#e8e6df] bg-white">
               {service.domain}
-            </Badge>
+            </span>
           </div>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-foreground leading-tight">
-            Is <span className="text-primary">{service.name}</span> Down Right Now?
+          <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif font-medium tracking-tight text-[#23211a] leading-[1.08] text-balance">
+            Is {service.name} Down Right Now?
           </h1>
 
-          <p className="text-base sm:text-lg text-muted-foreground max-w-3xl leading-relaxed">
+          <p className="text-base sm:text-lg text-[#5c5c5c] max-w-3xl leading-relaxed font-sans text-balance">
             Live global uptime status, multi-region edge latency, official incident reports, and
-            automated monitoring for <strong className="text-foreground">{service.name}</strong>.
+            automated monitoring for{" "}
+            <strong className="text-[#23211a] font-semibold">{service.name}</strong>.
           </p>
         </div>
 
@@ -231,6 +233,9 @@ export default async function ServiceDownPage({
         {/* 2. Relentless Core Conversion CTA ("Stop checking manually.") */}
         <ConversionCta service={service} />
 
+        {/* 2b. Agency Fleet Monitoring & Lead Magnet CTA */}
+        <AgencyOutageCta service={service} />
+
         {/* 3. Detailed Regional Diagnostics, Symptoms & Resilience Guide */}
         <ServiceDiagnostics service={service} probeResult={initialProbe} />
 
@@ -239,9 +244,9 @@ export default async function ServiceDownPage({
 
         {/* 5. Related Services Cluster for Topical Authority & Indexing */}
         {relatedServices.length > 0 && (
-          <div className="rounded-2xl border border-border bg-card/30 p-6 md:p-8 space-y-4">
-            <div className="flex items-center gap-2 text-sm font-bold uppercase tracking-wider text-muted-foreground">
-              <Layers className="h-4 w-4 text-primary" />
+          <div className="rounded-2xl border border-[#e8e6df] bg-white p-6 sm:p-8 space-y-4 shadow-xs">
+            <div className="flex items-center gap-2 text-xs font-mono font-semibold uppercase tracking-wider text-[#868279]">
+              <Layers className="h-4 w-4 text-[#23211a]" />
               <span>Related {CATEGORY_LABELS[service.category]} Dependencies</span>
             </div>
 
@@ -250,13 +255,13 @@ export default async function ServiceDownPage({
                 <Link
                   key={rel.slug}
                   href={`/is-down/${rel.slug}` as any}
-                  className="flex items-center justify-between p-3.5 rounded-xl border border-border/70 bg-background/60 hover:border-primary/40 hover:bg-card transition-all text-xs font-medium text-foreground group"
+                  className="flex items-center justify-between p-3.5 rounded-xl border border-[#e8e6df] bg-[#fbfbf9] hover:bg-[#f5f3ec] hover:border-[#23211a]/30 transition-all text-xs font-medium text-[#23211a] group shadow-xs"
                 >
                   <div className="flex items-center gap-2.5">
                     <span className="h-2 w-2 rounded-full bg-emerald-500" />
                     <span>Is {rel.name} down?</span>
                   </div>
-                  <ArrowRight className="h-3.5 w-3.5 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition-all" />
+                  <ArrowRight className="h-3.5 w-3.5 text-[#868279] group-hover:text-[#23211a] group-hover:translate-x-0.5 transition-all" />
                 </Link>
               ))}
             </div>

@@ -23,7 +23,11 @@ export type DateStyle = "date" | "time" | "datetime";
 
 export function formatDate(
   value: Date | string | number,
-  opts: { locale?: string; style?: DateStyle; timeStyle?: "short" | "medium" } = {},
+  opts: {
+    locale?: string;
+    style?: DateStyle;
+    timeStyle?: "short" | "medium";
+  } = {},
 ): string {
   const locale = opts.locale ?? DEFAULT_LOCALE;
   const date = value instanceof Date ? value : new Date(value);
@@ -89,7 +93,9 @@ export function formatLatencySmart(value: number, opts: { locale?: string } = {}
     return `${formatNumber(Math.round(value), { locale })} ms`;
   }
   const seconds = value / 1000;
-  const formatted = seconds.toLocaleString(locale, { maximumFractionDigits: 2 });
+  const formatted = seconds.toLocaleString(locale, {
+    maximumFractionDigits: 2,
+  });
   return `${formatted} s`;
 }
 
@@ -102,7 +108,13 @@ export function formatLatencySmart(value: number, opts: { locale?: string } = {}
  * to it. Call unconditionally at the top of the component.
  */
 export function useFormatters() {
-  const locale = useLocale();
+  let locale = DEFAULT_LOCALE;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    locale = useLocale();
+  } catch {
+    // Rendered outside NextIntlClientProvider — fall back to DEFAULT_LOCALE.
+  }
   return {
     locale,
     formatDate: (

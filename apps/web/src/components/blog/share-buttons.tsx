@@ -55,13 +55,13 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
       <button
         type="button"
         onClick={handleCopy}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground bg-card hover:bg-muted/80 border border-border transition-all duration-200"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-medium text-[#5c5c5c] hover:text-[#23211a] bg-white hover:bg-[#f0ede6] border border-[#e8e6df] transition-all duration-200 shadow-xs cursor-pointer"
         title="Copy article link"
       >
         {copied ? (
           <>
-            <Check className="size-3.5 text-emerald-400" />
-            <span className="text-emerald-400 text-xs">Link copied!</span>
+            <Check className="size-3.5 text-emerald-600" />
+            <span className="text-emerald-700 text-xs">Copied!</span>
           </>
         ) : (
           <>
@@ -74,7 +74,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
       <button
         type="button"
         onClick={handleShareX}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground bg-card hover:bg-muted/80 border border-border transition-all duration-200"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-medium text-[#5c5c5c] hover:text-[#23211a] bg-white hover:bg-[#f0ede6] border border-[#e8e6df] transition-all duration-200 shadow-xs cursor-pointer"
         title="Share on X / Twitter"
       >
         <svg className="size-3.5 fill-current" viewBox="0 0 24 24">
@@ -86,7 +86,7 @@ export function ShareButtons({ title, url }: ShareButtonsProps) {
       <button
         type="button"
         onClick={handleShareLinkedIn}
-        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium text-muted-foreground hover:text-foreground bg-card hover:bg-muted/80 border border-border transition-all duration-200"
+        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono font-medium text-[#5c5c5c] hover:text-[#23211a] bg-white hover:bg-[#f0ede6] border border-[#e8e6df] transition-all duration-200 shadow-xs cursor-pointer"
         title="Share on LinkedIn"
       >
         <svg className="size-3.5 fill-current" viewBox="0 0 24 24">

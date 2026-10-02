@@ -4,6 +4,7 @@ import LandingHeader from "@/components/landing/header";
 import LandingFooter from "@/components/landing/footer";
 import { ToolSchema } from "@/components/seo/tool-schema";
 import { ToolContentSection } from "@/components/tools/tool-content-section";
+import { Lock } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -30,22 +31,26 @@ export const metadata: Metadata = {
  */
 export default function SSLCheckerPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-[#fbfbf9] text-[#23211a] flex flex-col font-sans">
       <ToolSchema
         name="Free SSL Certificate Checker"
         description="Analyze your SSL/TLS security health. Check for expired certificates, legacy protocols, and HSTS configuration issues instantly."
         url="https://steadystack.dev/tools/ssl-checker"
       />
       <LandingHeader />
-      <main className="container mx-auto pt-32 pb-16 px-4 md:px-6 flex-1">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="text-center space-y-4 mb-10">
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight bg-linear-to-r from-primary to-blue-400 bg-clip-text text-transparent pb-2">
+      <main className="container mx-auto pt-32 pb-20 px-4 sm:px-6 md:px-8 flex-1">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="text-center space-y-4 mb-10 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-xs font-mono font-semibold uppercase tracking-wider shadow-xs">
+              <Lock className="size-3.5 text-[#ffd439]" />
+              <span>Free TLS Telemetry</span>
+            </div>
+            <h1 className="text-4xl sm:text-6xl font-serif font-medium tracking-tight text-[#23211a] leading-[1.08] text-balance">
               SSL Health & Security Check
             </h1>
-            <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
-              Scan your website's SSL/TLS configuration, verify certificate chain validity, and
-              detect deprecated protocols in seconds.
+            <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed font-sans text-balance">
+              Scan your website&apos;s SSL/TLS configuration, verify intermediate CA chain validity,
+              and detect deprecated protocols in seconds.
             </p>
           </div>
 

@@ -175,24 +175,24 @@ export function StatusPageEditor({ page, allMonitors }: { page: any; allMonitors
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+    <div className="space-y-8 animate-in fade-in duration-500">
+      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b border-border/80">
         {/* Header */}
         <div className="flex items-center gap-4">
           <Link
             href="/dashboard/pages"
-            className="p-2 hover:bg-white/5 rounded-full text-muted-foreground hover:text-foreground transition-colors"
+            className="p-2.5 hover:bg-muted rounded-xl text-muted-foreground hover:text-foreground transition-colors border border-border"
           >
-            <ArrowLeft className="size-5" />
+            <ArrowLeft className="size-4" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold font-mono tracking-tight text-foreground">
+            <h1 className="text-2xl font-serif font-medium tracking-tight text-foreground">
               {page.title}
             </h1>
             <a
               href={`/status-page/${page.slug}`}
               target="_blank"
-              className="flex items-center gap-2 text-sm text-primary hover:underline font-mono"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground font-mono mt-0.5"
             >
               {env.NEXT_PUBLIC_APP_URL.replace("https://", "").replace("http://", "")}
               /status-page/
@@ -202,15 +202,15 @@ export function StatusPageEditor({ page, allMonitors }: { page: any; allMonitors
         </div>
 
         {/* Tabs */}
-        <div className="flex bg-secondary/20 p-1 rounded-sm border border-primary/20 overflow-x-auto">
+        <div className="flex bg-muted/70 p-1 rounded-xl border border-border overflow-x-auto gap-1">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold uppercase font-mono rounded-sm transition-all whitespace-nowrap ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-medium font-mono rounded-lg transition-all whitespace-nowrap cursor-pointer ${
                 activeTab === tab.id
-                  ? "bg-primary text-black"
-                  : "text-muted-foreground hover:text-foreground hover:bg-white/5"
+                  ? "bg-foreground text-background shadow-xs"
+                  : "text-muted-foreground hover:text-foreground hover:bg-background/50"
               }`}
             >
               {tab.icon}
@@ -221,26 +221,26 @@ export function StatusPageEditor({ page, allMonitors }: { page: any; allMonitors
       </div>
 
       {activeTab === "monitors" && (
-        <div className="grid lg:grid-cols-3 gap-8">
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Main Config (Left) */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="border border-primary/20 bg-primary/5 rounded-sm p-6">
-              <h2 className="text-lg font-bold font-mono uppercase text-foreground mb-4 flex items-center gap-2">
-                <Monitor className="size-5 text-primary" /> Active Monitors
+            <div className="border border-border bg-card rounded-2xl p-6 shadow-xs">
+              <h2 className="text-base font-serif font-medium text-foreground mb-4 flex items-center gap-2">
+                <Monitor className="size-4.5 text-foreground" /> Active Monitors Linked
               </h2>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 {page.monitors.map((item: any) => {
                   const isEditing = editingMonitorId === item.monitorId;
 
                   return (
                     <div key={item.id} className="space-y-2">
-                      <div className="flex items-center justify-between p-3 bg-black/50 border border-white/10 rounded-sm">
+                      <div className="flex items-center justify-between p-3.5 bg-background border border-border rounded-xl">
                         <div className="flex items-center gap-3">
                           <div
-                            className={`size-2 rounded-full ${item.monitor.status === "UP" ? "bg-green-500" : "bg-red-500"}`}
+                            className={`size-2.5 rounded-full ${item.monitor.status === "UP" ? "bg-emerald-500" : "bg-rose-500"}`}
                           />
-                          <span className="font-mono text-sm">
+                          <span className="font-mono text-sm font-medium text-foreground">
                             {item.displayName || item.monitor.name}
                           </span>
                         </div>
@@ -254,7 +254,7 @@ export function StatusPageEditor({ page, allMonitors }: { page: any; allMonitors
                               setEditShowCheckCounts(item.showCheckCounts !== false);
                             }}
                             disabled={isPending}
-                            className="p-2 text-muted-foreground hover:text-foreground hover:bg-white/5 rounded-sm transition-colors"
+                            className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors cursor-pointer"
                             title="Monitor Settings"
                           >
                             <Settings2 className="size-4" />
@@ -262,7 +262,7 @@ export function StatusPageEditor({ page, allMonitors }: { page: any; allMonitors
                           <button
                             onClick={() => handleRemove(item.monitorId)}
                             disabled={isPending}
-                            className="p-2 text-red-500 hover:bg-red-500/10 rounded-sm transition-colors"
+                            className="p-2 text-rose-500 hover:bg-rose-500/10 rounded-lg transition-colors cursor-pointer"
                           >
                             <Trash2 className="size-4" />
                           </button>
@@ -270,71 +270,71 @@ export function StatusPageEditor({ page, allMonitors }: { page: any; allMonitors
                       </div>
 
                       {isEditing && (
-                        <div className="p-4 bg-black/75 border border-primary/20 rounded-sm space-y-4">
+                        <div className="p-4 bg-muted/40 border border-border rounded-xl space-y-4">
                           <div className="space-y-1.5">
-                            <label className="text-[10px] font-bold text-primary/70 uppercase tracking-widest font-mono">
+                            <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium">
                               Display Name Override
                             </label>
                             <input
                               value={editDisplayName}
                               onChange={(e) => setEditDisplayName(e.target.value)}
                               placeholder={item.monitor.name}
-                              className="w-full bg-black/50 border border-white/10 p-2 rounded-sm text-sm font-mono focus:border-primary/50 outline-none transition-colors"
+                              className="w-full bg-background border border-border p-2.5 rounded-xl text-sm font-sans focus:outline-none focus:ring-1 focus:ring-foreground/20 transition-colors"
                             />
                           </div>
 
                           <div className="grid grid-cols-3 gap-2">
-                            <label className="flex items-center gap-2 cursor-pointer p-2 bg-white/5 hover:bg-white/10 rounded-sm">
+                            <label className="flex items-center gap-2 cursor-pointer p-2.5 bg-background border border-border rounded-xl">
                               <input
                                 type="checkbox"
                                 checked={editShowLatency}
                                 onChange={(e) => setEditShowLatency(e.target.checked)}
-                                className="accent-primary size-4"
+                                className="accent-foreground size-4"
                               />
-                              <span className="text-[10px] font-mono font-bold text-foreground">
+                              <span className="text-[11px] font-mono text-foreground font-medium">
                                 Latency
                               </span>
                             </label>
 
-                            <label className="flex items-center gap-2 cursor-pointer p-2 bg-white/5 hover:bg-white/10 rounded-sm">
+                            <label className="flex items-center gap-2 cursor-pointer p-2.5 bg-background border border-border rounded-xl">
                               <input
                                 type="checkbox"
                                 checked={editShowUptime}
                                 onChange={(e) => setEditShowUptime(e.target.checked)}
-                                className="accent-primary size-4"
+                                className="accent-foreground size-4"
                               />
-                              <span className="text-[10px] font-mono font-bold text-foreground">
+                              <span className="text-[11px] font-mono text-foreground font-medium">
                                 Uptime %
                               </span>
                             </label>
 
-                            <label className="flex items-center gap-2 cursor-pointer p-2 bg-white/5 hover:bg-white/10 rounded-sm">
+                            <label className="flex items-center gap-2 cursor-pointer p-2.5 bg-background border border-border rounded-xl">
                               <input
                                 type="checkbox"
                                 checked={editShowCheckCounts}
                                 onChange={(e) => setEditShowCheckCounts(e.target.checked)}
-                                className="accent-primary size-4"
+                                className="accent-foreground size-4"
                               />
-                              <span className="text-[10px] font-mono font-bold text-foreground">
+                              <span className="text-[11px] font-mono text-foreground font-medium">
                                 Checks
                               </span>
                             </label>
                           </div>
 
-                          <div className="flex gap-2 justify-end">
+                          <div className="flex gap-2 justify-end pt-2">
                             <button
                               onClick={() => setEditingMonitorId(null)}
-                              className="px-3 py-1 text-xs font-mono border border-white/10 hover:bg-white/5 rounded-sm"
+                              className="px-3.5 py-1.5 text-xs font-mono border border-border hover:bg-muted rounded-xl transition-colors cursor-pointer"
                             >
                               Cancel
                             </button>
                             <button
                               onClick={() => handleUpdateMonitorSettings(item.monitorId)}
                               disabled={isPending}
-                              className="px-3 py-1 text-xs font-mono bg-primary text-black hover:bg-primary/80 rounded-sm font-bold flex items-center gap-1"
+                              className="px-3.5 py-1.5 text-xs font-mono bg-foreground text-background hover:bg-foreground/90 rounded-xl font-medium flex items-center gap-1.5 transition-colors cursor-pointer"
                             >
                               {isPending && <Loader2 className="size-3 animate-spin" />}
-                              Save
+                              Save Changes
                             </button>
                           </div>
                         </div>
@@ -343,8 +343,9 @@ export function StatusPageEditor({ page, allMonitors }: { page: any; allMonitors
                   );
                 })}
                 {page.monitors.length === 0 && (
-                  <p className="text-sm text-muted-foreground italic text-center py-4">
-                    No monitors added yet. Select monitors from the right to add them.
+                  <p className="text-sm text-muted-foreground italic text-center py-6">
+                    No monitors linked yet. Select monitors from the right panel to add them to this
+                    status page.
                   </p>
                 )}
               </div>
@@ -353,33 +354,37 @@ export function StatusPageEditor({ page, allMonitors }: { page: any; allMonitors
 
           {/* Sidebar (Right) */}
           <div className="space-y-6">
-            <div className="border border-white/10 rounded-sm p-6 bg-[#0A0A0A]">
-              <h3 className="text-sm font-bold font-mono uppercase text-muted-foreground mb-3">
+            <div className="border border-border rounded-2xl p-6 bg-card shadow-xs">
+              <h3 className="text-xs font-mono uppercase tracking-wider text-muted-foreground font-medium mb-3">
                 Available Monitors
               </h3>
-              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar">
+              <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1">
                 {availableMonitors.map((m) => (
                   <div
                     key={m.id}
-                    className="flex items-center justify-between p-2 hover:bg-white/5 rounded-sm border border-transparent hover:border-white/10 transition-all group"
+                    className="flex items-center justify-between p-2.5 bg-background hover:bg-muted/40 rounded-xl border border-border transition-all group"
                   >
-                    <div className="flex items-center gap-2 overflow-hidden">
+                    <div className="flex items-center gap-2.5 overflow-hidden">
                       <div
-                        className={`size-1.5 rounded-full shrink-0 ${m.status === "UP" ? "bg-green-500" : "bg-red-500"}`}
+                        className={`size-2 rounded-full shrink-0 ${m.status === "UP" ? "bg-emerald-500" : "bg-rose-500"}`}
                       />
-                      <span className="text-xs font-mono truncate">{m.name}</span>
+                      <span className="text-xs font-mono truncate font-medium text-foreground">
+                        {m.name}
+                      </span>
                     </div>
                     <button
                       onClick={() => handleAdd(m.id)}
                       disabled={isPending}
-                      className="p-1.5 bg-primary/20 hover:bg-primary/30 text-primary rounded-sm transition-all"
+                      className="p-1.5 bg-muted hover:bg-foreground hover:text-background text-foreground border border-border rounded-lg transition-all cursor-pointer"
                     >
-                      <Plus className="size-4" />
+                      <Plus className="size-3.5" />
                     </button>
                   </div>
                 ))}
                 {availableMonitors.length === 0 && (
-                  <p className="text-xs text-muted-foreground">All monitors added.</p>
+                  <p className="text-xs text-muted-foreground italic py-2">
+                    All monitors are currently assigned.
+                  </p>
                 )}
               </div>
             </div>
@@ -446,8 +451,8 @@ export function StatusPageEditor({ page, allMonitors }: { page: any; allMonitors
             onNavigateToShowcase={() => setActiveTab("showcase")}
           />
           <StatsCards pageId={page.id} />
-          <div className="border border-white/10 bg-white/5 rounded-sm p-6">
-            <h3 className="text-lg font-bold font-mono uppercase text-foreground mb-6">
+          <div className="border border-border bg-card rounded-2xl p-6 shadow-xs">
+            <h3 className="text-base font-serif font-medium text-foreground mb-6">
               Traffic Overview (Last 30 Days)
             </h3>
             <TrafficChart pageId={page.id} />

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Label } from "@/components/ui/label";
 import {
   ShieldCheck,
   ShieldAlert,
@@ -93,38 +94,49 @@ export function DNSAnalyzer() {
   };
 
   return (
-    <div className="space-y-8">
-      <Card className="border-primary/20 bg-card/40 backdrop-blur-xl relative overflow-hidden group">
-        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
-        <CardHeader>
+    <div className="space-y-8 font-sans">
+      <Card className="border-[#e8e6df] bg-white shadow-xs rounded-2xl overflow-hidden">
+        <CardHeader className="p-6 sm:p-8 border-b border-[#e8e6df] bg-[#fbfbf9]/50">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-primary/20 rounded-lg">
-              <Globe className="w-5 h-5 text-primary" />
+            <div className="p-2.5 bg-[#ffd439]/20 border border-[#ffd439]/40 rounded-xl">
+              <Globe className="w-5 h-5 text-[#23211a]" />
             </div>
             <div>
-              <CardTitle className="font-mono uppercase tracking-tighter italic text-lg leading-none">
-                DNS Integrity Sentinel
+              <CardTitle className="font-serif font-medium text-xl text-[#23211a]">
+                DNS & Email Integrity Sentinel
               </CardTitle>
-              <CardDescription className="font-mono text-[10px] opacity-60 uppercase tracking-widest mt-1">
-                Audit MX, SPF, & DMARC Health Score
+              <CardDescription className="font-mono text-xs text-[#868279] uppercase tracking-wider mt-0.5">
+                Audit MX, SPF lookup limits, and DMARC enforcement
               </CardDescription>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <form onSubmit={handleAudit} className="flex flex-col md:flex-row gap-4">
-            <div className="relative flex-1 group">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/40 group-focus-within:text-primary transition-colors" />
-              <Input
-                placeholder="TARGET_DOMAIN (e.g. cloudflare.com)"
-                className="pl-10 h-12 bg-background/50 border-primary/20 font-mono text-sm focus-visible:ring-primary/40"
-                value={domain}
-                onChange={(e) => setDomain(e.target.value)}
-              />
+        <CardContent className="p-6 sm:p-8">
+          <form
+            onSubmit={handleAudit}
+            className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end"
+          >
+            <div className="relative flex-1">
+              <Label
+                htmlFor="domain-input"
+                className="text-xs font-mono font-semibold text-[#868279] uppercase tracking-wider block mb-2"
+              >
+                Target Domain
+              </Label>
+              <div className="relative">
+                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#868279]" />
+                <Input
+                  id="domain-input"
+                  placeholder="example.com (e.g. cloudflare.com)"
+                  className="pl-10 h-12 bg-[#fbfbf9] border-[#e8e6df] font-mono text-sm text-[#23211a] focus-visible:ring-[#23211a] rounded-xl"
+                  value={domain}
+                  onChange={(e) => setDomain(e.target.value)}
+                />
+              </div>
             </div>
             <Button
               type="submit"
-              className="h-12 px-8 font-mono font-bold uppercase tracking-tighter"
+              className="h-12 px-7 bg-[#23211a] hover:bg-black text-[#ffd439] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs"
               disabled={isAuditing || !domain}
             >
               {isAuditing ? (
@@ -144,29 +156,29 @@ export function DNSAnalyzer() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="flex flex-col items-center justify-center py-16 space-y-8"
+            className="flex flex-col items-center justify-center py-16 space-y-6 bg-white border border-[#e8e6df] rounded-2xl shadow-xs"
           >
             <div className="flex gap-2">
               {[...Array(6)].map((_, i) => (
                 <motion.div
                   key={i}
-                  className="w-1.5 h-8 bg-primary/20"
+                  className="w-2 h-8 rounded-sm bg-[#ffd439]/30"
                   animate={{
                     height: activeStep >= i ? [8, 32, 8] : 8,
                     backgroundColor:
-                      activeStep >= i ? ["#22c55e", "#16a34a", "#22c55e"] : "#22c55e33",
+                      activeStep >= i ? ["#ffd439", "#23211a", "#ffd439"] : "#e8e6df",
                   }}
-                  transition={{ duration: 1.5, repeat: Infinity }}
+                  transition={{ duration: 1.2, repeat: Infinity }}
                 />
               ))}
             </div>
             <div className="text-center space-y-2">
               <GlitchText
                 text={resolveSteps[activeStep]}
-                className="text-primary font-mono text-xl uppercase tracking-tighter italic"
+                className="text-[#23211a] font-serif text-xl font-medium"
               />
-              <div className="text-[10px] font-mono text-primary/40 uppercase tracking-[0.3em] font-bold">
-                Query: {domain}
+              <div className="text-xs font-mono text-[#868279] uppercase tracking-wider font-semibold">
+                Querying: {domain}
               </div>
             </div>
           </motion.div>
@@ -179,105 +191,103 @@ export function DNSAnalyzer() {
             className="space-y-8"
           >
             {/* Summary Scoreboard */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card className="md:col-span-1 bg-card border border-primary/20 flex flex-col items-center justify-center py-12 relative overflow-hidden group">
-                <div className="absolute top-0 left-0 w-1 h-full bg-primary" />
-                <div className="text-[10px] font-mono text-primary/60 uppercase tracking-widest absolute top-4">
-                  Integrity Level
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <Card className="bg-white border-[#e8e6df] rounded-2xl shadow-xs flex flex-col items-center justify-center py-8 relative overflow-hidden">
+                <div className="text-[11px] font-mono text-[#868279] uppercase tracking-wider font-semibold mb-2">
+                  Integrity Grade
                 </div>
-                <div className="text-8xl font-black font-mono text-primary italic tracking-tighter group-hover:scale-110 transition-transform">
+                <div className="text-6xl font-serif font-medium text-[#23211a]">
                   {auditData.grade}
                 </div>
               </Card>
 
-              <div className="md:col-span-3 grid grid-cols-3 gap-4">
-                {[
-                  {
-                    label: "Deliverability",
-                    val: `${auditData.score}%`,
-                    icon: <Mail className="w-4 h-4 text-primary" />,
-                  },
-                  {
-                    label: "Security Nodes",
-                    val: auditData.results.filter((r) => r.status === "SECURE").length,
-                    icon: <ShieldCheck className="w-4 h-4 text-primary" />,
-                  },
-                  {
-                    label: "Total Records",
-                    val: Object.keys(auditData.raw).length,
-                    icon: <Activity className="w-4 h-4 text-primary" />,
-                  },
-                ].map((stat) => (
-                  <Card
-                    key={stat.label}
-                    className="bg-card/40 border border-primary/10 p-6 space-y-2 group hover:bg-card/60 transition-colors"
-                  >
-                    <div className="flex items-center gap-2">
-                      {stat.icon}
-                      <span className="text-[10px] uppercase font-mono text-muted-foreground tracking-widest">
-                        {stat.label}
-                      </span>
-                    </div>
-                    <div className="text-3xl font-mono font-black text-foreground italic">
-                      {stat.val}
-                    </div>
-                  </Card>
-                ))}
-              </div>
+              <Card className="bg-white border-[#e8e6df] rounded-2xl shadow-xs p-6 flex flex-col justify-between">
+                <div className="flex items-center gap-2 text-[11px] uppercase font-mono text-[#868279] tracking-wider font-semibold">
+                  <Mail className="w-4 h-4 text-[#23211a]" />
+                  <span>Deliverability</span>
+                </div>
+                <div className="text-3xl font-serif font-medium text-[#23211a] mt-3">
+                  {auditData.score}%
+                </div>
+              </Card>
+
+              <Card className="bg-white border-[#e8e6df] rounded-2xl shadow-xs p-6 flex flex-col justify-between">
+                <div className="flex items-center gap-2 text-[11px] uppercase font-mono text-[#868279] tracking-wider font-semibold">
+                  <ShieldCheck className="w-4 h-4 text-[#23211a]" />
+                  <span>Secure Records</span>
+                </div>
+                <div className="text-3xl font-serif font-medium text-[#23211a] mt-3">
+                  {auditData.results.filter((r) => r.status === "SECURE").length} /{" "}
+                  {auditData.results.length}
+                </div>
+              </Card>
+
+              <Card className="bg-white border-[#e8e6df] rounded-2xl shadow-xs p-6 flex flex-col justify-between">
+                <div className="flex items-center gap-2 text-[11px] uppercase font-mono text-[#868279] tracking-wider font-semibold">
+                  <Activity className="w-4 h-4 text-[#23211a]" />
+                  <span>Total Records</span>
+                </div>
+                <div className="text-3xl font-serif font-medium text-[#23211a] mt-3">
+                  {Object.keys(auditData.raw).length}
+                </div>
+              </Card>
             </div>
 
-            {/* Resolution Table */}
+            {/* Resolution List */}
             <div className="space-y-4">
-              <h2 className="font-mono text-sm uppercase tracking-[0.2em] text-primary/80 flex items-center gap-2 pl-1">
-                <Filter className="w-4 h-4" /> Analyzed Records
-              </h2>
+              <div className="flex items-center justify-between pl-1">
+                <h2 className="font-mono text-xs uppercase tracking-wider text-[#868279] font-semibold flex items-center gap-2">
+                  <Filter className="w-4 h-4 text-[#23211a]" /> Analyzed Recordsets
+                </h2>
+              </div>
               <div className="grid grid-cols-1 gap-4">
                 {auditData.results.map((res, idx) => (
                   <motion.div
                     key={res.key}
-                    initial={{ opacity: 0, x: -20 }}
+                    initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: idx * 0.1 }}
+                    transition={{ delay: idx * 0.05 }}
                   >
                     <Card
                       className={cn(
-                        "bg-card/60 border hover:shadow-[0_0_20px_rgba(34,197,94,0.05)] transition-all",
+                        "bg-white border rounded-2xl shadow-xs p-5 transition-all",
                         res.status === "SECURE"
-                          ? "border-primary/20"
+                          ? "border-[#e8e6df]"
                           : res.status === "CRITICAL"
-                            ? "border-red-500/30"
-                            : "border-yellow-500/30",
+                            ? "border-rose-300"
+                            : "border-amber-300",
                       )}
                     >
-                      <div className="p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-                        <div className="space-y-1 flex-1">
-                          <div className="flex items-center gap-3">
+                      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div className="space-y-1.5 flex-1">
+                          <div className="flex items-center gap-2.5">
                             {res.status === "SECURE" ? (
-                              <ShieldCheck className="w-5 h-5 text-primary" />
+                              <ShieldCheck className="w-4 h-4 text-emerald-600" />
                             ) : (
-                              <ShieldAlert className="w-5 h-5 text-red-500" />
+                              <ShieldAlert className="w-4 h-4 text-rose-600" />
                             )}
-                            <span className="font-mono text-lg font-black italic text-foreground">
+                            <span className="font-mono text-sm font-bold text-[#23211a]">
                               {res.key}
                             </span>
                             <Badge
+                              variant="outline"
                               className={cn(
-                                "text-[9px] uppercase font-mono italic h-5 border-none",
+                                "text-[10px] uppercase font-mono px-2 py-0.5 rounded-full border",
                                 res.status === "SECURE"
-                                  ? "bg-primary text-primary-foreground shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                                  ? "bg-emerald-50 text-emerald-700 border-emerald-200"
                                   : res.status === "CRITICAL"
-                                    ? "bg-red-500 text-white"
-                                    : "bg-yellow-500 text-black",
+                                    ? "bg-rose-50 text-rose-700 border-rose-200"
+                                    : "bg-amber-50 text-amber-700 border-amber-200",
                               )}
                             >
                               {res.status}
                             </Badge>
                           </div>
-                          <p className="text-xs text-muted-foreground font-mono leading-relaxed">
+                          <p className="text-xs text-[#5c5c5c] font-sans leading-relaxed">
                             {res.desc}
                           </p>
                         </div>
-                        <div className="bg-muted p-3 rounded-lg border border-border max-w-sm w-full truncate font-mono text-[11px] text-muted-foreground shadow-inner">
+                        <div className="bg-[#fbfbf9] p-3 rounded-xl border border-[#e8e6df] max-w-sm w-full truncate font-mono text-xs text-[#23211a]">
                           {res.value}
                         </div>
                       </div>
@@ -287,30 +297,33 @@ export function DNSAnalyzer() {
               </div>
             </div>
 
-            {/* Final CTA */}
-            <Card className="bg-linear-to-br from-primary/20 via-primary/5 to-transparent border-primary/20 p-8 text-center relative overflow-hidden group">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] opacity-20" />
+            {/* Final CTA Container */}
+            <Card className="rounded-3xl border border-black/[0.1] bg-[#23211a] text-white p-8 sm:p-12 text-center relative overflow-hidden shadow-md">
+              <div className="absolute -bottom-20 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-[#ffd439]/15 rounded-full blur-[80px] pointer-events-none" />
               <div className="relative z-10 max-w-xl mx-auto space-y-6">
                 <div className="space-y-2">
-                  <h2 className="text-2xl font-black font-mono uppercase italic tracking-tighter">
-                    Initialize Domain Watcher
+                  <h2 className="text-2xl sm:text-3xl font-serif font-medium text-white">
+                    Initialize Continuous DNS Monitoring
                   </h2>
-                  <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest leading-relaxed">
-                    Continuous DNS monitoring. Get alerted the microsecond your MX/SPF/DMARC records
-                    are tampered with or expire.
+                  <p className="text-xs text-white/70 font-sans leading-relaxed">
+                    Prevent unexpected email delivery failures. SteadyStack monitors your MX, SPF,
+                    and DMARC records 24/7 and alerts you the second a record is tampered with or
+                    drops.
                   </p>
                 </div>
-                <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-3.5 justify-center">
                   <Button
-                    className="px-8 h-12 uppercase font-mono font-bold tracking-tighter group/cta"
-                    onClick={() => router.push(`/dashboard/monitors/new?url=${domain}&type=DNS`)}
+                    className="h-11 px-7 bg-[#ffd439] hover:bg-[#ffe066] text-[#23211a] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
+                    onClick={() =>
+                      router.push(`/dashboard/monitors/new?url=${domain}&type=DNS` as any)
+                    }
                   >
-                    Setup DNS Sentinel
-                    <ArrowRight className="ml-2 w-4 h-4 group-hover/cta:translate-x-1 transition-transform" />
+                    Setup DNS Monitor
+                    <ArrowRight className="ml-2 w-4 h-4" />
                   </Button>
                   <Button
                     variant="outline"
-                    className="px-8 h-12 uppercase font-mono font-bold tracking-tighter border-primary/20"
+                    className="h-11 px-6 bg-white/10 hover:bg-white/15 border-white/20 text-white font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all"
                     onClick={() => {
                       const report =
                         `STEADYSTACK DNS INTEGRITY REPORT\n` +
@@ -338,7 +351,7 @@ export function DNSAnalyzer() {
                     }}
                   >
                     Export Record Dump
-                    <ArrowUpRight className="ml-2 w-4 h-4 opacity-40" />
+                    <ArrowUpRight className="ml-2 w-4 h-4 opacity-70" />
                   </Button>
                 </div>
               </div>

@@ -15,15 +15,82 @@ The core architectural innovation in SteadyStack is **Quorum Consensus Verificat
 
 Single-origin uptime monitors query your endpoints from one static IP or datacenter. When a Tier 1 telecom transit route experiences localized BGP flapping, high packet loss, or regional DDoS scrubbing, legacy tools assume your entire application is down and page your on-call engineers.
 
+A single monitoring node sees a dropped packet, a slow TLS handshake, or a momentary route flap — and triggers a 3am page. Your service was fine the entire time. Do that repeatedly and teams experience alert fatigue, which is worse than having no monitoring at all.
+
 ---
 
-## How SteadyStack Solves This
+## The Four-Step Verification Protocol
 
-When any edge probe node detects a non-2xx status code or a timeout, it does **not** immediately fire an alert. Instead, it submits the failure event to the **LatencyAggregator Durable Object**.
+SteadyStack never alerts based on a single region's observation. Every synthetic check and outage detection follows a strict four-step verification lifecycle:
 
-1. **Phase 1 (Probe Detection)**: A regional edge node records a connection failure or timeout.
-2. **Phase 2 (Immediate Quorum Trigger)**: The central orchestrator triggers out-of-cycle partner node confirmations across independent regions.
-3. **Phase 3 (Consensus Evaluation)**:
-   - **Free Tier ("The Initiate")**: Requires **2 of 3 primary edge regions** to confirm the failure.
-   - **Paid Tiers ("The Netrunner" / "The Construct")**: Requires **4 of 7 sovereign edge regions** (including out-of-band multi-ASN sentinel nodes) to confirm failure.
-4. **Phase 4 (Dispatch)**: If consensus threshold is reached, incident routing rules execute and push notifications to PagerDuty, Slack, Discord, or Webhooks.
+### Step 1: Breadth (Multi-Region Probing)
+
+Every monitor is checked across global edge regions (7 regions on paid tiers, 3 primary regions on free tier): Western and Eastern North America, Western and Eastern Europe, and three Asia-Pacific regions. Checks execute concurrently rather than as a rotating single-node scan.
+
+### Step 2: Verify (Immediate Local Re-Check)
+
+When a probe observes a non-2xx response or timeout, it does not immediately dispatch an incident. The region that observed the failure immediately executes a secondary re-check. Single dropped packets and transient TLS connection timeouts are filtered out at this stage without alerting on-call personnel.
+
+### Step 3: Confirm (Quorum Consensus)
+
+If the local re-check confirms the failure, the central orchestrator queries partner edge nodes across global edge regions:
+
+- **Free Tier**: Requires **2 of 3 primary edge regions** to confirm the failure.
+- **Paid Tiers**: Requires **4 of 7 global edge regions** to independently confirm failure.
+
+A region that is slow to respond or timing out on network transit is treated separately to prevent network congestion from skewing the quorum.
+
+### Step 4: Classify (Outage vs. Regional Degradation)
+
+Before dispatching an alert, SteadyStack classifies the failure mode:
+
+- **Regional Degradation**: When a subset of regions fail (e.g. 3 failing while 4 succeed), the incident is classified as regional degradation (often caused by localized CDN edge failure or ISP routing issues).
+- **Global Outage**: When quorum threshold is met across majority regions, the incident is classified as a confirmed global outage.
+
+---
+
+## Worked Verification Examples
+
+### Worked Example A: Regional Degradation (No Global Page)
+
+Consider a scenario where transatlantic transit routes flap, causing US and Western Europe probes to fail while other regions succeed:
+
+```text
+Region Results:
+├── wnam (US West)     -> FAIL (504 Gateway Timeout)
+├── enam (US East)     -> FAIL (504 Gateway Timeout)
+├── weur (EU West)     -> FAIL (504 Gateway Timeout)
+├── eeur (EU East)     -> OK (200 OK, 42ms)
+├── apac (Tokyo)       -> OK (200 OK, 110ms)
+├── apac-ne (Seoul)    -> TIMEOUT (Excluded from quorum)
+└── apac-se (Singapore)-> OK (200 OK, 88ms)
+
+Consensus: 3 of 6 counted regions report failure.
+Threshold: 4 of 7 required.
+Result: Quorum not met. No 3am on-call page. Logged to dashboard as Regional Degradation.
+```
+
+### Worked Example B: Confirmed Global Outage (Incident Dispatched)
+
+Consider a primary database failover or upstream application crash:
+
+```text
+Region Results:
+├── wnam (US West)     -> FAIL (500 Internal Server Error)
+├── enam (US East)     -> FAIL (500 Internal Server Error)
+├── weur (EU West)     -> FAIL (500 Internal Server Error)
+├── eeur (EU East)     -> FAIL (500 Internal Server Error)
+├── apac (Tokyo)       -> FAIL (500 Internal Server Error)
+├── apac-ne (Seoul)    -> OK (Cached response)
+└── apac-se (Singapore)-> FAIL (500 Internal Server Error)
+
+Consensus: 6 of 7 regions confirm failure.
+Threshold: 4 of 7 met.
+Result: Quorum achieved. Critical incident opened, on-call paged via PagerDuty/Slack, status page updated.
+```
+
+---
+
+## Regional Coverage & Transparency
+
+SteadyStack deploys edge probes across North America, Europe, and Asia-Pacific (including Tokyo and Sydney). Regions with active edge probes are published with live health telemetry. For endpoints serving users outside these primary zones, pairing multi-region checks with heartbeat and cron-job monitoring ensures complete coverage.

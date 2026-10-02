@@ -58,6 +58,24 @@ export default {
         );
       }
 
+      // --- AGENCY MONTHLY SLA REPORTS: Run on the 1st of every month at midnight ---
+      const isFirstDayOfMonth = now.getUTCDate() === 1 && isMidnight;
+      if (event.cron === "0 0 1 * *" || isFirstDayOfMonth) {
+        ctx.waitUntil(
+          (async () => {
+            try {
+              if (!env.DATABASE_URL) return;
+              const reportPrisma = getPrisma(env.DATABASE_URL, env.DATABASE_POOL_URL);
+              const { runMonthlyReportDispatcher } =
+                await import("./services/monthly-report-dispatcher");
+              await runMonthlyReportDispatcher(reportPrisma, env);
+            } catch (err) {
+              console.error("[MonthlyReports] Scheduled run failed:", err);
+            }
+          })(),
+        );
+      }
+
       // --- ANOMALY SCANNER: Run every 5 minutes ---
       if (event.cron === "*/5 * * * *" || event.cron === "0 * * * *" || isFiveMinuteMark) {
         ctx.waitUntil(

@@ -27,7 +27,7 @@ export interface UsageLimitWarningEmailProps {
 }
 
 export const UsageLimitWarningEmail: React.FC<Readonly<UsageLimitWarningEmailProps>> = ({
-  userName = "SteadyStack Operator",
+  userName = "Operator",
   planName = "Starter",
   warnings = [
     {
@@ -53,7 +53,7 @@ export const UsageLimitWarningEmail: React.FC<Readonly<UsageLimitWarningEmailPro
   return (
     <Html>
       <Head>
-        <title>Workspace Usage Limit Warning - SteadyStack</title>
+        <title>Workspace Usage Limit Warning</title>
         <style>{`
           body { margin: 0; padding: 0; background-color: #09090b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
           @media only screen and (max-width: 600px) {
@@ -208,7 +208,7 @@ export const UsageLimitWarningEmail: React.FC<Readonly<UsageLimitWarningEmailPro
 
           {/* Footer */}
           <EmailFooter
-            customMessage="SteadyStack Quota & Capacity Management System."
+            customMessage="Quota & Capacity Management System."
             unsubscribeUrl={`${baseUrl}/dashboard/settings?tab=billing`}
           />
         </Container>

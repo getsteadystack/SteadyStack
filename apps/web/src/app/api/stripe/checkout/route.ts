@@ -19,10 +19,12 @@ export async function POST(req: Request) {
       plan = "NETRUNNER",
       interval = "monthly",
       promoCode,
+      deal,
     } = body as {
       plan?: PlanTier;
       interval?: "monthly" | "annual";
       promoCode?: string;
+      deal?: string;
     };
 
     const host = (await headers()).get("host") || "localhost:3000";
@@ -36,6 +38,7 @@ export async function POST(req: Request) {
       interval,
       returnUrl,
       promoCode,
+      deal,
     });
 
     return NextResponse.json({ url: checkout.url });

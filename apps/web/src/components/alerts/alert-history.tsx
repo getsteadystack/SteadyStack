@@ -109,50 +109,46 @@ export function AlertHistory({
   };
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center justify-between pb-2 border-b border-border/80">
         <div className="flex flex-col">
-          <h3 className="text-lg font-bold text-foreground font-mono uppercase tracking-tight">
-            System Log
-          </h3>
-          <p className="text-xs text-primary/60 font-mono">Recent monitor events</p>
+          <h3 className="text-xl font-serif font-medium text-foreground">System Event Log</h3>
+          <p className="text-xs text-muted-foreground font-sans mt-0.5">
+            Recent monitor health events and dispatch records
+          </p>
         </div>
       </div>
 
-      <div className="border border-primary/20 bg-black/40 relative overflow-hidden shadow-lg backdrop-blur-sm">
-        {/* Decor */}
-        <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-primary/50 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-primary/50 pointer-events-none"></div>
-
+      <div className="border border-border bg-card rounded-2xl overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-primary/5 border-b border-primary/20">
+            <thead className="bg-muted/50 border-b border-border">
               <tr>
-                <th className="px-6 py-4 text-[10px] font-bold text-primary/60 uppercase tracking-widest font-mono">
+                <th className="px-6 py-3.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider font-mono">
                   Target System
                 </th>
-                <th className="px-6 py-4 text-[10px] font-bold text-primary/60 uppercase tracking-widest font-mono">
+                <th className="px-6 py-3.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider font-mono">
                   Event Type
                 </th>
-                <th className="px-6 py-4 text-[10px] font-bold text-primary/60 uppercase tracking-widest font-mono">
+                <th className="px-6 py-3.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider font-mono">
                   Status
                 </th>
-                <th className="px-6 py-4 text-[10px] font-bold text-primary/60 uppercase tracking-widest font-mono">
+                <th className="px-6 py-3.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider font-mono">
                   Details
                 </th>
-                <th className="px-6 py-4 text-[10px] font-bold text-primary/60 uppercase tracking-widest font-mono">
+                <th className="px-6 py-3.5 text-[11px] font-medium text-muted-foreground uppercase tracking-wider font-mono">
                   Time
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-primary/10">
+            <tbody className="divide-y divide-border/60">
               {history.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-6 py-8 text-center text-xs text-primary/50 font-mono uppercase"
+                    className="px-6 py-12 text-center text-xs text-muted-foreground font-sans"
                   >
-                    No events recorded yet
+                    No system events recorded yet.
                   </td>
                 </tr>
               ) : (
@@ -160,35 +156,35 @@ export function AlertHistory({
                   const config = getTypeConfig(item);
                   const Icon = config.icon;
                   return (
-                    <tr key={item.id} className="hover:bg-primary/5 transition-colors group">
+                    <tr key={item.id} className="hover:bg-muted/30 transition-colors group">
                       <td className="px-6 py-4">
-                        <span className="text-sm font-bold text-foreground font-mono group-hover:text-primary transition-colors">
+                        <span className="text-sm font-semibold text-foreground font-sans">
                           {item.monitor.name}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-2">
                           <Icon className={`size-4 ${config.color}`} />
-                          <span className="text-xs font-bold text-foreground font-mono">
+                          <span className="text-xs font-medium text-foreground font-sans">
                             {config.text}
                           </span>
                         </div>
                       </td>
                       <td className="px-6 py-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 border text-[10px] font-bold uppercase tracking-wider ${config.statusColor}`}
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full border text-[10px] font-mono font-medium uppercase tracking-wider ${config.statusColor}`}
                         >
                           {item.status}
                         </span>
                       </td>
                       <td className="px-6 py-4">
                         {item.status === "UP" ? (
-                          <span className="text-xs text-primary/70 font-mono">
+                          <span className="text-xs text-muted-foreground font-mono">
                             {item.latency}ms latency
                           </span>
                         ) : (
                           <span
-                            className="text-xs text-red-400 font-mono truncate max-w-[200px] block"
+                            className="text-xs text-rose-600 dark:text-rose-400 font-mono truncate max-w-[200px] block"
                             title={item.errorReason || ""}
                           >
                             {item.errorReason || "No details"}
@@ -196,8 +192,8 @@ export function AlertHistory({
                         )}
                       </td>
                       <td className="px-6 py-4">
-                        <div className="flex items-center gap-1 text-primary/50">
-                          <Clock className="size-3" />
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                          <Clock className="size-3.5" />
                           <span className="text-xs font-mono">{formatTimeAgo(item.timestamp)}</span>
                         </div>
                       </td>
@@ -210,30 +206,26 @@ export function AlertHistory({
         </div>
 
         {/* Pagination Footer */}
-        <div className="bg-primary/5 px-6 py-3 flex items-center justify-between border-t border-primary/20 font-mono">
-          <p className="text-[10px] text-primary/60 uppercase tracking-widest">
-            Showing page {currentPage} of {totalPages} ({totalCount} entries)
+        <div className="bg-muted/30 px-6 py-3.5 flex items-center justify-between border-t border-border font-mono text-xs">
+          <p className="text-[11px] text-muted-foreground">
+            Page {currentPage} of {totalPages} ({totalCount} entries)
           </p>
           <div className="flex gap-2">
             <Link
               href={currentPage > 1 ? `?page=${currentPage - 1}` : "#"}
-              className={`px-3 py-1 border border-primary/20 text-primary/60 text-[10px] uppercase font-bold transition-all flex items-center gap-1 ${
-                currentPage <= 1
-                  ? "opacity-30 cursor-not-allowed"
-                  : "hover:text-primary hover:border-primary/50"
+              className={`px-3 py-1.5 border border-border bg-card rounded-xl text-foreground text-xs font-medium transition-all flex items-center gap-1 shadow-xs ${
+                currentPage <= 1 ? "opacity-40 cursor-not-allowed" : "hover:bg-muted"
               }`}
             >
-              <ChevronLeft className="size-3" /> Prev
+              <ChevronLeft className="size-3.5" /> Prev
             </Link>
             <Link
               href={currentPage < totalPages ? `?page=${currentPage + 1}` : "#"}
-              className={`px-3 py-1 border border-primary/20 text-primary/60 text-[10px] uppercase font-bold transition-all flex items-center gap-1 ${
-                currentPage >= totalPages
-                  ? "opacity-30 cursor-not-allowed"
-                  : "hover:text-primary hover:border-primary/50"
+              className={`px-3 py-1.5 border border-border bg-card rounded-xl text-foreground text-xs font-medium transition-all flex items-center gap-1 shadow-xs ${
+                currentPage >= totalPages ? "opacity-40 cursor-not-allowed" : "hover:bg-muted"
               }`}
             >
-              Next <ChevronRight className="size-3" />
+              Next <ChevronRight className="size-3.5" />
             </Link>
           </div>
         </div>

@@ -55,7 +55,9 @@ function normalizeProtocolUrl(type: string, rawUrl?: string): string {
   if (!conf) return input;
 
   // Append the default port only when the host has no explicit port
-  return input.includes(":") ? `${conf.scheme}://${input}` : `${conf.scheme}://${input}:${conf.port}`;
+  return input.includes(":")
+    ? `${conf.scheme}://${input}`
+    : `${conf.scheme}://${input}:${conf.port}`;
 }
 
 // Helper Types for Incident Management
@@ -337,7 +339,12 @@ const monitorSchema = baseSchema.superRefine((data, ctx) => {
           path: ["url"],
         });
       }
-    } else if (data.type === "GRPC" || data.type === "SMTP" || data.type === "FTP" || data.type === "MAIL") {
+    } else if (
+      data.type === "GRPC" ||
+      data.type === "SMTP" ||
+      data.type === "FTP" ||
+      data.type === "MAIL"
+    ) {
       if (!data.url) {
         ctx.addIssue({
           code: z.ZodIssueCode.custom,
@@ -458,7 +465,12 @@ export async function createMonitor(prevState: any, formData: FormData) {
       finalUrl = `icmp://${data.url}`;
     } else if (data.type === "PORT") {
       finalUrl = `tcp://${data.url}:${data.port}`;
-    } else if (data.type === "GRPC" || data.type === "SMTP" || data.type === "FTP" || data.type === "MAIL") {
+    } else if (
+      data.type === "GRPC" ||
+      data.type === "SMTP" ||
+      data.type === "FTP" ||
+      data.type === "MAIL"
+    ) {
       finalUrl = normalizeProtocolUrl(data.type, data.url);
     } else if (data.type === "HEARTBEAT") {
       const crypto = await import("crypto");
@@ -492,7 +504,10 @@ export async function createMonitor(prevState: any, formData: FormData) {
         method: data.method,
         // Headers arrive decrypted-or-plaintext from the form; skip a
         // pointless double-encrypt when the value is already an envelope.
-        headers: data.headers && !isEncrypted(data.headers) ? await encryptSecret(data.headers) : data.headers || null,
+        headers:
+          data.headers && !isEncrypted(data.headers)
+            ? await encryptSecret(data.headers)
+            : data.headers || null,
         body: data.body,
         script: data.script,
         expectation: data.expectation || null,
@@ -587,6 +602,8 @@ export async function quickCreateMonitor(data: {
       targetUrl = targetUrl.startsWith("tcp://") ? targetUrl : `tcp://${targetUrl}:${portNum}`;
     }
 
+    const active = await getActiveWorkspace();
+
     const newMonitor = await prisma.monitor.create({
       data: {
         name: data.name.trim() || targetUrl || "New Monitor",
@@ -598,6 +615,7 @@ export async function quickCreateMonitor(data: {
         nextCheck: new Date(),
         checkRegions: JSON.stringify(["us-east", "eu-central", "ap-tokyo"]),
         userId: session.user.id,
+        organizationId: active?.id || null,
         alertRules: {
           create: {
             trigger: "STATUS_CHANGE",
@@ -710,18 +728,28 @@ export async function updateMonitor(id: string, prevState: any, formData: FormDa
   let finalUrl = data.url || "";
   let heartbeatToken = undefined;
 
+  const active = await getActiveWorkspace();
+  const monitorScope = active?.id
+    ? { organizationId: active.id }
+    : { userId: session.user.id, organizationId: null };
+
   if (data.type === "PING") {
     finalUrl = `ping://${data.url}`;
   } else if (data.type === "ICMP") {
     finalUrl = `icmp://${data.url}`;
   } else if (data.type === "PORT") {
     finalUrl = `tcp://${data.url}:${data.port}`;
-  } else if (data.type === "GRPC" || data.type === "SMTP" || data.type === "FTP" || data.type === "MAIL") {
+  } else if (
+    data.type === "GRPC" ||
+    data.type === "SMTP" ||
+    data.type === "FTP" ||
+    data.type === "MAIL"
+  ) {
     finalUrl = normalizeProtocolUrl(data.type, data.url);
   } else if (data.type === "HEARTBEAT") {
     // Find current monitor to see if it already has a token
-    const current = await prisma.monitor.findUnique({
-      where: { id, userId: session.user.id },
+    const current = await prisma.monitor.findFirst({
+      where: { id, ...monitorScope },
       select: { heartbeatToken: true },
     });
     if (current?.heartbeatToken) {
@@ -740,15 +768,18 @@ export async function updateMonitor(id: string, prevState: any, formData: FormDa
     const clientCert = await resolveClientCertWrite(data);
     // The stored envelope is needed so a posted username with a blank
     // password can keep the stored password (the browser never sees it).
-    const storedMonitor = await prisma.monitor.findUnique({
-      where: { id, userId: session.user.id },
+    const storedMonitor = await prisma.monitor.findFirst({
+      where: { id, ...monitorScope },
       select: { headers: true },
     });
+
+    if (!storedMonitor) {
+      return { success: false, error: "Monitor not found or unauthorized" };
+    }
 
     await prisma.monitor.update({
       where: {
         id,
-        userId: session.user.id,
       },
       data: {
         name: data.name,
@@ -805,10 +836,11 @@ export async function getMonitors() {
     const monitors = await prisma.monitor.findMany({
       where: active?.id
         ? {
-            OR: [{ organizationId: active.id }, { userId: session.user.id }],
+            organizationId: active.id,
           }
         : {
             userId: session.user.id,
+            organizationId: null,
           },
       orderBy: {
         createdAt: "desc",
@@ -843,14 +875,15 @@ export async function getMonitor(id: string) {
 
   if (!session?.user) return null;
 
+  const active = await getActiveWorkspace();
+
   try {
     const monitor = await prisma.monitor.findFirst({
       where: {
         id,
-        OR: [
-          { organization: { members: { some: { userId: session.user.id } } } },
-          { userId: session.user.id },
-        ],
+        ...(active?.id
+          ? { organizationId: active.id }
+          : { userId: session.user.id, organizationId: null }),
       },
       include: {
         events: {
@@ -890,8 +923,13 @@ export async function checkMonitor(
     return { success: false, error: rateLimit.error };
   }
 
+  const active = await getActiveWorkspace();
+  const monitorScope = active?.id
+    ? { organizationId: active.id }
+    : { userId: session.user.id, organizationId: null };
+
   const monitor = await prisma.monitor.findFirst({
-    where: { id, userId: session.user.id },
+    where: { id, ...monitorScope },
     include: {
       // @ts-ignore
       maintenanceWindows: {
@@ -967,182 +1005,185 @@ export async function checkMonitor(
       : "http";
 
     try {
-    if (
-      monitor.type === "BROWSER" ||
-      monitor.type === "SEQUENCE" ||
-      monitor.type === "SSL" ||
-      monitor.type === "GRPC" ||
-      monitor.type === "SMTP" ||
-      monitor.type === "FTP" ||
-      monitor.type === "ICMP" ||
-      monitor.type === "MAIL"
-    ) {
-      const workerUrl = env.STEADYSTACK_WORKER_URL;
-      const cookieHeader = (await headers()).get("Cookie");
+      if (
+        monitor.type === "BROWSER" ||
+        monitor.type === "SEQUENCE" ||
+        monitor.type === "SSL" ||
+        monitor.type === "GRPC" ||
+        monitor.type === "SMTP" ||
+        monitor.type === "FTP" ||
+        monitor.type === "ICMP" ||
+        monitor.type === "MAIL"
+      ) {
+        const workerUrl = env.STEADYSTACK_WORKER_URL;
+        const cookieHeader = (await headers()).get("Cookie");
 
-      const response = await fetch(`${workerUrl}/api/check-now`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          ...(cookieHeader ? { Cookie: cookieHeader } : {}),
-        },
-        body: JSON.stringify({ monitor }),
-        signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
-      });
-
-      latency = Date.now() - start;
-
-      if (response.ok) {
-        const result = (await response.json()) as {
-          status: "UP" | "DOWN";
-          latency: number;
-          errorReason?: string;
-        };
-        currentStatus = result.status;
-        latency = result.latency;
-        errorReason = result.errorReason;
-      } else {
-        currentStatus = "DOWN";
-        const text = await response.text();
-        errorReason = `Worker HTTP ${response.status}: ${text.substring(0, 50)}`;
-      }
-    } else {
-      if (monitor.url.startsWith("ping://") || monitor.url.startsWith("tcp://")) {
-        transport = "ping";
-        const isPing = monitor.url.startsWith("ping://");
-        const part = monitor.url.replace(isPing ? "ping://" : "tcp://", "");
-        const [hostname, portStr] = part.split(":");
-        const port = isPing ? 80 : parseInt(portStr);
-
-        if (!hostname || (isNaN(port) && !isPing)) {
-          throw new Error("Invalid host or port in URL");
-        }
-
-        await new Promise<void>((resolve, reject) => {
-          const socket = net.connect({
-            host: hostname,
-            port: port,
-          });
-
-          socket.setTimeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000);
-
-          socket.on("connect", () => {
-            currentStatus = "UP";
-            socket.end();
-            resolve();
-          });
-
-          socket.on("timeout", () => {
-            socket.destroy();
-            reject(new Error("TIMEOUT"));
-          });
-
-          socket.on("error", (err) => {
-            socket.destroy();
-            reject(err);
-          });
+        const response = await fetch(`${workerUrl}/api/check-now`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            ...(cookieHeader ? { Cookie: cookieHeader } : {}),
+          },
+          body: JSON.stringify({ monitor }),
+          signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
         });
 
-        latency = Math.round(Date.now() - start);
-      } else if (monitor.url.startsWith("http://") || monitor.url.startsWith("https://")) {
-        // Enforce SSRF validation for manual web checks
-        const ssrfCheck = await isPrivateOrInternalUrlAsync(monitor.url);
-        if (ssrfCheck.isForbidden) {
-          currentStatus = "DOWN";
-          errorReason = `SSRF Protection: ${ssrfCheck.reason || "Target URL points to a private or internal network"}`;
-          latency = Math.round(Date.now() - start);
+        latency = Date.now() - start;
+
+        if (response.ok) {
+          const result = (await response.json()) as {
+            status: "UP" | "DOWN";
+            latency: number;
+            errorReason?: string;
+          };
+          currentStatus = result.status;
+          latency = result.latency;
+          errorReason = result.errorReason;
         } else {
-          const method = monitor.method || "GET";
-          const userHeaders: Record<string, string> = {};
-
-          if (monitor.headers) {
-            try {
-              const rawHeaders = await decryptSecret(monitor.headers);
-              const parsed = JSON.parse(rawHeaders);
-              if (Array.isArray(parsed)) {
-                parsed.forEach((h: { key: string; value: string }) => {
-                  if (h.key) userHeaders[h.key] = h.value;
-                });
-              } else if (typeof parsed === "object" && parsed !== null) {
-                Object.assign(userHeaders, parsed);
-              }
-            } catch (e) {
-              console.error("Failed to parse monitor headers:", e);
-            }
-          }
-
-          // mTLS: decrypt the client certificate bundle when present
-          let clientCert: string | undefined;
-          let clientKey: string | undefined;
-          if (monitor.clientCert) {
-            try {
-              const raw = await decryptSecret(monitor.clientCert);
-              const parsed = JSON.parse(raw) as { cert?: string; key?: string };
-              clientCert = parsed.cert;
-              clientKey = parsed.key;
-            } catch {
-              console.error("[MTLS] Failed to parse client certificate bundle");
-            }
-          }
-
-          const response = await fetch(monitor.url, {
-            method,
-            redirect: "follow",
-            headers: {
-              "User-Agent": STEADYSTACK_CANONICAL_USER_AGENT,
-              Accept:
-                "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
-              "Accept-Language": "en-US,en;q=0.9",
-              "Sec-CH-UA": '"Chromium";v="133", "Not(A:Brand";v="99", "Google Chrome";v="133"',
-              "Sec-CH-UA-Mobile": "?0",
-              "Sec-CH-UA-Platform": '"Windows"',
-              "Sec-Fetch-Dest": "document",
-              "Sec-Fetch-Mode": "navigate",
-              "Sec-Fetch-Site": "none",
-              "Sec-Fetch-User": "?1",
-              "Upgrade-Insecure-Requests": "1",
-              ...userHeaders,
-            },
-            body: ["POST", "PUT", "PATCH"].includes(method) ? monitor.body : undefined,
-            signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
-              // @ts-ignore — Node dispatcher for mTLS; ignored on non-Node runtimes
-            dispatcher:
-              clientCert && clientKey
-                ? await createMtlsDispatcher(clientCert, clientKey)
-                : undefined,
-          });
-
-          const body = await response.text();
-          latency = Math.round(Date.now() - start);
-          // Treat 2xx, 3xx as UP. Treat 429 and 403 as UP — endpoint is alive and responsive.
-          const statusNum = Number(response.status);
-          const isRateLimited = statusNum === 429;
-          const isIPBlocked = statusNum === 403;
-          const isHealthyStatus =
-            response.ok || (statusNum >= 300 && statusNum < 400) || isRateLimited || isIPBlocked;
-          currentStatus = isHealthyStatus ? "UP" : "DOWN";
-
-          if (currentStatus === "UP" && monitor.expectation) {
-            const { validatePayload, validateBodySize } = await import("@/lib/payload-parser");              // Body size thresholds first (byte-exact), then content validation
-              const sizeValidation = validateBodySize(new Blob([body]).size, monitor.expectation);
-            if (!sizeValidation.success) {
-              currentStatus = "DOWN";
-              errorReason = sizeValidation.errorMessage;
-            } else {
-              const validation = validatePayload(body, response.status, monitor.expectation);
-              if (!validation.success) {
-                currentStatus = "DOWN";
-                errorReason = validation.errorMessage || "Payload validation failed";
-              }
-            }
-          } else if (currentStatus === "DOWN") {
-            errorReason = `HTTP_${response.status}`;
-          }
+          currentStatus = "DOWN";
+          const text = await response.text();
+          errorReason = `Worker HTTP ${response.status}: ${text.substring(0, 50)}`;
         }
       } else {
-        throw new Error(`Unsupported protocol in URL: ${monitor.url}`);
+        if (monitor.url.startsWith("ping://") || monitor.url.startsWith("tcp://")) {
+          transport = "ping";
+          const isPing = monitor.url.startsWith("ping://");
+          const part = monitor.url.replace(isPing ? "ping://" : "tcp://", "");
+          const [hostname, portStr] = part.split(":");
+          const port = isPing ? 80 : parseInt(portStr);
+
+          if (!hostname || (isNaN(port) && !isPing)) {
+            throw new Error("Invalid host or port in URL");
+          }
+
+          await new Promise<void>((resolve, reject) => {
+            const socket = net.connect({
+              host: hostname,
+              port: port,
+            });
+
+            socket.setTimeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000);
+
+            socket.on("connect", () => {
+              currentStatus = "UP";
+              socket.end();
+              resolve();
+            });
+
+            socket.on("timeout", () => {
+              socket.destroy();
+              reject(new Error("TIMEOUT"));
+            });
+
+            socket.on("error", (err) => {
+              socket.destroy();
+              reject(err);
+            });
+          });
+
+          latency = Math.round(Date.now() - start);
+        } else if (monitor.url.startsWith("http://") || monitor.url.startsWith("https://")) {
+          // Enforce SSRF validation for manual web checks
+          const ssrfCheck = await isPrivateOrInternalUrlAsync(monitor.url);
+          if (ssrfCheck.isForbidden) {
+            currentStatus = "DOWN";
+            errorReason = `SSRF Protection: ${ssrfCheck.reason || "Target URL points to a private or internal network"}`;
+            latency = Math.round(Date.now() - start);
+          } else {
+            const method = monitor.method || "GET";
+            const userHeaders: Record<string, string> = {};
+
+            if (monitor.headers) {
+              try {
+                const rawHeaders = await decryptSecret(monitor.headers);
+                const parsed = JSON.parse(rawHeaders);
+                if (Array.isArray(parsed)) {
+                  parsed.forEach((h: { key: string; value: string }) => {
+                    if (h.key) userHeaders[h.key] = h.value;
+                  });
+                } else if (typeof parsed === "object" && parsed !== null) {
+                  Object.assign(userHeaders, parsed);
+                }
+              } catch (e) {
+                console.error("Failed to parse monitor headers:", e);
+              }
+            }
+
+            // mTLS: decrypt the client certificate bundle when present
+            let clientCert: string | undefined;
+            let clientKey: string | undefined;
+            if (monitor.clientCert) {
+              try {
+                const raw = await decryptSecret(monitor.clientCert);
+                const parsed = JSON.parse(raw) as {
+                  cert?: string;
+                  key?: string;
+                };
+                clientCert = parsed.cert;
+                clientKey = parsed.key;
+              } catch {
+                console.error("[MTLS] Failed to parse client certificate bundle");
+              }
+            }
+
+            const response = await fetch(monitor.url, {
+              method,
+              redirect: "follow",
+              headers: {
+                "User-Agent": STEADYSTACK_CANONICAL_USER_AGENT,
+                Accept:
+                  "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8",
+                "Accept-Language": "en-US,en;q=0.9",
+                "Sec-CH-UA": '"Chromium";v="133", "Not(A:Brand";v="99", "Google Chrome";v="133"',
+                "Sec-CH-UA-Mobile": "?0",
+                "Sec-CH-UA-Platform": '"Windows"',
+                "Sec-Fetch-Dest": "document",
+                "Sec-Fetch-Mode": "navigate",
+                "Sec-Fetch-Site": "none",
+                "Sec-Fetch-User": "?1",
+                "Upgrade-Insecure-Requests": "1",
+                ...userHeaders,
+              },
+              body: ["POST", "PUT", "PATCH"].includes(method) ? monitor.body : undefined,
+              signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
+              // @ts-ignore — Node dispatcher for mTLS; ignored on non-Node runtimes
+              dispatcher:
+                clientCert && clientKey
+                  ? await createMtlsDispatcher(clientCert, clientKey)
+                  : undefined,
+            });
+
+            const body = await response.text();
+            latency = Math.round(Date.now() - start);
+            // Treat 2xx, 3xx as UP. Treat 429 and 403 as UP — endpoint is alive and responsive.
+            const statusNum = Number(response.status);
+            const isRateLimited = statusNum === 429;
+            const isIPBlocked = statusNum === 403;
+            const isHealthyStatus =
+              response.ok || (statusNum >= 300 && statusNum < 400) || isRateLimited || isIPBlocked;
+            currentStatus = isHealthyStatus ? "UP" : "DOWN";
+
+            if (currentStatus === "UP" && monitor.expectation) {
+              const { validatePayload, validateBodySize } = await import("@/lib/payload-parser"); // Body size thresholds first (byte-exact), then content validation
+              const sizeValidation = validateBodySize(new Blob([body]).size, monitor.expectation);
+              if (!sizeValidation.success) {
+                currentStatus = "DOWN";
+                errorReason = sizeValidation.errorMessage;
+              } else {
+                const validation = validatePayload(body, response.status, monitor.expectation);
+                if (!validation.success) {
+                  currentStatus = "DOWN";
+                  errorReason = validation.errorMessage || "Payload validation failed";
+                }
+              }
+            } else if (currentStatus === "DOWN") {
+              errorReason = `HTTP_${response.status}`;
+            }
+          }
+        } else {
+          throw new Error(`Unsupported protocol in URL: ${monitor.url}`);
+        }
       }
-    }
     } catch (err: any) {
       console.error(`Error checking ${monitor.url}:`, err);
       latency = 0;
@@ -1161,7 +1202,11 @@ export async function checkMonitor(
     console.warn(
       `[ManualCheck] First attempt failed for ${monitor.name} (${attempt.errorReason}) — verifying before persisting`,
     );
-    attempt = await confirmDownWithRetries(attempt, () => runAttempt(), CONFIRMATION_RETRY_DELAY_MS);
+    attempt = await confirmDownWithRetries(
+      attempt,
+      () => runAttempt(),
+      CONFIRMATION_RETRY_DELAY_MS,
+    );
   }
 
   // Layer 2: consecutive-failure gate — a DOWN only replaces a healthy status
@@ -1663,9 +1708,23 @@ export async function toggleMonitor(id: string, enabled: boolean) {
 
   if (!session?.user) return { success: false, error: "Unauthorized" };
 
+  const active = await getActiveWorkspace();
+  const monitorScope = active?.id
+    ? { organizationId: active.id }
+    : { userId: session.user.id, organizationId: null };
+
   try {
+    const existing = await prisma.monitor.findFirst({
+      where: { id, ...monitorScope },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return { success: false, error: "Monitor not found or unauthorized" };
+    }
+
     await prisma.monitor.update({
-      where: { id, userId: session.user.id },
+      where: { id },
       data: {
         status: enabled ? "UP" : "PAUSED", // Reset to UP (pending next check) or PAUSED
         nextCheck: enabled ? new Date() : null,
@@ -1699,9 +1758,12 @@ export async function getDashboardStats() {
   const active = await getActiveWorkspace();
   const monitorScope = active?.id
     ? {
-        OR: [{ organizationId: active.id }, { userId: session.user.id }],
+        organizationId: active.id,
       }
-    : { userId: session.user.id };
+    : {
+        userId: session.user.id,
+        organizationId: null,
+      };
 
   try {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -1780,9 +1842,7 @@ export async function getDashboardStats() {
  * Follows a URL's full redirect chain and reports every hop (status, target).
  * Read-only diagnostic for HTTP monitors — no monitor state is modified.
  */
-export async function inspectRedirects(
-  monitorId: string,
-): Promise<
+export async function inspectRedirects(monitorId: string): Promise<
   | {
       success: true;
       hops: { url: string; status: number; location: string }[];
@@ -1798,13 +1858,15 @@ export async function inspectRedirects(
   }
 
   try {
+    const active = await getActiveWorkspace();
+    const monitorScope = active?.id
+      ? { organizationId: active.id }
+      : { userId: session.user.id, organizationId: null };
+
     const monitor = await prisma.monitor.findFirst({
       where: {
         id: monitorId,
-        OR: [
-          { organization: { members: { some: { userId: session.user.id } } } },
-          { userId: session.user.id },
-        ],
+        ...monitorScope,
       },
       select: { url: true },
     });
@@ -1813,7 +1875,10 @@ export async function inspectRedirects(
       return { success: false, error: "Monitor not found" };
     }
     if (!monitor.url.startsWith("http://") && !monitor.url.startsWith("https://")) {
-      return { success: false, error: "Redirect inspection is only available for HTTP(S) monitors" };
+      return {
+        success: false,
+        error: "Redirect inspection is only available for HTTP(S) monitors",
+      };
     }
 
     const result = await inspectRedirectChain(monitor.url, {
@@ -1837,9 +1902,12 @@ export async function getMonitorInsights(monitorId?: string) {
   const active = await getActiveWorkspace();
   const monitorScope = active?.id
     ? {
-        OR: [{ organizationId: active.id }, { userId: session.user.id }],
+        organizationId: active.id,
       }
-    : { userId: session.user.id };
+    : {
+        userId: session.user.id,
+        organizationId: null,
+      };
 
   try {
     const insights = await prisma.monitorInsight.findMany({
@@ -2024,8 +2092,11 @@ export async function generateLiveAIInsights() {
   if (!session?.user) return { success: false, error: "Unauthorized" };
 
   try {
+    const active = await getActiveWorkspace();
     const userMonitors = await prisma.monitor.findMany({
-      where: { userId: session.user.id },
+      where: active?.id
+        ? { organizationId: active.id }
+        : { userId: session.user.id, organizationId: null },
       include: {
         events: {
           orderBy: { timestamp: "desc" },

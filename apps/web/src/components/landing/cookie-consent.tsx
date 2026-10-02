@@ -60,9 +60,8 @@ export function CookieConsent() {
         <div className="space-y-1">
           <p className="text-xs font-semibold text-foreground">Cookies & analytics</p>
           <p className="text-[11px] text-muted-foreground leading-relaxed">
-            We use essential cookies to keep you signed in and privacy-first,
-            aggregated analytics to understand which pages help. No ad
-            tracking. Details in our{" "}
+            We use essential cookies to keep you signed in and privacy-first, aggregated analytics
+            to understand which pages help. No ad tracking. Details in our{" "}
             <Link href="/privacy" className="text-primary hover:underline">
               privacy policy
             </Link>

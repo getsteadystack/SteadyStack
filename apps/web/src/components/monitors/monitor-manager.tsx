@@ -6,16 +6,24 @@ import { MonitorFilters } from "@/components/monitors/monitor-filters";
 import { MonitorList } from "@/components/monitors/monitor-list";
 import { useMonitors } from "@/hooks/use-monitors";
 
-interface MonitorManagerProps {
-  initialMonitors: any[];
+interface ClientOption {
+  id: string;
+  name: string;
+  color: string;
 }
 
-export function MonitorManager({ initialMonitors }: MonitorManagerProps) {
+interface MonitorManagerProps {
+  initialMonitors: any[];
+  clients?: ClientOption[];
+}
+
+export function MonitorManager({ initialMonitors, clients = [] }: MonitorManagerProps) {
   const { data: monitors } = useMonitors(initialMonitors);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
   const [sort, setSort] = useState("name");
   const [selectedTag, setSelectedTag] = useState<string | null>(null);
+  const [selectedClientId, setSelectedClientId] = useState<string | null>(null);
 
   const getUptime = (events: any[]) => {
     if (!events || events.length === 0) return 0;
@@ -25,11 +33,13 @@ export function MonitorManager({ initialMonitors }: MonitorManagerProps) {
 
   const availableTags = useMemo(() => {
     const tags = new Set<string>();
-    monitors.forEach((monitor) => {
+    for (const monitor of monitors) {
       if (monitor.tags) {
-        monitor.tags.forEach((t: string) => tags.add(t));
+        for (const t of monitor.tags as string[]) {
+          tags.add(t);
+        }
       }
-    });
+    }
     return Array.from(tags).sort();
   }, [monitors]);
 
@@ -43,7 +53,9 @@ export function MonitorManager({ initialMonitors }: MonitorManagerProps) {
 
       const matchesTag = !selectedTag || (monitor.tags && monitor.tags.includes(selectedTag));
 
-      return matchesSearch && matchesStatus && matchesTag;
+      const matchesClient = !selectedClientId || monitor.clientId === selectedClientId;
+
+      return matchesSearch && matchesStatus && matchesTag && matchesClient;
     });
 
     return [...filtered].sort((a, b) => {
@@ -52,7 +64,7 @@ export function MonitorManager({ initialMonitors }: MonitorManagerProps) {
       if (sort === "uptime") return getUptime(b.events) - getUptime(a.events);
       return 0;
     });
-  }, [monitors, searchQuery, statusFilter, sort, selectedTag]);
+  }, [monitors, searchQuery, statusFilter, sort, selectedTag, selectedClientId]);
 
   return (
     <div className="flex flex-col gap-6">
@@ -67,6 +79,9 @@ export function MonitorManager({ initialMonitors }: MonitorManagerProps) {
         availableTags={availableTags}
         selectedTag={selectedTag}
         setSelectedTag={setSelectedTag}
+        availableClients={clients}
+        selectedClientId={selectedClientId}
+        setSelectedClientId={setSelectedClientId}
       />
       <MonitorList monitors={filteredMonitors} />
     </div>

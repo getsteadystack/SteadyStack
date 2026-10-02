@@ -1,0 +1,60 @@
+---
+title: "Automated Monthly SLA & PDF Reports"
+description: "Schedule automated monthly SLA uptime executive summaries, export client-ready PDFs, and prove maintenance retainer ROI."
+section: "Agency & Client Management"
+order: 5
+badge: "Reports"
+lastUpdated: "2026-10-02"
+---
+
+Proving infrastructure reliability and uptime SLA fulfillment to clients is often a tedious manual task at the end of each month. SteadyStack automates the entire reporting lifecycle with **Executive SLA Reports**.
+
+Every month on the 1st at 00:00 UTC, SteadyStack aggregates all quorum-verified synthetic telemetry, calculates SLA adherence down to four decimal places (e.g. `99.9850%`), and generates publication-grade PDF and HTML reports.
+
+---
+
+## What Is Included in an SLA Report
+
+An Executive SLA Report contains:
+
+1. **Executive Scorecard**: Overall portfolio uptime percentage, total synthetic probes executed, and SLA compliance status (Met / Breached).
+2. **Per-Monitor Performance Matrix**: Detailed breakdown of 24/7 uptime, 30-day response time percentiles ($p_{50}$, $p_{90}$, $p_{99}$), and operational status.
+3. **Verified Incident Log**: Timestamped record of verified downtime events, duration, consensus votes across edge regions, and root cause error codes (e.g., `HTTP 502 Bad Gateway`, `TCP Connection Refused`).
+4. **Scheduled Maintenance Ledger**: Documented maintenance windows excluded from SLA penalty calculations.
+5. **Agency Branding & Notes**: Custom agency letterhead, executive commentary from your engineering team, and custom contact links.
+
+---
+
+## 1. Configuring Automated Schedules
+
+To set up recurring email delivery for a client:
+
+1. Navigate to **Dashboard → Reports → Scheduled Deliveries**.
+2. Click **Add Scheduled Report**.
+3. Select the client tag filter (e.g., `client:nike-retail`).
+4. Enter recipient client stakeholder email addresses (comma separated).
+5. Specify the target SLA commitment (e.g. `99.9%` or `99.99%`).
+6. Set the delivery day and timezone (defaults to 1st of month at 08:00 client local time).
+
+---
+
+## 2. On-Demand Report Generation
+
+You can generate custom ad-hoc reports for any date range:
+
+1. Go to **Dashboard → Reports → Generate Report**.
+2. Select your date range (e.g. Last 7 Days, Last 30 Days, Last Quarter, or Custom Range).
+3. Choose the target monitors or filter by tag namespace.
+4. Click **Preview Report** to inspect the live interactive HTML layout.
+5. Click **Download PDF** to export a vector-quality PDF document for client presentations or RFP audits.
+
+---
+
+## 3. SLA Mathematical Formula
+
+SteadyStack calculates SLA percentage using verified quorum downtime minutes against total elapsed period minutes:
+
+$$\text{Uptime \%} = \left( 1 - \frac{\text{Verified Downtime Minutes} - \text{Approved Maintenance Minutes}}{\text{Total Period Minutes}} \right) \times 100$$
+
+> [!NOTE]
+> Transient single-probe anomalies that failed to achieve 4-of-7 regional quorum consensus are classified as localized network noise and are **never** counted as downtime against your SLA percentage.

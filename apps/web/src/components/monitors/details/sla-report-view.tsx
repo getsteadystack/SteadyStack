@@ -45,13 +45,13 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
   });
 
   if (isLoading) {
-    return <Skeleton className="h-[400px] w-full bg-zinc-900/50" />;
+    return <Skeleton className="h-[400px] w-full rounded-2xl bg-muted/60" />;
   }
 
   if (error) {
     return (
-      <Card className="border-red-500/20 bg-red-500/10">
-        <CardContent className="flex items-center justify-center p-6 text-red-500">
+      <Card className="border-red-500/20 bg-red-500/10 rounded-2xl">
+        <CardContent className="flex items-center justify-center p-6 text-red-600 font-mono text-xs">
           Failed to load SLA Report
         </CardContent>
       </Card>
@@ -79,7 +79,7 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h3 className="text-lg font-medium text-foreground">SLA & Uptime Report</h3>
+          <h3 className="text-base font-serif font-medium text-foreground">SLA & Uptime Report</h3>
           <p className="text-xs text-muted-foreground font-mono">
             Contractual uptime compliance and delivery metrics for this service.
           </p>
@@ -87,10 +87,10 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
 
         <div className="flex flex-wrap items-center gap-2">
           <Select value={range} onValueChange={(v: "7d" | "30d") => setRange(v)}>
-            <SelectTrigger className="w-[140px] bg-zinc-950/50 border-zinc-800 font-mono text-xs h-8">
+            <SelectTrigger className="w-[140px] bg-card border-border font-mono text-xs h-8 rounded-xl">
               <SelectValue placeholder="Select period" />
             </SelectTrigger>
-            <SelectContent className="bg-zinc-950 border-zinc-800 font-mono text-xs">
+            <SelectContent className="bg-card border-border font-mono text-xs rounded-xl">
               <SelectItem value="7d">Last 7 Days</SelectItem>
               <SelectItem value="30d">Last 30 Days</SelectItem>
             </SelectContent>
@@ -100,9 +100,9 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
             variant="outline"
             size="sm"
             onClick={handleDownloadPdf}
-            className="h-8 font-mono text-xs gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+            className="h-8 font-mono text-xs gap-1.5 border-border bg-card text-foreground hover:bg-accent rounded-xl"
           >
-            <FileText className="size-3.5" />
+            <FileText className="size-3.5 text-muted-foreground" />
             PDF
           </Button>
 
@@ -110,9 +110,9 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
             variant="outline"
             size="sm"
             onClick={handleDownloadCsv}
-            className="h-8 font-mono text-xs gap-1.5"
+            className="h-8 font-mono text-xs gap-1.5 border-border bg-card text-foreground hover:bg-accent rounded-xl"
           >
-            <FileSpreadsheet className="size-3.5 text-emerald-400" />
+            <FileSpreadsheet className="size-3.5 text-emerald-600" />
             CSV
           </Button>
 
@@ -128,36 +128,36 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-4">
-        <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-sm">
+        <Card className="border-border bg-card rounded-2xl shadow-xs">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider font-mono text-muted-foreground">
               Overall Uptime
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div
               className={cn(
-                "text-2xl font-bold font-mono",
-                isSlaMet ? "text-emerald-500" : "text-amber-500",
+                "text-2xl font-bold font-mono tracking-tight",
+                isSlaMet ? "text-emerald-600" : "text-amber-600",
               )}
             >
               {Number(aggregate?.uptimePct ?? 100).toFixed(3)}%
             </div>
-            <p className="text-xs text-muted-foreground mt-1">Target: 99.90%</p>
+            <p className="text-xs text-muted-foreground mt-1 font-mono">Target: 99.90%</p>
           </CardContent>
         </Card>
 
-        <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-sm">
+        <Card className="border-border bg-card rounded-2xl shadow-xs">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
+            <CardTitle className="text-xs font-bold uppercase tracking-wider font-mono text-muted-foreground">
               Total Downtime
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-foreground font-mono">
+            <div className="text-2xl font-bold text-foreground font-mono tracking-tight">
               {aggregate?.totalDowntimeMinutes ?? 0}m
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 font-mono">
               across {aggregate?.totalDown ?? 0} failures
             </p>
           </CardContent>
@@ -165,25 +165,25 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
 
         <Card
           className={cn(
-            "border-dashed backdrop-blur-sm transition-colors duration-500",
-            isSlaMet
-              ? "bg-emerald-950/10 border-emerald-900/50"
-              : "bg-red-950/10 border-red-900/50",
+            "rounded-2xl border transition-colors duration-500 shadow-xs",
+            isSlaMet ? "bg-emerald-500/5 border-emerald-500/20" : "bg-red-500/5 border-red-500/20",
           )}
         >
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">SLA Status</CardTitle>
+            <CardTitle className="text-xs font-bold uppercase tracking-wider font-mono text-muted-foreground">
+              SLA Status
+            </CardTitle>
           </CardHeader>
           <CardContent className="flex items-center gap-2">
             {isSlaMet ? (
               <>
-                <CheckCircle2 className="size-5 text-emerald-500" />
-                <span className="text-lg font-bold text-emerald-500 font-mono">PASS</span>
+                <CheckCircle2 className="size-5 text-emerald-600" />
+                <span className="text-lg font-bold text-emerald-600 font-mono">PASS</span>
               </>
             ) : (
               <>
-                <AlertTriangle className="size-5 text-red-500" />
-                <span className="text-lg font-bold text-red-500 font-mono">FAIL</span>
+                <AlertTriangle className="size-5 text-red-600" />
+                <span className="text-lg font-bold text-red-600 font-mono">FAIL</span>
               </>
             )}
           </CardContent>
@@ -191,28 +191,28 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
       </div>
 
       {/* Daily Breakdown Chart */}
-      <Card className="border-zinc-800 bg-zinc-950/50 backdrop-blur-sm">
+      <Card className="border-border bg-card rounded-2xl shadow-xs">
         <CardHeader>
-          <CardTitle className="text-base font-medium text-zinc-200">
+          <CardTitle className="text-sm font-bold font-mono uppercase tracking-wider text-foreground">
             Daily Uptime Breakdown
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[300px] w-full">
+          <div className="h-[280px] w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dailyBreakdown} margin={{ top: 10, right: 30, left: 0, bottom: 5 }}>
                 <XAxis
                   dataKey="date"
                   tickFormatter={(val) => format(new Date(val as string | number), "MMM d")}
-                  stroke="#52525b"
-                  fontSize={12}
+                  stroke="#8c8b85"
+                  fontSize={11}
                   tickLine={false}
                   axisLine={false}
                   dy={10}
                 />
                 <YAxis
-                  stroke="#52525b"
-                  fontSize={12}
+                  stroke="#8c8b85"
+                  fontSize={11}
                   tickLine={false}
                   axisLine={false}
                   domain={[domainMin, 100]}
@@ -220,30 +220,30 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
                   dx={-10}
                 />
                 <Tooltip
-                  cursor={{ fill: "#27272a", opacity: 0.4 }}
+                  cursor={{ fill: "rgba(0,0,0,0.04)" }}
                   content={({ active, payload, label }) => {
                     if (active && payload && payload.length) {
                       const data = payload[0].payload;
                       const dateStr = format(new Date(label as string | number), "MMM d, yyyy");
                       return (
-                        <div className="rounded-lg border border-zinc-800 bg-zinc-900 p-3 shadow-xl backdrop-blur-md">
-                          <p className="mb-2 text-sm font-medium text-zinc-400">{dateStr}</p>
+                        <div className="rounded-xl border border-border bg-card p-3 shadow-md font-mono text-xs">
+                          <p className="mb-2 font-semibold text-foreground">{dateStr}</p>
                           <div className="space-y-1">
                             <div className="flex items-center gap-2">
                               <div
                                 className={cn(
                                   "size-2 rounded-full",
-                                  data.uptimePct >= 99.9 ? "bg-emerald-500" : "bg-red-500",
+                                  data.uptimePct >= 99.9 ? "bg-emerald-600" : "bg-red-600",
                                 )}
                               />
-                              <p className="text-sm font-bold text-zinc-100 font-mono">
+                              <p className="text-xs font-bold text-foreground font-mono">
                                 {Number(data.uptimePct).toFixed(3)}%
                               </p>
                             </div>
-                            <p className="text-xs text-zinc-400">
+                            <p className="text-[11px] text-muted-foreground">
                               Downtime: {data.downDuration} min
                             </p>
-                            <p className="text-xs text-zinc-500">
+                            <p className="text-[10px] text-muted-foreground">
                               Checks: {data.checksTotal} (Down: {data.checksDown})
                             </p>
                           </div>
@@ -253,13 +253,13 @@ export function SlaReportView({ monitorId }: { monitorId: string }) {
                     return null;
                   }}
                 />
-                <ReferenceLine y={99.9} stroke="#10b981" strokeDasharray="3 3" opacity={0.5} />
+                <ReferenceLine y={99.9} stroke="#10b981" strokeDasharray="3 3" opacity={0.6} />
                 <Bar dataKey="uptimePct" radius={[4, 4, 0, 0]}>
                   {dailyBreakdown.map((entry, index) => (
                     <Cell
                       key={`cell-${index}`}
                       fill={entry.uptimePct >= 99.9 ? "#10b981" : "#ef4444"}
-                      fillOpacity={0.8}
+                      fillOpacity={0.85}
                     />
                   ))}
                 </Bar>

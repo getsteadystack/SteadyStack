@@ -196,8 +196,8 @@ export default function AdminDesignPartnersClient({
             Design Partner Applications
           </h1>
           <p className="text-xs text-muted-foreground mt-1">
-            Review, approve, or reject applicants for the 1-Year Free Netrunner Pro partnership,
-            with automated Stripe SDK promotion codes.
+            Review, approve, or reject applicants for the 1-Year Free Agency Plan partnership, with
+            automated Stripe SDK promotion codes.
           </p>
         </div>
 

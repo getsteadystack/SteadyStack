@@ -700,7 +700,7 @@ export async function redeemDesignPartnerCode(
     return {
       success: true,
       message:
-        "VIP Partner License activated successfully! 1-Year Netrunner Pro ($228 Value) is now active on your account.",
+        "VIP Partner License activated successfully! 1-Year Agency Plan ($348 Value) is now active on your account.",
     };
   } catch (error: any) {
     console.error("Failed to redeem VIP design partner code:", error);

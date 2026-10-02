@@ -1,17 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Activity, ArrowRight } from "lucide-react";
+import { Activity, ArrowRight, Sparkles } from "lucide-react";
 import { getAllServices } from "@/content/is-down-services";
 import { IsDownDirectory } from "@/components/is-down/is-down-directory";
-import { buttonVariants } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { AgencyOutageCta } from "@/components/is-down/agency-outage-cta";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Is It Down? Live Outage Tracker & Global Service Status Directory | SteadyStack",
   description:
-    "Real-time outage checker and uptime status directory for 400+ cloud, AI, developer, payment, gaming, and streaming services including Stripe, GitHub, OpenAI, AWS, Steam, Netflix, and Gemini. Stop checking manually.",
+    "Real-time outage checker and uptime status directory for 400+ cloud, AI, developer, payment, gaming, and streaming services including Stripe, GitHub, OpenAI, AWS, Steam, Netflix, and Gemini.",
   keywords: [
     "is it down",
     "is service down",
@@ -71,7 +70,7 @@ export default function IsDownHubPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pt-24 pb-20 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-[#fbfbf9] text-[#23211a] pt-28 pb-20 px-4 sm:px-6 lg:px-8 font-sans">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -80,47 +79,27 @@ export default function IsDownHubPage() {
       <div className="max-w-7xl mx-auto space-y-16">
         {/* Hub Hero Header */}
         <div className="text-center max-w-3xl mx-auto space-y-4 pt-8">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-4 py-1.5 text-xs font-semibold text-primary">
-            <Activity className="h-3.5 w-3.5 animate-pulse" />
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-xs font-mono font-semibold uppercase tracking-wider shadow-xs">
+            <Activity className="size-3.5 text-[#ffd439]" />
             <span>400+ Monitored Developer, Cloud & Consumer Services</span>
           </div>
 
-          <h1 className="text-4xl sm:text-6xl font-black tracking-tight text-foreground leading-tight">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-serif font-medium tracking-tight text-[#23211a] leading-[1.08] text-balance">
             Is it down? <br className="hidden sm:inline" />
-            <span className="bg-gradient-to-r from-foreground via-foreground/90 to-muted-foreground bg-clip-text text-transparent">
-              Real-time outage tracker.
-            </span>
+            Real-time outage tracker.
           </h1>
 
-          <p className="text-base sm:text-xl text-muted-foreground leading-relaxed">
+          <p className="text-base sm:text-lg text-[#5c5c5c] leading-relaxed max-w-2xl mx-auto font-sans text-balance">
             Live multi-region status checks, latency telemetry, and incident diagnostics for 400+
             APIs, cloud providers, streaming, gaming, and SaaS platforms. Stop checking manually.
           </p>
         </div>
 
-        {/* Directory Component with Search and Categories */}
+        {/* Directory Search & Grid */}
         <IsDownDirectory services={services} />
 
-        {/* Bottom Banner: Custom Monitoring Pitch */}
-        <div className="rounded-3xl border border-border bg-card/60 p-8 sm:p-12 backdrop-blur-xl text-center sm:text-left flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xl">
-          <div className="space-y-2 max-w-2xl">
-            <h3 className="text-2xl font-bold text-foreground">
-              Don't see your internal service or custom API?
-            </h3>
-            <p className="text-sm text-muted-foreground">
-              SteadyStack gives you 50 free synthetic monitors with 10-second checks from 15 global
-              edge locations, multi-region consensus, and instant Slack / Discord alerts.
-            </p>
-          </div>
-
-          <Link
-            href={"/signup" as any}
-            className={cn(buttonVariants({ size: "lg" }), "shrink-0 font-bold")}
-          >
-            <span>Create Free Account</span>
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </div>
+        {/* Agency Outage Callout */}
+        <AgencyOutageCta />
       </div>
     </div>
   );

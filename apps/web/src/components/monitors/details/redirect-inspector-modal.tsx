@@ -127,7 +127,10 @@ export function RedirectInspectorModal({
               )}
 
               {result.hops.map((hop, i) => (
-                <div key={i} className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-1.5">
+                <div
+                  key={i}
+                  className="p-3.5 rounded-xl bg-muted/40 border border-border space-y-1.5"
+                >
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-muted-foreground">
                       Hop {i + 1}

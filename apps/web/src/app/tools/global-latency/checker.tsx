@@ -134,28 +134,40 @@ export function LatencyChecker() {
     })) || [];
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in duration-700 font-sans">
       {/* Controls */}
-      <Card className="border-primary/20 bg-background/50 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          <form onSubmit={handleCheck} className="flex gap-4 items-end">
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="url">Target URL</Label>
+      <Card className="border-[#e8e6df] bg-white shadow-xs rounded-2xl overflow-hidden">
+        <CardContent className="p-6 sm:p-8">
+          <form
+            onSubmit={handleCheck}
+            className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end"
+          >
+            <div className="grid w-full items-center gap-2">
+              <Label
+                htmlFor="url"
+                className="text-xs font-mono font-semibold text-[#868279] uppercase tracking-wider"
+              >
+                Target Domain or URL
+              </Label>
               <Input
                 id="url"
-                placeholder="example.com"
+                placeholder="example.com or https://api.yourservice.com"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="font-mono"
+                className="font-mono text-sm h-12 bg-[#fbfbf9] border-[#e8e6df] text-[#23211a] focus-visible:ring-[#23211a] rounded-xl"
               />
             </div>
-            <Button type="submit" disabled={loading} className="min-w-[120px]">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="h-12 px-7 min-w-[140px] bg-[#23211a] hover:bg-black text-[#ffd439] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs"
+            >
               {loading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <Zap className="mr-2 h-4 w-4" />
               )}
-              {loading ? "Pinging..." : "Check"}
+              {loading ? "Pinging..." : "Check Latency"}
             </Button>
           </form>
         </CardContent>
@@ -163,59 +175,68 @@ export function LatencyChecker() {
 
       {/* Map Visualization */}
       {mapPoints.length > 0 && (
-        <Card className="overflow-hidden border-none bg-transparent shadow-none">
+        <Card className="overflow-hidden border-[#e8e6df] bg-white rounded-2xl shadow-xs p-2">
           <WorldMap points={mapPoints} />
         </Card>
       )}
 
       {/* Results Table */}
       {results && (
-        <Card className="border-border/50">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-primary" />
-              Global Performance Report
+        <Card className="border-[#e8e6df] bg-white shadow-xs rounded-2xl overflow-hidden">
+          <CardHeader className="p-6 sm:p-8 border-b border-[#e8e6df] bg-[#fbfbf9]/50">
+            <CardTitle className="flex items-center gap-2 text-xl font-serif font-medium text-[#23211a]">
+              <Globe className="h-5 w-5 text-[#23211a]" />
+              Global Latency Telemetry
             </CardTitle>
-            <CardDescription>Latency measurements from our global edge network.</CardDescription>
+            <CardDescription className="text-[#5c5c5c] text-sm">
+              Real-time response times measured across sovereign edge regions.
+            </CardDescription>
           </CardHeader>
-          <CardContent>
-            <div className="relative rounded-md border">
+          <CardContent className="p-0">
+            <div className="relative">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <Th>Region</Th>
-                    <Th>Server Location</Th>
-                    <Th>Status</Th>
-                    <Th className="text-right">Latency</Th>
+                <TableHeader className="bg-[#fbfbf9]">
+                  <TableRow className="border-[#e8e6df] hover:bg-transparent">
+                    <Th className="font-mono text-[11px] uppercase tracking-wider text-[#868279] pl-6">
+                      Region
+                    </Th>
+                    <Th className="font-mono text-[11px] uppercase tracking-wider text-[#868279]">
+                      Location
+                    </Th>
+                    <Th className="font-mono text-[11px] uppercase tracking-wider text-[#868279]">
+                      Status
+                    </Th>
+                    <Th className="font-mono text-[11px] uppercase tracking-wider text-[#868279] text-right pr-6">
+                      Latency
+                    </Th>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {results.slice(0, unlocked ? undefined : 3).map((res) => (
-                    <TableRow key={res.region}>
-                      <TableCell className="font-medium">{res.region.toUpperCase()}</TableCell>
-                      <TableCell>{res.city}</TableCell>
+                    <TableRow key={res.region} className="border-[#e8e6df] hover:bg-[#fbfbf9]/60">
+                      <TableCell className="font-mono font-bold text-xs pl-6 text-[#23211a]">
+                        {res.region.toUpperCase()}
+                      </TableCell>
+                      <TableCell className="text-sm text-[#5c5c5c]">{res.city}</TableCell>
                       <TableCell>
                         {res.status === "UP" ? (
-                          <Badge
-                            variant="outline"
-                            className="text-green-500 border-green-500/30 bg-green-500/10 gap-1"
-                          >
-                            <CheckCircle className="h-3 w-3" /> UP
-                          </Badge>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <CheckCircle className="h-3 w-3 text-emerald-600" /> UP
+                          </span>
                         ) : (
-                          <Badge variant="destructive" className="gap-1">
-                            <XCircle className="h-3 w-3" /> DOWN
-                          </Badge>
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-mono font-medium bg-red-50 text-red-700 border border-red-200">
+                            <XCircle className="h-3 w-3 text-red-600" /> DOWN
+                          </span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right font-mono">
+                      <TableCell className="text-right font-mono font-semibold text-xs pr-6">
                         <span
                           className={
                             res.latency < 200
-                              ? "text-green-500"
+                              ? "text-emerald-700"
                               : res.latency < 500
-                                ? "text-yellow-500"
-                                : "text-red-500"
+                                ? "text-amber-700"
+                                : "text-rose-700"
                           }
                         >
                           {res.latency}ms
@@ -226,17 +247,19 @@ export function LatencyChecker() {
 
                   {/* Blurry Rows (Locked State) */}
                   {!unlocked &&
-                    Array.from({ length: 5 }).map((_, i) => (
+                    Array.from({ length: 4 }).map((_, i) => (
                       <TableRow
                         key={`blur-${i}`}
-                        className="opacity-30 blur-sm select-none pointer-events-none"
+                        className="opacity-30 blur-xs select-none pointer-events-none border-[#e8e6df]"
                       >
-                        <TableCell>LOCKED</TableCell>
-                        <TableCell>LOCKED</TableCell>
+                        <TableCell className="pl-6 font-mono text-xs">EU-CENTRAL</TableCell>
+                        <TableCell className="text-sm">Frankfurt, Germany</TableCell>
                         <TableCell>
-                          <Badge variant="outline">???</Badge>
+                          <Badge variant="outline" className="border-[#e8e6df]">
+                            ???
+                          </Badge>
                         </TableCell>
-                        <TableCell className="text-right">???ms</TableCell>
+                        <TableCell className="text-right pr-6 font-mono text-xs">???ms</TableCell>
                       </TableRow>
                     ))}
                 </TableBody>
@@ -244,16 +267,23 @@ export function LatencyChecker() {
 
               {/* Unlock Overlay */}
               {!unlocked && (
-                <div className="absolute inset-x-0 bottom-0 h-48 bg-linear-to-t from-background via-background/90 to-transparent flex flex-col items-center justify-end pb-8 gap-4">
+                <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-white via-white/95 to-transparent flex flex-col items-center justify-end pb-8 gap-3">
                   <div className="flex flex-col items-center gap-2 text-center p-4">
-                    <Lock className="h-8 w-8 text-primary mb-2" />
-                    <h3 className="font-bold text-lg">Unlock Full Global Report</h3>
-                    <p className="text-muted-foreground text-sm max-w-xs">
-                      Get detailed latency data from all 10 regions instantly. No credit card
-                      required.
+                    <div className="p-2.5 rounded-full bg-[#ffd439]/20 border border-[#ffd439]/40 mb-1">
+                      <Lock className="h-5 w-5 text-[#23211a]" />
+                    </div>
+                    <h3 className="font-serif font-medium text-lg text-[#23211a]">
+                      Unlock Full Global Telemetry
+                    </h3>
+                    <p className="text-[#5c5c5c] text-xs max-w-sm">
+                      Inspect latency across all 10 international edge regions instantly. Free
+                      forever.
                     </p>
-                    <Button onClick={() => setGateOpen(true)} className="mt-2">
-                      Unlock Results <ArrowRight className="ml-2 h-4 w-4" />
+                    <Button
+                      onClick={() => setGateOpen(true)}
+                      className="mt-2 h-10 px-5 bg-[#23211a] hover:bg-black text-[#ffd439] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs"
+                    >
+                      Unlock All 10 Regions <ArrowRight className="ml-2 h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
@@ -265,23 +295,31 @@ export function LatencyChecker() {
 
       {/* Unlock Dialog */}
       <Dialog open={gateOpen} onOpenChange={setGateOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white border-[#e8e6df] text-[#23211a] rounded-2xl p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle>Evaluate Global Performance</DialogTitle>
-            <DialogDescription>
-              Enter your email to view the detailed latency breakdown for all regions.
+            <DialogTitle className="font-serif font-medium text-2xl text-[#23211a]">
+              Evaluate Global Performance
+            </DialogTitle>
+            <DialogDescription className="text-[#5c5c5c] text-sm">
+              Enter your work email to view the complete 10-region latency matrix and raw round-trip
+              breakdown.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 py-4">
             <div className="grid flex-1 gap-2">
-              <Label htmlFor="email" className="sr-only">
-                Email
+              <Label
+                htmlFor="email"
+                className="text-xs font-mono font-semibold text-[#868279] uppercase tracking-wider"
+              >
+                Work Email
               </Label>
               <Input
                 id="email"
-                placeholder="name@company.com"
+                type="email"
+                placeholder="developer@company.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="font-mono text-sm h-11 bg-[#fbfbf9] border-[#e8e6df] text-[#23211a] focus-visible:ring-[#23211a] rounded-xl"
               />
             </div>
           </div>
@@ -290,7 +328,7 @@ export function LatencyChecker() {
               type="button"
               onClick={handleUnlock}
               disabled={isEmailSubmitting}
-              className="w-full"
+              className="w-full h-11 bg-[#23211a] hover:bg-black text-[#ffd439] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs"
             >
               {isEmailSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Access Full Report

@@ -284,12 +284,13 @@ export async function performCheck(monitor: any, env?: Env, prisma?: any): Promi
   if (monitor.type === MonitorType.GRPC) {
     const { checkGrpcHealth } = await import("@steadystack/core");
     try {
-      const grpcConfig = monitor.expectation
-        ? (JSON.parse(monitor.expectation) as any)
-        : {};
+      const grpcConfig = monitor.expectation ? (JSON.parse(monitor.expectation) as any) : {};
       const result = await checkGrpcHealth(monitor.url, {
         serviceName: grpcConfig.serviceName,
-        useTls: grpcConfig.useTls === true || monitor.url.startsWith("grpcs://") || monitor.url.includes(":443"),
+        useTls:
+          grpcConfig.useTls === true ||
+          monitor.url.startsWith("grpcs://") ||
+          monitor.url.includes(":443"),
         timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
       });
       return {
@@ -543,7 +544,10 @@ export async function performInternalRequest(
         const { validatePayload, validateBodySize } = await import("./lib/payload-parser");
         // Body size thresholds are checked against the exact received bytes
         // before content expectations (null size = size within thresholds).
-        const sizeValidation = validateBodySize(checkResult.bodySizeBytes ?? null, monitor.expectation);
+        const sizeValidation = validateBodySize(
+          checkResult.bodySizeBytes ?? null,
+          monitor.expectation,
+        );
         if (!sizeValidation.success) {
           currentStatus = Status.DOWN;
           errorReason = sizeValidation.errorMessage;

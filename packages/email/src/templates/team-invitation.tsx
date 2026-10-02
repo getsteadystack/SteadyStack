@@ -23,7 +23,7 @@ export function TeamInvitation({ data }: { data: TeamInvitationEmailData }) {
   return (
     <Html>
       <Head>
-        <title>You've been invited to join {data.organizationName} - SteadyStack</title>
+        <title>You've been invited to join {data.organizationName}</title>
         <style>{`
           body { margin: 0; padding: 0; background-color: #09090b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
           @media only screen and (max-width: 600px) {
@@ -77,8 +77,7 @@ export function TeamInvitation({ data }: { data: TeamInvitationEmailData }) {
             >
               <strong style={{ color: "#f4f4f5" }}>{data.inviterName}</strong> has invited you to
               collaborate on the{" "}
-              <strong style={{ color: "#f4f4f5" }}>{data.organizationName}</strong> workspace on
-              SteadyStack.
+              <strong style={{ color: "#f4f4f5" }}>{data.organizationName}</strong> workspace.
             </Text>
 
             {/* Team Details Card */}
@@ -203,7 +202,7 @@ export function TeamInvitation({ data }: { data: TeamInvitationEmailData }) {
           </Section>
 
           {/* Footer */}
-          <EmailFooter customMessage="SteadyStack Organizations & Workspace Collaboration Engine" />
+          <EmailFooter customMessage="Organizations & Workspace Collaboration Engine" />
         </Container>
       </Body>
     </Html>

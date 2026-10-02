@@ -17,44 +17,43 @@ import { Button } from "@/components/ui/button";
 
 export function DangerZone() {
   return (
-    <section className="bg-black/40 border border-red-500/30 relative overflow-hidden backdrop-blur-sm hover:border-red-500/60 transition-all">
-      <div className="p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+    <section className="rounded-2xl border border-destructive/30 bg-destructive/5 overflow-hidden shadow-sm">
+      <div className="p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <div className="flex items-start gap-4">
-          <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-sm">
-            <AlertTriangle className="size-6 text-red-500" />
+          <div className="p-3 bg-destructive/10 border border-destructive/20 rounded-xl shrink-0">
+            <AlertTriangle className="size-5 text-destructive" />
           </div>
           <div className="flex flex-col">
-            <h3 className="text-lg font-bold text-red-500 font-mono uppercase tracking-tight">
-              Danger Zone
-            </h3>
-            <p className="text-xs text-red-500/70 font-mono">
+            <h3 className="text-base font-serif font-medium text-destructive">Danger Zone</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
               Permanently delete account and all associated data. This action is irreversible.
             </p>
           </div>
         </div>
         <Dialog>
           <DialogTrigger asChild>
-            <button className="bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 text-xs font-bold px-4 py-2 uppercase tracking-wider border border-red-500/30 hover:border-red-500/60 transition-all font-mono whitespace-nowrap">
+            <button className="bg-destructive/10 hover:bg-destructive/20 text-destructive text-xs font-medium px-4 py-2 rounded-xl border border-destructive/30 transition-all cursor-pointer whitespace-nowrap">
               Delete Account
             </button>
           </DialogTrigger>
-          <DialogContent className="dark bg-zinc-950 border-red-500/30 sm:max-w-[425px]">
-            <DialogHeader>
-              <DialogTitle className="text-red-500 font-mono uppercase tracking-widest flex items-center gap-2">
+          <DialogContent className="bg-card border-border sm:max-w-[425px] rounded-2xl shadow-2xl p-6">
+            <DialogHeader className="text-left">
+              <DialogTitle className="text-base font-serif font-medium text-destructive flex items-center gap-2">
                 <AlertTriangle className="size-5" />
-                Confirm Deletion
+                Confirm Account Deletion
               </DialogTitle>
-              <DialogDescription className="text-primary/70 font-mono text-xs">
+              <DialogDescription className="text-xs text-muted-foreground mt-1">
                 This action cannot be undone. This will permanently delete your account and remove
                 your data from our servers.
               </DialogDescription>
             </DialogHeader>
-            <div className="flex flex-col gap-4 py-4">
-              <p className="text-primary/50 text-xs font-mono border-l-2 border-red-500/50 pl-3">
-                All monitors, metrics, and incident history will be erased immediately.
+            <div className="flex flex-col gap-4 py-3">
+              <p className="text-xs text-muted-foreground border-l-2 border-destructive/50 pl-3 leading-relaxed">
+                All active monitors, status pages, SLA records, and incident histories will be
+                erased immediately.
               </p>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2 sm:gap-0">
               <DeleteConfirmButton />
             </DialogFooter>
           </DialogContent>

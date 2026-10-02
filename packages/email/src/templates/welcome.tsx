@@ -17,7 +17,7 @@ export function Welcome({ data }: { data: WelcomeEmailData }) {
   return (
     <Html>
       <Head>
-        <title>Welcome to SteadyStack</title>
+        <title>Welcome to Your Monitoring Control Center</title>
         <style>{`
           body { margin: 0; padding: 0; background-color: #09090b; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; }
           @media only screen and (max-width: 600px) {
@@ -60,7 +60,7 @@ export function Welcome({ data }: { data: WelcomeEmailData }) {
                 lineHeight: 1.3,
               }}
             >
-              Welcome to SteadyStack, {data.userName}
+              Welcome, {data.userName}
             </Text>
 
             <Text
@@ -71,9 +71,8 @@ export function Welcome({ data }: { data: WelcomeEmailData }) {
                 lineHeight: 1.6,
               }}
             >
-              Your enterprise monitoring station is now active. SteadyStack tracks your critical
-              APIs, websites, and infrastructure across global edge locations with sub-minute
-              precision.
+              Your monitoring station is now active. Track your critical APIs, websites, and
+              infrastructure across global edge locations with sub-minute precision.
             </Text>
 
             {/* Step 1 */}
@@ -272,9 +271,9 @@ export function Welcome({ data }: { data: WelcomeEmailData }) {
 }
 
 export function renderWelcomeText(data: WelcomeEmailData): string {
-  return `Welcome to SteadyStack, ${data.userName}!
+  return `Welcome, ${data.userName}!
 
-Your enterprise monitoring station is now active. SteadyStack tracks your critical services 24/7 across global edge locations with sub-minute precision.
+Your monitoring station is now active. Track your critical services 24/7 across global edge locations with sub-minute precision.
 
 QUICK START:
 1. Deploy Your First Monitor: Add HTTP/S endpoints, TCP checks, or SSL expiry rules.
@@ -283,7 +282,7 @@ QUICK START:
 
 Open Control Center: ${data.dashboardUrl}
 
-Sent by SteadyStack Monitoring Platform • https://steadystack.dev`;
+Automated Infrastructure Monitoring`;
 }
 
 export async function renderWelcome(data: WelcomeEmailData): Promise<string> {

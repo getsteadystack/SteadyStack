@@ -1,11 +1,5 @@
 import { describe, test, expect } from "bun:test";
-import {
-  checkGrpcHealth,
-  checkSmtp,
-  checkFtp,
-  checkMailRetrieval,
-  checkIcmpPing,
-} from "../index";
+import { checkGrpcHealth, checkSmtp, checkFtp, checkMailRetrieval, checkIcmpPing } from "../index";
 
 /**
  * Protocol checker tests run entirely against non-routable / refused targets
@@ -172,13 +166,17 @@ describe("checkIcmpPing", () => {
   });
 
   test("returns DOWN for unresolvable host", async () => {
-    const result = await checkIcmpPing("nonexistent.invalid", { timeoutSeconds: 3 });
+    const result = await checkIcmpPing("nonexistent.invalid", {
+      timeoutSeconds: 3,
+    });
     expect(result.status).toBe("DOWN");
     expect(result.errorReason).toBeDefined();
   });
 
   test("reports 100% packet loss for non-routable documentation IP", async () => {
-    const result = await checkIcmpPing(NON_ROUTABLE_HOST, { timeoutSeconds: 3 });
+    const result = await checkIcmpPing(NON_ROUTABLE_HOST, {
+      timeoutSeconds: 3,
+    });
     expect(result.status).toBe("DOWN");
     if (result.errorReason?.startsWith("PING_FAILED")) {
       // True ICMP path exercised: ping binary ran and reported failure.
@@ -189,7 +187,9 @@ describe("checkIcmpPing", () => {
   });
 
   test("strips URL schemes to extract the bare host", async () => {
-    const result = await checkIcmpPing(`icmp://${NON_ROUTABLE_HOST}`, { timeoutSeconds: 1 });
+    const result = await checkIcmpPing(`icmp://${NON_ROUTABLE_HOST}`, {
+      timeoutSeconds: 1,
+    });
     expect(result.status).toBe("DOWN");
   });
 });

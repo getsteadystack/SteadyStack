@@ -265,11 +265,11 @@ Copy the structure from an existing one (e.g., `packages/db/README.md`) and fill
 
 SteadyStack supports **9 locales** (`en`, `es`, `fr`, `de`, `pt-BR`, `ja`, `ko`, `zh-CN`, `ar`) across three surfaces:
 
-| Surface                   | Source file                              | Notes                                    |
-| ------------------------- | ---------------------------------------- | ---------------------------------------- |
-| Status-page UI            | `apps/web/messages/en.json`              | Nested JSON, 41 keys                     |
-| Email templates           | `packages/email/src/i18n.ts`             | Flat key catalog, `{placeholder}` style  |
-| CLI output                | `apps/cli/src/i18n.ts`                   | Flat key catalog, `{placeholder}` style  |
+| Surface         | Source file                  | Notes                                   |
+| --------------- | ---------------------------- | --------------------------------------- |
+| Status-page UI  | `apps/web/messages/en.json`  | Nested JSON, 41 keys                    |
+| Email templates | `packages/email/src/i18n.ts` | Flat key catalog, `{placeholder}` style |
+| CLI output      | `apps/cli/src/i18n.ts`       | Flat key catalog, `{placeholder}` style |
 
 ### Preferred: Crowdin
 

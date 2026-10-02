@@ -74,7 +74,9 @@ export function createPrisma(databaseUrl?: string) {
     // path on the deployed Workers runtime.
     const usePgDriver =
       (typeof process !== "undefined" &&
-        String(process.env.DB_USE_PG_DRIVER ?? "").trim().toLowerCase() === "true") ||
+        String(process.env.DB_USE_PG_DRIVER ?? "")
+          .trim()
+          .toLowerCase() === "true") ||
       (globalThis as any).DB_USE_PG_DRIVER === "true";
 
     if (usePgDriver) {

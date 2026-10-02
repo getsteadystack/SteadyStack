@@ -7,9 +7,9 @@ import { RedeemClient } from "@/components/redeem/redeem-client";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Redeem AppSumo Code | SteadyStack",
+  title: "Redeem Lifetime Deal License | SteadyStack",
   description:
-    "Redeem your AppSumo Lifetime Deal code for SteadyStack edge-native synthetic monitoring.",
+    "Redeem your Founder Lifetime Deal license code for SteadyStack edge-native synthetic monitoring.",
   alternates: {
     canonical: "https://steadystack.dev/redeem",
   },

@@ -31,14 +31,14 @@ export function EmbedCodeGenerator({ slug }: EmbedCodeGeneratorProps) {
   };
 
   return (
-    <div className="rounded-sm border border-primary/20 bg-card/40 p-6 backdrop-blur-sm">
+    <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Code2 className="size-5 text-primary" />
+          <div className="p-2 rounded-xl bg-muted border border-border text-foreground">
+            <Code2 className="size-4.5 text-foreground" />
+          </div>
           <div>
-            <h3 className="text-sm font-bold font-mono uppercase tracking-tight text-foreground">
-              Embed Code
-            </h3>
+            <h3 className="text-base font-serif font-medium text-foreground">Embed Code</h3>
             <p className="text-xs text-muted-foreground">
               Copy and paste this code into your website
             </p>
@@ -47,20 +47,20 @@ export function EmbedCodeGenerator({ slug }: EmbedCodeGeneratorProps) {
         <button
           onClick={handleCopy}
           className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-sm border font-mono text-xs font-bold uppercase tracking-wider transition-all",
+            "flex items-center gap-2 px-4 py-2 rounded-xl border font-mono text-xs font-semibold uppercase tracking-wider transition-all shadow-2xs cursor-pointer",
             copied
-              ? "bg-green-500/10 border-green-500/20 text-green-500"
-              : "bg-primary/10 border-primary/20 text-primary hover:bg-primary/20",
+              ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-700 dark:text-emerald-400"
+              : "bg-foreground text-background border-foreground hover:bg-foreground/90 shadow-xs",
           )}
         >
           {copied ? (
             <>
-              <Check className="size-4" />
+              <Check className="size-3.5" />
               Copied!
             </>
           ) : (
             <>
-              <Copy className="size-4" />
+              <Copy className="size-3.5" />
               Copy Code
             </>
           )}
@@ -69,16 +69,16 @@ export function EmbedCodeGenerator({ slug }: EmbedCodeGeneratorProps) {
 
       {/* Code Block */}
       <div className="relative">
-        <pre className="bg-zinc-950 border border-zinc-800 rounded-sm p-4 overflow-x-auto">
-          <code className="text-sm font-mono text-zinc-300 whitespace-pre-wrap break-all">
+        <pre className="bg-muted/40 border border-border rounded-xl p-4 overflow-x-auto">
+          <code className="text-xs font-mono text-foreground whitespace-pre-wrap break-all">
             {embedCode}
           </code>
         </pre>
       </div>
 
       {/* Instructions */}
-      <div className="mt-4 space-y-2 text-xs text-muted-foreground/80 font-mono">
-        <p className="font-bold text-primary/80 uppercase tracking-wider">Installation:</p>
+      <div className="mt-4 space-y-2 text-xs text-muted-foreground font-mono">
+        <p className="font-semibold text-foreground uppercase tracking-wider">Installation:</p>
         <ol className="list-decimal list-inside space-y-1 pl-2">
           <li>Copy the code above</li>
           <li>Paste it into your website's HTML where you want the status badge to appear</li>
@@ -91,11 +91,11 @@ export function EmbedCodeGenerator({ slug }: EmbedCodeGeneratorProps) {
         <summary className="text-xs font-mono text-muted-foreground cursor-pointer hover:text-foreground transition-colors uppercase tracking-wider">
           Advanced Configuration →
         </summary>
-        <div className="mt-3 p-4 bg-background/50 rounded-sm border border-primary/10 space-y-3">
+        <div className="mt-3 p-4 bg-muted/30 rounded-xl border border-border space-y-3">
           <p className="text-xs text-muted-foreground">
             You can customize the target element by adding this before the script:
           </p>
-          <pre className="bg-zinc-950 border border-zinc-800 rounded-sm p-3 text-xs font-mono text-zinc-300 overflow-x-auto">
+          <pre className="bg-muted/40 border border-border rounded-xl p-3 text-xs font-mono text-foreground overflow-x-auto">
             {`<script>
   window.SteadyStack = {
     config: {

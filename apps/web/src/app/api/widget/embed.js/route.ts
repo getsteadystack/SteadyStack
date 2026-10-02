@@ -149,7 +149,7 @@ export async function GET(request: NextRequest) {
     }
     
     // Build the widget HTML
-    var pageUrl = '${baseUrl}/status/' + slug;
+    var pageUrl = '${baseUrl}/status-page/' + slug;
     container.innerHTML = \`
       <a href="\${pageUrl}" target="_blank" rel="noopener" class="pg-widget">
         <span class="pg-widget-dot" style="background: \${dotColor};"></span>

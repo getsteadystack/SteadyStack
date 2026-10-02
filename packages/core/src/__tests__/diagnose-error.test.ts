@@ -59,7 +59,10 @@ describe("Core diagnoseError formatting", () => {
   });
 
   test("formats SSL/TLS Handshake Failures correctly", () => {
-    const err = { code: "CERT_HAS_EXPIRED", message: "certificate has expired" };
+    const err = {
+      code: "CERT_HAS_EXPIRED",
+      message: "certificate has expired",
+    };
     const result = diagnoseError(err, target);
     expect(result).toContain("SSL_ERROR: TLS Handshake failed.");
     expect(result).toContain(`• Target: ${target}`);

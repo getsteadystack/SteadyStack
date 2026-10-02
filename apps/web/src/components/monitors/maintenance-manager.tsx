@@ -77,31 +77,31 @@ export function MaintenanceManager({
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex flex-col gap-2">
-        <h3 className="text-xl font-bold text-foreground font-mono uppercase tracking-tight flex items-center gap-2">
-          <Construction className="size-5 text-amber-500" />
+      <div className="flex flex-col gap-1">
+        <h3 className="text-xl font-serif font-medium text-foreground tracking-tight flex items-center gap-2">
+          <Construction className="size-5 text-foreground" />
           Scheduled Maintenance
         </h3>
-        <p className="text-sm text-muted-foreground/60 font-mono">
+        <p className="text-xs text-muted-foreground font-mono">
           Schedule downtime windows where alerts are suppressed.
         </p>
       </div>
 
       <form
         action={formAction}
-        className="bg-card/40 border border-amber-500/20 p-6 backdrop-blur-sm relative group"
+        className="bg-card border border-border p-6 rounded-2xl shadow-xs relative group"
       >
         <input type="hidden" name="monitorId" value={monitorId} />
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label className="text-[10px] font-bold text-amber-500/70 uppercase tracking-widest font-mono">
+            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-mono">
               Description
             </label>
             <input
               name="description"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              className="bg-secondary/20 border border-amber-500/20 focus:border-amber-500/60 text-foreground text-sm rounded-sm p-3 font-mono placeholder:text-muted-foreground/30 focus:outline-none focus:ring-1 focus:ring-amber-500/20 transition-all w-full"
+              className="bg-background border border-border focus:border-foreground/30 text-foreground text-xs rounded-xl p-3 font-mono placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full"
               type="text"
               placeholder="e.g. Weekly Server Patching"
             />
@@ -109,32 +109,32 @@ export function MaintenanceManager({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-amber-500/70 uppercase tracking-widest font-mono">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-mono">
                 Start Time
               </label>
               <div className="relative">
-                <Calendar className="absolute top-3 left-3 size-4 text-amber-500/40 pointer-events-none" />
+                <Calendar className="absolute top-3.5 left-3 size-4 text-muted-foreground pointer-events-none" />
                 <input
                   type="datetime-local"
                   name="startAt"
                   value={startAt}
                   onChange={(e) => setStartAt(e.target.value)}
-                  className="bg-secondary/20 border border-amber-500/20 focus:border-amber-500/60 text-foreground text-sm rounded-sm p-3 pl-10 font-mono focus:outline-none focus:ring-1 focus:ring-amber-500/20 transition-all w-full calendar-picker-indicator:invert dark:calendar-picker-indicator:invert-0"
+                  className="bg-background border border-border focus:border-foreground/30 text-foreground text-xs rounded-xl p-3 pl-10 font-mono focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full"
                 />
               </div>
             </div>
             <div className="flex flex-col gap-1.5">
-              <label className="text-[10px] font-bold text-amber-500/70 uppercase tracking-widest font-mono">
+              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-mono">
                 End Time
               </label>
               <div className="relative">
-                <Calendar className="absolute top-3 left-3 size-4 text-amber-500/40 pointer-events-none" />
+                <Calendar className="absolute top-3.5 left-3 size-4 text-muted-foreground pointer-events-none" />
                 <input
                   type="datetime-local"
                   name="endAt"
                   value={endAt}
                   onChange={(e) => setEndAt(e.target.value)}
-                  className="bg-secondary/20 border border-amber-500/20 focus:border-amber-500/60 text-foreground text-sm rounded-sm p-3 pl-10 font-mono focus:outline-none focus:ring-1 focus:ring-amber-500/20 transition-all w-full calendar-picker-indicator:invert dark:calendar-picker-indicator:invert-0"
+                  className="bg-background border border-border focus:border-foreground/30 text-foreground text-xs rounded-xl p-3 pl-10 font-mono focus:outline-none focus:ring-1 focus:ring-primary/10 transition-all w-full"
                 />
               </div>
             </div>
@@ -144,12 +144,12 @@ export function MaintenanceManager({
             <button
               type="submit"
               disabled={isPending}
-              className="px-6 py-2.5 bg-amber-500 hover:bg-amber-400 text-amber-950 text-xs font-bold uppercase tracking-wider font-mono transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-5 py-2.5 bg-foreground hover:bg-foreground/90 text-background text-xs font-bold uppercase tracking-wider font-mono rounded-xl transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               {isPending ? (
-                <Loader2 className="size-4 animate-spin" />
+                <Loader2 className="size-3.5 animate-spin" />
               ) : (
-                <Plus className="size-4" />
+                <Plus className="size-3.5" />
               )}
               Schedule Window
             </button>
@@ -157,12 +157,12 @@ export function MaintenanceManager({
         </div>
       </form>
 
-      <div className="space-y-4">
-        <h4 className="text-xs font-bold text-primary/50 uppercase tracking-widest font-mono border-b border-primary/10 pb-2">
+      <div className="space-y-3">
+        <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider font-mono border-b border-border pb-2">
           Upcoming Windows
         </h4>
         {activeWindows.length === 0 ? (
-          <p className="text-sm text-primary/30 font-mono italic">
+          <p className="text-xs text-muted-foreground font-mono italic">
             No upcoming maintenance scheduled.
           </p>
         ) : (
@@ -170,13 +170,13 @@ export function MaintenanceManager({
             {activeWindows.map((w) => (
               <div
                 key={w.id}
-                className="flex items-center justify-between p-4 bg-primary/5 border border-primary/10 hover:border-amber-500/30 transition-colors group"
+                className="flex items-center justify-between p-4 bg-card border border-border rounded-xl hover:border-border/80 transition-colors group shadow-xs font-mono"
               >
                 <div className="flex flex-col gap-1">
-                  <span className="text-sm font-bold text-primary font-mono">
+                  <span className="text-xs font-bold text-foreground">
                     {w.description || "Unscheduled Maintenance"}
                   </span>
-                  <span className="text-xs text-primary/50 font-mono flex gap-2">
+                  <span className="text-[11px] text-muted-foreground flex gap-2">
                     <span>{new Date(w.startAt).toLocaleString()}</span>
                     <span>→</span>
                     <span>{new Date(w.endAt).toLocaleString()}</span>
@@ -184,9 +184,9 @@ export function MaintenanceManager({
                 </div>
                 <button
                   onClick={() => handleDelete(w.id)}
-                  className="p-2 text-primary/30 hover:text-red-500 hover:bg-red-500/10 rounded transition-colors"
+                  className="p-1.5 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors cursor-pointer"
                 >
-                  <Trash2 className="size-4" />
+                  <Trash2 className="size-3.5" />
                 </button>
               </div>
             ))}

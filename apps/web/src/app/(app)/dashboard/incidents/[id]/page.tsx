@@ -125,7 +125,9 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
                   </div>
                   <div className="flex justify-between items-center py-2 border-b">
                     <span className="text-muted-foreground">Started</span>
-                    <span className="font-mono">{formatDateTime(new Date(incident.startedAt))}</span>
+                    <span className="font-mono">
+                      {formatDateTime(new Date(incident.startedAt))}
+                    </span>
                   </div>
                   {incident.resolvedAt && (
                     <div className="flex justify-between items-center py-2 border-b bg-green-500/5 -mx-2 px-2">

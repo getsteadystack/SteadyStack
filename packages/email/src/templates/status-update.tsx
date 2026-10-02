@@ -209,7 +209,9 @@ export function StatusUpdate({
           {/* Footer */}
           <EmailFooter
             locale={locale}
-            customMessage={tr("status.subscribedMessage", { page: data.pageTitle })}
+            customMessage={tr("status.subscribedMessage", {
+              page: data.pageTitle,
+            })}
             unsubscribeUrl={data.manageUrl}
           />
         </Container>

@@ -1,11 +1,11 @@
 # ADR-004: SLA ratio is computed from successful checks, not incident durations
 
-*Accepted — 2026-09*
+_Accepted — 2026-09_
 
 ## Context
 
-An SLA report must answer: *what fraction of the reporting window was the
-service up?* Two data sources in the product could answer it:
+An SLA report must answer: _what fraction of the reporting window was the
+service up?_ Two data sources in the product could answer it:
 
 1. **Incident records** — start/end timestamps of detected outages. Human-auditable,
    but only as good as detection: probes that miss the window, alerting rules
@@ -15,7 +15,7 @@ service up?* Two data sources in the product could answer it:
    monitor per 30 seconds. Complete, but enormous at scale.
 
 The definition of "downtime" also matters. We do not want SLA numbers to move
-when someone edits an alerting rule or an incident is closed late — the *service*
+when someone edits an alerting rule or an incident is closed late — the _service_
 was up or down independently of how our alerting reacted.
 
 ## Decision
@@ -43,7 +43,7 @@ window, computed from the persisted check stream. Concretely:
   30-second or 5-minute intervals. A month of reports reads ~30 rows per
   monitor instead of ~86k checks.
 - **Interval changes don't distort history**: because the ratio is a fraction
-  of *that day's* checks, switching a monitor from 5-minute to 30-second
+  of _that day's_ checks, switching a monitor from 5-minute to 30-second
   cadence changes the denominator of new days only — past days keep their own
   consistent fractions.
 - **Missed checks are invisible by construction** (no check recorded, no count).

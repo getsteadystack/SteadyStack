@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, HelpCircle, ShieldCheck, Zap, Terminal, AlertTriangle } from "lucide-react";
+import { ArrowRight, HelpCircle, ShieldCheck, Zap, Terminal, Activity } from "lucide-react";
 
 export interface ToolFaqItem {
   question: string;
@@ -58,7 +58,7 @@ export function ToolContentSection({
   };
 
   return (
-    <div className="mt-24 space-y-16 border-t border-border/60 pt-16">
+    <div className="mt-24 space-y-16 border-t border-[#e8e6df] pt-16 font-sans">
       {/* FAQ Schema */}
       <script
         type="application/ld+json"
@@ -68,14 +68,14 @@ export function ToolContentSection({
       {/* Section 1: Overview & How it Works */}
       <div className="space-y-8">
         <div className="space-y-3">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-mono font-medium">
-            <Zap className="size-3.5" />
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-xs font-mono font-semibold uppercase tracking-wider shadow-xs">
+            <Zap className="size-3 text-[#ffd439]" />
             <span>Technical Deep Dive</span>
           </div>
-          <h2 className="text-2xl md:text-3xl font-extrabold tracking-tight text-foreground">
+          <h2 className="text-2xl sm:text-4xl font-serif font-medium tracking-tight text-[#23211a]">
             {overviewTitle}
           </h2>
-          <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-3xl">
+          <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed max-w-3xl">
             {overviewDescription}
           </p>
         </div>
@@ -84,17 +84,17 @@ export function ToolContentSection({
           {howItWorks.map((step, idx) => (
             <div
               key={idx}
-              className="p-6 rounded-xl border border-border/80 bg-card/40 hover:bg-card/70 transition-colors flex flex-col justify-between space-y-4"
+              className="p-6 rounded-2xl border border-[#e8e6df] bg-white shadow-xs flex flex-col justify-between space-y-4"
             >
               <div className="space-y-2.5">
-                <div className="size-8 rounded-lg bg-primary/15 text-primary flex items-center justify-center font-mono font-bold text-sm border border-primary/20">
+                <div className="size-8 rounded-xl bg-[#ffd439]/20 text-[#23211a] flex items-center justify-center font-mono font-bold text-xs border border-[#ffd439]/40">
                   0{idx + 1}
                 </div>
-                <h3 className="font-semibold text-foreground text-base">{step.title}</h3>
-                <p className="text-sm text-muted-foreground leading-relaxed">{step.content}</p>
+                <h3 className="font-serif font-medium text-base text-[#23211a]">{step.title}</h3>
+                <p className="text-xs sm:text-sm text-[#5c5c5c] leading-relaxed">{step.content}</p>
               </div>
               {step.codeSnippet && (
-                <div className="p-2.5 rounded-lg bg-background/80 border border-border/60 font-mono text-xs text-primary/90 overflow-x-auto">
+                <div className="p-3 rounded-xl bg-[#fbfbf9] border border-[#e8e6df] font-mono text-xs text-[#23211a] overflow-x-auto">
                   <code>{step.codeSnippet}</code>
                 </div>
               )}
@@ -103,76 +103,87 @@ export function ToolContentSection({
         </div>
       </div>
 
-      {/* Section 2: Use Cases & Diagnostics */}
-      <div className="space-y-6">
-        <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-          <Terminal className="size-5 text-primary" />
-          <span>{useCasesTitle}</span>
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {useCases.map((uc, idx) => (
-            <div
-              key={idx}
-              className="p-5 rounded-xl border border-border/70 bg-card/20 flex flex-col justify-between space-y-2 hover:border-primary/40 transition-colors"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <h3 className="font-semibold text-foreground text-sm">{uc.title}</h3>
-                {uc.badge && (
-                  <span className="text-[10px] font-mono px-2 py-0.5 rounded-md border border-primary/30 bg-primary/10 text-primary font-medium">
-                    {uc.badge}
-                  </span>
-                )}
-              </div>
-              <p className="text-xs text-muted-foreground leading-relaxed">{uc.description}</p>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* Section 3: Frequently Asked Questions */}
-      <div className="space-y-6">
-        <div className="space-y-2">
-          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground flex items-center gap-2">
-            <HelpCircle className="size-5 text-primary" />
-            <span>Frequently Asked Questions</span>
+      {/* Section 2: Use Cases & Pitfalls */}
+      {useCases && useCases.length > 0 && (
+        <div className="space-y-6">
+          <h2 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#23211a]">
+            {useCasesTitle}
           </h2>
-          <p className="text-sm text-muted-foreground">
-            Everything you need to know about {toolName} and network reliability best practices.
-          </p>
-        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {faqs.map((faq, idx) => (
-            <div
-              key={idx}
-              className="p-5 rounded-xl border border-border/80 bg-card/30 space-y-2 hover:bg-card/50 transition-colors"
-            >
-              <h3 className="font-semibold text-foreground text-sm">{faq.question}</h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">{faq.answer}</p>
-            </div>
-          ))}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {useCases.map((useCase, idx) => (
+              <div
+                key={idx}
+                className="p-6 rounded-2xl border border-[#e8e6df] bg-white shadow-xs space-y-2"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <h3 className="font-serif font-medium text-base text-[#23211a]">
+                    {useCase.title}
+                  </h3>
+                  {useCase.badge && (
+                    <span className="px-2 py-0.5 rounded-md bg-[#f0ede6] text-[#23211a] font-mono text-[10px] uppercase font-bold shrink-0">
+                      {useCase.badge}
+                    </span>
+                  )}
+                </div>
+                <p className="text-xs sm:text-sm text-[#5c5c5c] leading-relaxed">
+                  {useCase.description}
+                </p>
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* Section 3: FAQs */}
+      {faqs && faqs.length > 0 && (
+        <div className="space-y-6">
+          <div className="space-y-1">
+            <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-[#868279] uppercase tracking-wider">
+              <HelpCircle className="size-4" />
+              <span>Frequently Asked Questions</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#23211a]">
+              Common Questions About {toolName}
+            </h2>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {faqs.map((faq, idx) => (
+              <div
+                key={idx}
+                className="p-6 rounded-2xl border border-[#e8e6df] bg-white shadow-xs space-y-2"
+              >
+                <h3 className="font-serif font-medium text-base text-[#23211a]">{faq.question}</h3>
+                <p className="text-xs sm:text-sm text-[#5c5c5c] leading-relaxed">{faq.answer}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Section 4: Automated Monitoring CTA */}
-      <div className="p-8 rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-background to-primary/5 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="space-y-2 text-center md:text-left">
-          <div className="inline-flex items-center gap-1.5 text-xs font-mono font-semibold text-primary uppercase tracking-wider">
-            <ShieldCheck className="size-4" />
-            <span>Continuous Edge Verification</span>
+      <div className="rounded-3xl border border-black/[0.1] bg-[#23211a] text-white p-8 sm:p-12 md:p-14 flex flex-col md:flex-row items-center justify-between gap-8 shadow-[0_24px_60px_rgba(0,0,0,0.14)] relative overflow-hidden">
+        <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[500px] h-[250px] bg-[#ffd439]/20 rounded-full blur-[90px] pointer-events-none" />
+
+        <div className="space-y-3 max-w-xl text-center md:text-left relative z-10">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/20 bg-white/10 text-white text-[10px] font-mono font-bold uppercase tracking-wider backdrop-blur-md">
+            <ShieldCheck className="size-3.5 text-emerald-400" />
+            <span>24/7 Automated Surveillance</span>
           </div>
-          <h2 className="text-lg md:text-xl font-bold text-foreground">{ctaTitle}</h2>
-          <p className="text-xs md:text-sm text-muted-foreground max-w-xl leading-relaxed">
-            {ctaDescription}
-          </p>
+          <h3 className="text-2xl sm:text-3xl font-serif font-medium text-white">{ctaTitle}</h3>
+          <p className="text-xs sm:text-sm text-white/80 leading-relaxed">{ctaDescription}</p>
         </div>
-        <Link
-          href={ctaLink as any}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:opacity-90 transition-opacity whitespace-nowrap shadow-lg shadow-primary/20 shrink-0"
-        >
-          <span>Start Free Monitoring</span>
-          <ArrowRight className="size-4" />
-        </Link>
+
+        <div className="shrink-0 flex flex-col sm:flex-row items-center gap-3 relative z-10 w-full md:w-auto">
+          <Link
+            href={ctaLink as any}
+            className="inline-flex items-center justify-center gap-2 h-12 px-7 rounded-xl bg-[#ffd439] hover:bg-[#ffe066] text-[#23211a] font-mono font-semibold text-xs uppercase tracking-wider transition-all shadow-md hover:scale-[1.02] active:scale-[0.98] w-full sm:w-auto"
+          >
+            <span>Start Free Checks</span>
+            <ArrowRight className="size-3.5" />
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -27,27 +27,27 @@ SteadyStack runs **19 monitor types** — HTTP endpoints, TCP ports, ICMP pings,
 
 ## Architecture
 
-| App / Package | What it is |
-| --- | --- |
-| [`apps/web`](apps/web) | Next.js dashboard, marketing site, docs, public status pages |
-| [`apps/worker`](apps/worker) | Cloudflare Worker: scheduled checks, notifications, crons |
-| [`apps/probe`](apps/probe) | Distributed probe agent that reports results to the registry |
-| [`apps/cli`](apps/cli) | Terminal client (`steadystack` command) |
-| [`apps/native`](apps/native) | Expo / React Native mobile app |
-| [`apps/e2e`](apps/e2e) | Playwright end-to-end tests |
-| [`packages/api`](packages/api) | tRPC backend (typed API layer) |
-| [`packages/core`](packages/core) | Protocol checkers, redirect-chain logic (shared by web, worker, probes) |
-| [`packages/db`](packages/db) | Prisma schema, migrations, generated client |
-| [`packages/auth`](packages/auth) | better-auth configuration |
-| [`packages/email`](packages/email) | React Email templates (i18n-ready) |
-| [`packages/shared`](packages/shared) | Shared constants & payload validation |
-| [`packages/wasm-parser`](packages/wasm-parser) | Rust→WASM high-performance response-assertion validator |
-| [`packages/terraform-provider`](packages/terraform-provider) | Official Terraform provider (Go) |
-| [`packages/github-action`](packages/github-action) | Multi-region quorum check for PR previews |
-| [`packages/types`](packages/types) | Shared TypeScript types |
-| [`packages/env`](packages/env) | Environment variable schema |
-| [`packages/config`](packages/config) | Shared lint/format/TS config |
-| [`packages/infra`](packages/infra) | Alchemy IaC for Cloudflare deployment |
+| App / Package                                                | What it is                                                              |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| [`apps/web`](apps/web)                                       | Next.js dashboard, marketing site, docs, public status pages            |
+| [`apps/worker`](apps/worker)                                 | Cloudflare Worker: scheduled checks, notifications, crons               |
+| [`apps/probe`](apps/probe)                                   | Distributed probe agent that reports results to the registry            |
+| [`apps/cli`](apps/cli)                                       | Terminal client (`steadystack` command)                                 |
+| [`apps/native`](apps/native)                                 | Expo / React Native mobile app                                          |
+| [`apps/e2e`](apps/e2e)                                       | Playwright end-to-end tests                                             |
+| [`packages/api`](packages/api)                               | tRPC backend (typed API layer)                                          |
+| [`packages/core`](packages/core)                             | Protocol checkers, redirect-chain logic (shared by web, worker, probes) |
+| [`packages/db`](packages/db)                                 | Prisma schema, migrations, generated client                             |
+| [`packages/auth`](packages/auth)                             | better-auth configuration                                               |
+| [`packages/email`](packages/email)                           | React Email templates (i18n-ready)                                      |
+| [`packages/shared`](packages/shared)                         | Shared constants & payload validation                                   |
+| [`packages/wasm-parser`](packages/wasm-parser)               | Rust→WASM high-performance response-assertion validator                 |
+| [`packages/terraform-provider`](packages/terraform-provider) | Official Terraform provider (Go)                                        |
+| [`packages/github-action`](packages/github-action)           | Multi-region quorum check for PR previews                               |
+| [`packages/types`](packages/types)                           | Shared TypeScript types                                                 |
+| [`packages/env`](packages/env)                               | Environment variable schema                                             |
+| [`packages/config`](packages/config)                         | Shared lint/format/TS config                                            |
+| [`packages/infra`](packages/infra)                           | Alchemy IaC for Cloudflare deployment                                   |
 
 ```
 ┌────────────┐   checks    ┌─────────────────┐
@@ -82,20 +82,20 @@ bun run dev            # web, worker, and CLI in watch mode (native/probe/infra 
 
 ## Scripts
 
-| Command | What it does |
-| --- | --- |
-| `bun run dev` | All dev servers (web, worker, CLI — infra & probes excluded) |
-| `bun run dev:web` / `dev:worker` / `dev:native` | One app at a time |
-| `bun run cron:local` | Local cron ticker for the worker |
-| `bun run db:push` / `db:migrate` / `db:generate` | Prisma schema → database |
-| `bun run db:studio` | Prisma Studio |
-| `bun run seed` | Seed demo monitors |
-| `bun run import:kuma` | Import from Uptime Kuma |
-| `bun run test` | Bun tests across all packages |
-| `bun run check` | oxlint + format |
-| `bun run check-types` | TypeScript across the monorepo |
-| `bun run check-names` / `check-deps` / `check-publint` / `check-size` | Hygiene checks |
-| `bun run deploy` / `destroy` | Cloudflare deploy via Alchemy |
+| Command                                                               | What it does                                                 |
+| --------------------------------------------------------------------- | ------------------------------------------------------------ |
+| `bun run dev`                                                         | All dev servers (web, worker, CLI — infra & probes excluded) |
+| `bun run dev:web` / `dev:worker` / `dev:native`                       | One app at a time                                            |
+| `bun run cron:local`                                                  | Local cron ticker for the worker                             |
+| `bun run db:push` / `db:migrate` / `db:generate`                      | Prisma schema → database                                     |
+| `bun run db:studio`                                                   | Prisma Studio                                                |
+| `bun run seed`                                                        | Seed demo monitors                                           |
+| `bun run import:kuma`                                                 | Import from Uptime Kuma                                      |
+| `bun run test`                                                        | Bun tests across all packages                                |
+| `bun run check`                                                       | oxlint + format                                              |
+| `bun run check-types`                                                 | TypeScript across the monorepo                               |
+| `bun run check-names` / `check-deps` / `check-publint` / `check-size` | Hygiene checks                                               |
+| `bun run deploy` / `destroy`                                          | Cloudflare deploy via Alchemy                                |
 
 ## Documentation
 

@@ -47,18 +47,18 @@ export function TableOfContents({ items }: TableOfContentsProps) {
   if (!items || items.length === 0) return null;
 
   return (
-    <nav className="p-4 rounded-xl border border-border/80 bg-card/60 backdrop-blur-sm text-xs">
-      <div className="flex items-center gap-2 mb-3 font-semibold text-foreground tracking-tight">
-        <List className="size-3.5 text-primary" />
+    <nav className="p-5 rounded-2xl border border-[#e8e6df] bg-white text-xs shadow-xs">
+      <div className="flex items-center gap-2 mb-3.5 font-mono font-semibold text-[#23211a] uppercase tracking-wider text-[11px]">
+        <List className="size-3.5 text-[#23211a]" />
         <span>Table of Contents</span>
       </div>
-      <ul className="space-y-1.5 list-none m-0 p-0">
+      <ul className="space-y-1 list-none m-0 p-0 font-sans">
         {items.map((item) => {
           const isActive = activeId === item.id;
           return (
             <li
               key={item.id}
-              className={item.level === 3 ? "pl-3.5" : item.level === 4 ? "pl-6" : ""}
+              className={item.level === 3 ? "pl-3" : item.level === 4 ? "pl-5" : ""}
             >
               <a
                 href={`#${item.id}`}
@@ -74,10 +74,10 @@ export function TableOfContents({ items }: TableOfContentsProps) {
                     setActiveId(item.id);
                   }
                 }}
-                className={`block py-1 transition-colors leading-snug line-clamp-2 ${
+                className={`block py-1 transition-all leading-snug line-clamp-2 ${
                   isActive
-                    ? "text-primary font-semibold border-l-2 border-primary -ml-[calc(theme(spacing.4)+1px)] pl-[calc(theme(spacing.4)-1px)]"
-                    : "text-muted-foreground/80 hover:text-foreground"
+                    ? "text-[#23211a] font-semibold border-l-2 border-[#23211a] -ml-5 pl-[18px] bg-[#f0ede6]/50"
+                    : "text-[#5c5c5c] hover:text-[#23211a] hover:pl-1"
                 }`}
               >
                 {item.text}

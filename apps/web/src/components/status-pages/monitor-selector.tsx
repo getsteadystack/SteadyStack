@@ -39,32 +39,32 @@ export function MonitorSelector({ monitors, selectedIds, onChange }: MonitorSele
   };
 
   return (
-    <div className="border border-primary/20 rounded-md overflow-hidden bg-black/30">
+    <div className="border border-border rounded-2xl overflow-hidden bg-background">
       {/* Select All Header */}
       <button
         type="button"
         onClick={toggleAll}
-        className="w-full flex items-center gap-3 p-3 hover:bg-primary/5 transition-colors border-b border-primary/10"
+        className="w-full flex items-center gap-3 p-3 hover:bg-muted/50 transition-colors border-b border-border text-left"
       >
         <div
-          className={`size-5 rounded flex items-center justify-center border ${
+          className={`size-4 rounded-md flex items-center justify-center border transition-colors ${
             allSelected
-              ? "bg-primary/20 border-primary text-primary"
-              : "border-primary/30 text-primary/30"
+              ? "bg-primary border-primary text-primary-foreground"
+              : "border-muted-foreground/40 text-transparent"
           }`}
         >
-          {allSelected && <Check className="size-3" />}
+          {allSelected && <Check className="size-3 stroke-[3]" />}
         </div>
-        <span className="text-sm font-medium text-primary/80">
+        <span className="text-xs font-medium text-foreground">
           {allSelected ? "Deselect All" : "Select All"}
         </span>
-        <span className="ml-auto text-xs text-primary/40">
+        <span className="ml-auto text-xs text-muted-foreground font-mono">
           {selectedIds.length}/{monitors.length}
         </span>
       </button>
 
       {/* Monitor List */}
-      <div className="max-h-48 overflow-y-auto">
+      <div className="max-h-48 overflow-y-auto divide-y divide-border">
         {monitors.map((item) => {
           const isSelected = selectedIds.includes(item.monitorId);
           const name = item.displayName || item.monitor.name;
@@ -74,20 +74,20 @@ export function MonitorSelector({ monitors, selectedIds, onChange }: MonitorSele
               key={item.id}
               type="button"
               onClick={() => toggleMonitor(item.monitorId)}
-              className="w-full flex items-center gap-3 p-3 hover:bg-primary/5 transition-colors border-b border-primary/10 last:border-b-0"
+              className="w-full flex items-center gap-3 p-3 hover:bg-muted/40 transition-colors text-left cursor-pointer"
             >
               <div
-                className={`size-5 rounded flex items-center justify-center border transition-colors ${
+                className={`size-4 rounded-md flex items-center justify-center border transition-colors shrink-0 ${
                   isSelected
-                    ? "bg-primary/20 border-primary text-primary"
-                    : "border-primary/30 text-transparent hover:border-primary/50"
+                    ? "bg-primary border-primary text-primary-foreground"
+                    : "border-muted-foreground/40 text-transparent"
                 }`}
               >
-                <Check className="size-3" />
+                <Check className="size-3 stroke-[3]" />
               </div>
               <span
-                className={`text-sm font-mono truncate ${
-                  isSelected ? "text-primary" : "text-primary/50"
+                className={`text-xs truncate ${
+                  isSelected ? "text-foreground font-medium" : "text-muted-foreground"
                 }`}
               >
                 {name}
@@ -99,7 +99,9 @@ export function MonitorSelector({ monitors, selectedIds, onChange }: MonitorSele
 
       {/* Empty State */}
       {monitors.length === 0 && (
-        <div className="p-4 text-center text-primary/40 text-sm">No monitors available</div>
+        <div className="p-4 text-center text-muted-foreground text-xs font-mono">
+          No monitors available
+        </div>
       )}
     </div>
   );

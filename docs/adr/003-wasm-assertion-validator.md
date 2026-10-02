@@ -1,6 +1,6 @@
 # ADR-003: Response assertions run through a Rust → WASM validator
 
-*Accepted — 2026-09*
+_Accepted — 2026-09_
 
 ## Context
 

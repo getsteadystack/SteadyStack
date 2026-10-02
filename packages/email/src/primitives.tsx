@@ -146,9 +146,11 @@ export function Hr({ style }: Omit<BaseProps, "children">) {
 export function EmailHeader({
   badge,
   badgeColor = emailTheme.colors.primary,
+  brandName,
 }: {
   badge?: string;
   badgeColor?: string;
+  brandName?: string;
   /** Reserved for localized header chrome; accepted for API stability. */
   locale?: EmailLocale;
 }) {
@@ -164,7 +166,7 @@ export function EmailHeader({
           <tr>
             <td align="left" style={{ verticalAlign: "middle" }}>
               <div style={{ display: "inline-flex", alignItems: "center" }}>
-                {/* Modern Brand Logo */}
+                {/* Modern Status Logo */}
                 <div
                   style={{
                     display: "inline-block",
@@ -201,7 +203,7 @@ export function EmailHeader({
                     verticalAlign: "middle",
                   }}
                 >
-                  Steady<span style={{ color: "#10b981" }}>Stack</span>
+                  {brandName || "System Monitor"}
                 </span>
               </div>
             </td>
@@ -343,16 +345,7 @@ export function EmailFooter({
               >
                 {tr("footer.tagline")}
                 <br />
-                {tr("footer.secured")} •{" "}
-                <Link
-                  href={baseUrl}
-                  style={{
-                    color: "#71717a",
-                    textDecoration: "none",
-                  }}
-                >
-                  steadystack.dev
-                </Link>
+                {tr("footer.secured")}
               </Text>
             </td>
           </tr>

@@ -45,6 +45,8 @@ model StatusPage {
   // Relations
   userId       String
   user         User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId     String?                @unique
+  client       Client?                @relation(fields: [clientId], references: [id], onDelete: SetNull)
   monitors     StatusPageMonitor[]
   groups       StatusPageGroup[]
   views        StatusPageView[]

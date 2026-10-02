@@ -15,7 +15,13 @@ import { emailTheme } from "../styles/theme";
 import type { MonitorAlertData } from "../index";
 import { isRtlEmailLocale, t, formatEmailTimestamp, type EmailLocale } from "../i18n";
 
-export function MonitorAlert({ data, locale = "en" }: { data: MonitorAlertData; locale?: EmailLocale }) {
+export function MonitorAlert({
+  data,
+  locale = "en",
+}: {
+  data: MonitorAlertData;
+  locale?: EmailLocale;
+}) {
   const tr = (key: string, params?: Record<string, string | number>) => t(locale, key, params);
   const dir = isRtlEmailLocale(locale) ? "rtl" : "ltr";
 
@@ -25,7 +31,11 @@ export function MonitorAlert({ data, locale = "en" }: { data: MonitorAlertData; 
     data.reason?.includes("expires in") || data.reason?.includes("SSL certificate expires");
 
   let statusColor = isDown ? "#ef4444" : isDegraded ? "#f59e0b" : "#10b981";
-  let statusBadgeText = isDown ? tr("alert.critical") : isDegraded ? tr("alert.degraded") : tr("alert.resolved");
+  let statusBadgeText = isDown
+    ? tr("alert.critical")
+    : isDegraded
+      ? tr("alert.degraded")
+      : tr("alert.resolved");
   let statusTitle = isDown
     ? tr("alert.outageTitle")
     : isDegraded
@@ -100,7 +110,11 @@ export function MonitorAlert({ data, locale = "en" }: { data: MonitorAlertData; 
                 }}
               >
                 <span style={{ marginInlineEnd: "8px", fontSize: "10px" }}>●</span>
-                {isDown ? tr("alert.serviceDown") : isSslWarning ? tr("alert.expiryNotice") : tr("alert.serviceRestored")}
+                {isDown
+                  ? tr("alert.serviceDown")
+                  : isSslWarning
+                    ? tr("alert.expiryNotice")
+                    : tr("alert.serviceRestored")}
               </div>
             </div>
 
@@ -258,7 +272,9 @@ export function MonitorAlert({ data, locale = "en" }: { data: MonitorAlertData; 
                     color: "#f87171",
                   }}
                 >
-                  {tr("alert.detectedFrom", { count: data.failedRegions.length })}
+                  {tr("alert.detectedFrom", {
+                    count: data.failedRegions.length,
+                  })}
                 </Text>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                   {data.failedRegions.map((region, idx) => (
@@ -288,7 +304,11 @@ export function MonitorAlert({ data, locale = "en" }: { data: MonitorAlertData; 
 
             {/* Action CTA */}
             <PrimaryButton href={actionUrl} variant={isDown ? "danger" : "primary"}>
-              {data.runbookUrl ? tr("alert.viewRunbook") : isDown ? tr("alert.investigate") : tr("alert.viewTelemetry")}
+              {data.runbookUrl
+                ? tr("alert.viewRunbook")
+                : isDown
+                  ? tr("alert.investigate")
+                  : tr("alert.viewTelemetry")}
             </PrimaryButton>
 
             {data.runbookUrl && (

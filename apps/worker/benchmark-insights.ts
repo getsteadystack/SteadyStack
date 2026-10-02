@@ -17,11 +17,13 @@ async function runBenchmark() {
             name: `Bench Monitor ${i}`,
             url: "https://example.com",
             userId: "bench-user",
-            workspaceId: "bench-workspace",
+            organizationId: "bench-workspace",
           },
         })
         .catch((e) => {
-          return prisma.monitor.findFirst({ where: { name: `Bench Monitor ${i}` } });
+          return prisma.monitor.findFirst({
+            where: { name: `Bench Monitor ${i}` },
+          });
         });
       if (m) {
         monitorIds.push(m.id);

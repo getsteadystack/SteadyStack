@@ -46,24 +46,21 @@ export function ModeToggle() {
           </Button>
         }
       />
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="mr-2 h-4 w-4" /> Obsidian Dark
+      <DropdownMenuContent
+        align="end"
+        className="bg-card border-border rounded-2xl p-1.5 shadow-xs"
+      >
+        <DropdownMenuItem
+          onClick={() => setTheme("light")}
+          className="cursor-pointer font-medium text-xs rounded-xl"
+        >
+          <Sun className="mr-2 h-4 w-4 text-[#ffd439]" /> Warm Paper (Light)
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("matrix")}>
-          <Monitor className="mr-2 h-4 w-4 text-[#38bdf8]" /> Midnight Slate
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("cyberpunk")}>
-          <Moon className="mr-2 h-4 w-4 text-[#f97316]" /> Carbon Ember
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("blade")}>
-          <Moon className="mr-2 h-4 w-4 text-[#10b981]" /> Nordic Emerald
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="mr-2 h-4 w-4" /> Clean Light
-        </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          <Laptop className="mr-2 h-4 w-4" /> System
+        <DropdownMenuItem
+          onClick={() => setTheme("dark")}
+          className="cursor-pointer font-medium text-xs rounded-xl"
+        >
+          <Moon className="mr-2 h-4 w-4 text-muted-foreground" /> Espresso (Dark)
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

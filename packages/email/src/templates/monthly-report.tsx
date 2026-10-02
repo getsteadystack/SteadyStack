@@ -107,6 +107,8 @@ interface MonthlyReportProps {
     avgResponseTime: number;
     startDate: string;
     endDate: string;
+    agencyName?: string;
+    clientName?: string;
     criticalEvents: {
       id: string;
       date: string;
@@ -117,77 +119,81 @@ interface MonthlyReportProps {
   };
 }
 
-export const MonthlyReportDocument: React.FC<MonthlyReportProps> = ({ stats }) => (
-  <Document>
-    <Page size="A4" style={styles.page}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.title}>Monthly Performance Report</Text>
-          <Text style={styles.subtitle}>
-            Period: {stats.startDate} — {stats.endDate}
-          </Text>
-        </View>
-        <Text style={styles.brand}>SteadyStack</Text>
-      </View>
+export const MonthlyReportDocument: React.FC<MonthlyReportProps> = ({ stats }) => {
+  const brandTitle = stats.agencyName?.trim() || stats.clientName?.trim() || "Performance Audit";
 
-      {/* Hero Stats */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Key Metrics</Text>
-        <View style={styles.statsGrid}>
-          <View style={styles.statCard}>
-            <Text
-              style={[
-                styles.statValue,
-                { color: stats.globalUptime >= 99.9 ? "#22c55e" : "#eab308" },
-              ]}
-            >
-              {stats.globalUptime}%
+  return (
+    <Document>
+      <Page size="A4" style={styles.page}>
+        {/* Header */}
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.title}>Monthly Performance Report</Text>
+            <Text style={styles.subtitle}>
+              Period: {stats.startDate} — {stats.endDate}
             </Text>
-            <Text style={styles.statLabel}>Global Uptime</Text>
           </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.totalIncidents}</Text>
-            <Text style={styles.statLabel}>Incidents</Text>
-          </View>
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>{stats.avgResponseTime}ms</Text>
-            <Text style={styles.statLabel}>Avg Latency</Text>
+          <Text style={styles.brand}>{brandTitle}</Text>
+        </View>
+
+        {/* Hero Stats */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Key Metrics</Text>
+          <View style={styles.statsGrid}>
+            <View style={styles.statCard}>
+              <Text
+                style={[
+                  styles.statValue,
+                  { color: stats.globalUptime >= 99.9 ? "#22c55e" : "#eab308" },
+                ]}
+              >
+                {stats.globalUptime}%
+              </Text>
+              <Text style={styles.statLabel}>Global Uptime</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{stats.totalIncidents}</Text>
+              <Text style={styles.statLabel}>Incidents</Text>
+            </View>
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>{stats.avgResponseTime}ms</Text>
+              <Text style={styles.statLabel}>Avg Latency</Text>
+            </View>
           </View>
         </View>
-      </View>
 
-      {/* Critical Events */}
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Critical Incidents</Text>
-        {stats.criticalEvents.length > 0 ? (
-          <View style={styles.table}>
-            <View style={styles.tableHeader}>
-              <Text style={styles.colDate}>Date</Text>
-              <Text style={styles.colMonitor}>Service</Text>
-              <Text style={styles.colDesc}>Incident</Text>
-              <Text style={styles.colDuration}>Duration</Text>
-            </View>
-            {stats.criticalEvents.map((event) => (
-              <View key={event.id} style={styles.tableRow}>
-                <Text style={styles.colDate}>{event.date}</Text>
-                <Text style={styles.colMonitor}>{event.monitorName}</Text>
-                <Text style={styles.colDesc}>{event.description}</Text>
-                <Text style={styles.colDuration}>{event.duration}</Text>
+        {/* Critical Events */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Critical Incidents</Text>
+          {stats.criticalEvents.length > 0 ? (
+            <View style={styles.table}>
+              <View style={styles.tableHeader}>
+                <Text style={styles.colDate}>Date</Text>
+                <Text style={styles.colMonitor}>Service</Text>
+                <Text style={styles.colDesc}>Incident</Text>
+                <Text style={styles.colDuration}>Duration</Text>
               </View>
-            ))}
-          </View>
-        ) : (
-          <Text style={{ fontSize: 12, color: "#64748b", fontStyle: "italic" }}>
-            No critical incidents reported this month. Great job!
-          </Text>
-        )}
-      </View>
+              {stats.criticalEvents.map((event) => (
+                <View key={event.id} style={styles.tableRow}>
+                  <Text style={styles.colDate}>{event.date}</Text>
+                  <Text style={styles.colMonitor}>{event.monitorName}</Text>
+                  <Text style={styles.colDesc}>{event.description}</Text>
+                  <Text style={styles.colDuration}>{event.duration}</Text>
+                </View>
+              ))}
+            </View>
+          ) : (
+            <Text style={{ fontSize: 12, color: "#64748b", fontStyle: "italic" }}>
+              No critical incidents reported this month. Great job!
+            </Text>
+          )}
+        </View>
 
-      {/* Footer */}
-      <Text style={styles.footer}>
-        Generated by SteadyStack Automated Reporting System • {new Date().getFullYear()}
-      </Text>
-    </Page>
-  </Document>
-);
+        {/* Footer */}
+        <Text style={styles.footer}>
+          Generated by Automated Performance Reporting Engine • {new Date().getFullYear()}
+        </Text>
+      </Page>
+    </Document>
+  );
+};

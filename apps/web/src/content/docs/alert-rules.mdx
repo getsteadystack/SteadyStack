@@ -1,37 +1,63 @@
 ---
-title: "Alert Rules"
-description: "Configure conditional incident routing, triggers, and threshold evaluations."
+title: "Alert Rules & Conditional Triggers"
+description: "Configure conditional incident routing, multi-channel escalation policies, delay dampening, and automated failover triggers."
 section: "Alerting & Incidents"
 order: 6
 badge: "Alerts"
-lastUpdated: "2026-08-22"
+lastUpdated: "2026-10-02"
 ---
 
-Alert rules define when, why, and where SteadyStack dispatches incident notifications.
-
----
-
-## Trigger Types
-
-- `STATUS_CHANGE`: Trigger when a monitor transitions state (e.g., `UP` -> `DOWN`, `DOWN` -> `UP`, or `DEGRADED`).
-- `LATENCY`: Trigger when response time exceeds a static millisecond threshold or dynamic anomaly limit.
-- `SSL_EXPIRY`: Trigger when an SSL/TLS certificate has fewer than $N$ days remaining before expiration.
-- `DNS_WATCHDOG`: Trigger if DNS records change unexpectedly.
-- `DOMAIN_EXPIRY`: Trigger when WHOIS domain registration is nearing expiration.
+SteadyStack **Alert Rules** evaluate real-time telemetry from the consensus engine and execute deterministic routing policies. Unlike legacy systems with basic on/off toggles, SteadyStack alert rules allow multi-condition filtering, delay dampening, and tiered escalations.
 
 ---
 
-## Example Rule Configuration
+## Supported Trigger Conditions
+
+1. **`STATUS_CHANGE`**: Triggers when a monitor transitions between operational states (`UP` $\rightarrow$ `DOWN`, `DOWN` $\rightarrow$ `UP`, `UP` $\rightarrow$ `DEGRADED`).
+2. **`LATENCY_ANOMALY`**: Triggers when $p_{95}$ latency exceeds static limits (e.g. $> 800\text{ms}$) or dynamic statistical thresholds.
+3. **`SSL_EXPIRY`**: Triggers when an X.509 TLS certificate has fewer than $N$ days remaining before expiration (e.g. 30d, 14d, 7d).
+4. **`DNS_MUTATION`**: Triggers if authoritative nameservers return altered `A`, `AAAA`, `CNAME`, or `MX` records.
+5. **`PAYLOAD_ASSERTION_FAILURE`**: Triggers when JSON Schema or regex keyword matching fails on the response body.
+
+---
+
+## 1. Delay Dampening & Alert Flapping Protection
+
+To prevent flapping notifications during momentary network micro-bursts, configure **Dampening**:
+
+- **Consecutive Quorum Failures**: Require 2 consecutive failed quorum rounds (e.g., 2 consecutive 60-second checks) before opening an incident.
+- **Auto-Resolve Delay**: Keep incident status open until 3 consecutive checks pass verification.
+
+---
+
+## 2. Tiered Escalation Policies
+
+You can cascade notifications based on outage duration:
+
+```
+[Outage Starts] ──> Minute 0: Post to Slack (#client-alerts)
+                 ──> Minute 5: Email Agency On-Call Engineers
+                 ──> Minute 15: PagerDuty / OpsGenie Urgent Phone Call
+```
+
+---
+
+## 3. Terraform Rule Configuration
 
 ```hcl
-resource "steadystack_alert_rule" "critical_api_down" {
-  monitor_id    = steadystack_monitor.api.id
+resource "steadystack_alert_rule" "api_production_down" {
+  name          = "Critical API Outage Policy"
+  monitor_id    = steadystack_monitor.api_gateway.id
   trigger       = "STATUS_CHANGE"
   target_status = "DOWN"
   enabled       = true
-  channel_ids   = [
-    steadystack_alert_channel.pagerduty_oncall.id,
-    steadystack_alert_channel.slack_sre.id
+
+  # Dampening: Require 2 consecutive consensus failures
+  consecutive_failures = 2
+
+  channel_ids = [
+    steadystack_alert_channel.slack_engineering.id,
+    steadystack_alert_channel.pagerduty_primary.id,
   ]
 }
 ```

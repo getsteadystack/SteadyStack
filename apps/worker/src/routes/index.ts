@@ -28,6 +28,7 @@ import {
   probeResultRoute,
 } from "./probes";
 import { locationsRoute } from "./locations";
+import { reportsDispatchRoute } from "./reports";
 
 export type { RouteHandler } from "./types";
 
@@ -38,6 +39,7 @@ export const ROUTES: RouteHandler[] = [
   debugFetchRoute,
   checkNowRoute,
   broadcastRoute,
+  reportsDispatchRoute,
   dnsAuditRoute,
   payloadAuditRoute,
   securityHeadersRoute,

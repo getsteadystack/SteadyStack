@@ -10,7 +10,7 @@ lastUpdated: "2026-09-16"
 Private probes are on-premise agents that poll the SteadyStack worker for
 check jobs and execute them from **inside your network** — private VPC
 endpoints, internal admin panels, and databases that public edge probes can
-never reach. The probe speaks only *outbound* HTTPS to the worker; no inbound
+never reach. The probe speaks only _outbound_ HTTPS to the worker; no inbound
 ports required.
 
 This page covers deploying the probe agent itself. For hosting the whole
@@ -33,15 +33,15 @@ FTP, ICMP ping, and mail retrieval.
 
 ## Probe environment variables
 
-| Variable | Required | Default | Purpose |
-| :------- | :------: | :------ | :------ |
-| `STEADYSTACK_API_URL` | ✅ | — | Base URL of your SteadyStack worker |
-| `STEADYSTACK_PROBE_TOKEN` | ✅ | — | Shared secret, sent as `Authorization: Bearer` |
-| `PROBE_REGION` | — | `private` | Region label shown for results from this probe |
-| `PROBE_POLL_INTERVAL` | — | `15` | Seconds between job polls |
-| `PROBE_HEARTBEAT_INTERVAL` | — | `30` | Seconds between heartbeats |
-| `PROBE_CONCURRENCY` | — | `5` | Max checks run in parallel |
-| `ENCRYPTION_SECRET` | — | unset | Required only if monitors use encrypted headers/mTLS |
+| Variable                   | Required | Default   | Purpose                                              |
+| :------------------------- | :------: | :-------- | :--------------------------------------------------- |
+| `STEADYSTACK_API_URL`      |    ✅    | —         | Base URL of your SteadyStack worker                  |
+| `STEADYSTACK_PROBE_TOKEN`  |    ✅    | —         | Shared secret, sent as `Authorization: Bearer`       |
+| `PROBE_REGION`             |    —     | `private` | Region label shown for results from this probe       |
+| `PROBE_POLL_INTERVAL`      |    —     | `15`      | Seconds between job polls                            |
+| `PROBE_HEARTBEAT_INTERVAL` |    —     | `30`      | Seconds between heartbeats                           |
+| `PROBE_CONCURRENCY`        |    —     | `5`       | Max checks run in parallel                           |
+| `ENCRYPTION_SECRET`        |    —     | unset     | Required only if monitors use encrypted headers/mTLS |
 
 ---
 
@@ -81,7 +81,7 @@ services:
     container_name: steadystack-probe
     restart: unless-stopped
     environment:
-      STEADYSTACK_API_URL: "http://host.docker.internal:8787"  # local Miniflare worker
+      STEADYSTACK_API_URL: "http://host.docker.internal:8787" # local Miniflare worker
       STEADYSTACK_PROBE_TOKEN: "local-dev-probe-secret"
       PROBE_REGION: "local"
     extra_hosts:
@@ -167,7 +167,7 @@ per-poll, so multiple probes share the load without duplicating checks.
 ## Targeting private endpoints
 
 Monitors can use any URL the probe can resolve — internal DNS names and
-private IPs included. Because the *public* edge probes would flag private
+private IPs included. Because the _public_ edge probes would flag private
 targets as unreachable, give monitors that only a private probe can reach:
 
 - a longer `interval` (the private probe polls on its own cadence), and
@@ -177,10 +177,10 @@ targets as unreachable, give monitors that only a private probe can reach:
 
 ## Troubleshooting
 
-| Symptom | Likely cause |
-| :------ | :----------- |
-| `Invalid probe environment variables: …` at startup | Missing `STEADYSTACK_PROBE_TOKEN` or malformed `STEADYSTACK_API_URL` (must include scheme) |
-| Heartbeats fail with fetch errors | Worker URL unreachable from inside the network — check egress/firewall; the probe only needs outbound HTTPS |
-| Jobs never arrive | Token mismatch with the worker's `probeSecret`, or no monitors target this probe's region |
-| Encrypted headers fail to decrypt | `ENCRYPTION_SECRET` differs from the platform's value — must match exactly |
-| 401 from `/api/probes/poll` | Rotate the token in both places (Helm: update `secrets.probeSecret`, pods roll automatically) |
+| Symptom                                             | Likely cause                                                                                                |
+| :-------------------------------------------------- | :---------------------------------------------------------------------------------------------------------- |
+| `Invalid probe environment variables: …` at startup | Missing `STEADYSTACK_PROBE_TOKEN` or malformed `STEADYSTACK_API_URL` (must include scheme)                  |
+| Heartbeats fail with fetch errors                   | Worker URL unreachable from inside the network — check egress/firewall; the probe only needs outbound HTTPS |
+| Jobs never arrive                                   | Token mismatch with the worker's `probeSecret`, or no monitors target this probe's region                   |
+| Encrypted headers fail to decrypt                   | `ENCRYPTION_SECRET` differs from the platform's value — must match exactly                                  |
+| 401 from `/api/probes/poll`                         | Rotate the token in both places (Helm: update `secrets.probeSecret`, pods roll automatically)               |

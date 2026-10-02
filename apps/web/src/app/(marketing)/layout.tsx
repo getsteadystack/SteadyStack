@@ -5,7 +5,7 @@ export const dynamic = "force-dynamic";
 
 export default function MarketingLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex flex-col min-h-screen bg-background text-foreground font-sans selection:bg-primary/20">
+    <div className="flex flex-col min-h-screen bg-[#fbfbf9] text-[#23211a] font-sans selection:bg-[#ffd439]/30">
       <LandingHeader />
       <main className="flex-1">{children}</main>
       <LandingFooter />

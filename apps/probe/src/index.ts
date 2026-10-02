@@ -127,7 +127,11 @@ async function runCheck(job: ProbeJob): Promise<CheckResult> {
 
     if (job.type === "PING" || job.url.startsWith("ping://")) {
       const hostname = job.url.replace("ping://", "");
-      const checkResult = await checkPortUniversal(hostname, 80, DEFAULT_CHECK_TIMEOUT_SECONDS * 1000);
+      const checkResult = await checkPortUniversal(
+        hostname,
+        80,
+        DEFAULT_CHECK_TIMEOUT_SECONDS * 1000,
+      );
 
       return {
         monitorId: job.monitorId,
@@ -143,7 +147,8 @@ async function runCheck(job: ProbeJob): Promise<CheckResult> {
       const grpcConfig = job.expectation ? (JSON.parse(job.expectation) as any) : {};
       const checkResult = await checkGrpcHealth(job.url, {
         serviceName: grpcConfig.serviceName,
-        useTls: grpcConfig.useTls === true || job.url.startsWith("grpcs://") || job.url.includes(":443"),
+        useTls:
+          grpcConfig.useTls === true || job.url.startsWith("grpcs://") || job.url.includes(":443"),
         timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
       });
       return {

@@ -1,7 +1,11 @@
 import { describe, test, expect } from "bun:test";
 import { classifyAttemptOutcome, confirmDownWithRetries, type CheckAttempt } from "../index";
 
-const up = (latency = 42): CheckAttempt => ({ status: "UP", latency, transport: "http" });
+const up = (latency = 42): CheckAttempt => ({
+  status: "UP",
+  latency,
+  transport: "http",
+});
 const down = (reason = "TIMEOUT"): CheckAttempt => ({
   status: "DOWN",
   latency: 0,

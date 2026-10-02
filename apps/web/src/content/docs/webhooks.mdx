@@ -23,7 +23,7 @@ import crypto from "node:crypto";
 export function verifySteadyStackWebhook(
   rawBody: string,
   signatureHeader: string,
-  secret: string
+  secret: string,
 ): boolean {
   const expectedSignature = crypto
     .createHmac("sha256", secret)
@@ -32,7 +32,7 @@ export function verifySteadyStackWebhook(
 
   return crypto.timingSafeEqual(
     Buffer.from(signatureHeader),
-    Buffer.from(expectedSignature)
+    Buffer.from(expectedSignature),
   );
 }
 ```

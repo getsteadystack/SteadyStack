@@ -14,7 +14,7 @@ mock.module("@steadystack/db", () => ({
     },
     statusPageMonitor: {
       findFirst: mockStatusPageMonitorFindFirst,
-    }
+    },
   })),
 }));
 
@@ -28,7 +28,10 @@ describe("verifySession retry logic", () => {
 
   beforeEach(() => {
     mockFindUnique.mockReset();
-    env = { DATABASE_URL: "postgres://fake", DATABASE_POOL_URL: "postgres://fake-pool" } as Env;
+    env = {
+      DATABASE_URL: "postgres://fake",
+      DATABASE_POOL_URL: "postgres://fake-pool",
+    } as Env;
     req = new Request("http://localhost?token=faketoken");
   });
 
@@ -38,7 +41,10 @@ describe("verifySession retry logic", () => {
 
   test("returns null and does not retry on non-retryable error", async () => {
     mockFindUnique.mockRejectedValue(new Error("Some random error"));
-    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => { cb(); return 1 as any; }) as any);
+    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => {
+      cb();
+      return 1 as any;
+    }) as any);
 
     const result = await verifySession(req, env);
 
@@ -61,7 +67,10 @@ describe("verifySession retry logic", () => {
       expiresAt: futureDate,
     });
 
-    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => { cb(); return 1 as any; }) as any);
+    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => {
+      cb();
+      return 1 as any;
+    }) as any);
 
     const result = await verifySession(req, env);
 
@@ -76,7 +85,10 @@ describe("verifySession retry logic", () => {
     mockFindUnique.mockRejectedValueOnce(new Error("timeout"));
     mockFindUnique.mockRejectedValueOnce(new Error("timeout"));
 
-    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => { cb(); return 1 as any; }) as any);
+    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => {
+      cb();
+      return 1 as any;
+    }) as any);
 
     const result = await verifySession(req, env);
 
@@ -93,7 +105,10 @@ describe("verifyMonitorAccess retry logic", () => {
   beforeEach(() => {
     mockMonitorFindUnique.mockReset();
     mockStatusPageMonitorFindFirst.mockReset();
-    env = { DATABASE_URL: "postgres://fake", DATABASE_POOL_URL: "postgres://fake-pool" } as Env;
+    env = {
+      DATABASE_URL: "postgres://fake",
+      DATABASE_POOL_URL: "postgres://fake-pool",
+    } as Env;
   });
 
   afterEach(() => {
@@ -102,7 +117,10 @@ describe("verifyMonitorAccess retry logic", () => {
 
   test("returns false and does not retry on non-retryable error", async () => {
     mockMonitorFindUnique.mockRejectedValue(new Error("Some random error"));
-    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => { cb(); return 1 as any; }) as any);
+    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => {
+      cb();
+      return 1 as any;
+    }) as any);
 
     const result = await verifyMonitorAccess("user-123", "monitor-1", env);
 
@@ -119,7 +137,10 @@ describe("verifyMonitorAccess retry logic", () => {
       userId: "user-123",
     });
 
-    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => { cb(); return 1 as any; }) as any);
+    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => {
+      cb();
+      return 1 as any;
+    }) as any);
 
     const result = await verifyMonitorAccess("user-123", "monitor-1", env);
 
@@ -133,7 +154,10 @@ describe("verifyMonitorAccess retry logic", () => {
     mockMonitorFindUnique.mockRejectedValueOnce(new Error("timeout"));
     mockMonitorFindUnique.mockRejectedValueOnce(new Error("timeout"));
 
-    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => { cb(); return 1 as any; }) as any);
+    const setTimeoutSpy = spyOn(globalThis, "setTimeout").mockImplementation(((cb: Function) => {
+      cb();
+      return 1 as any;
+    }) as any);
 
     const result = await verifyMonitorAccess("user-123", "monitor-1", env);
 

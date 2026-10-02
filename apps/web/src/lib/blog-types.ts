@@ -2,7 +2,7 @@ export interface PostMeta {
   title: string;
   description: string;
   date: string;
-  category: "Engineering" | "Product" | "Guides";
+  category: "Engineering" | "Product" | "Guides" | "Agency";
   readTime: string;
   tags: string[];
   author: string;

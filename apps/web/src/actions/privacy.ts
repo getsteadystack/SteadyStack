@@ -91,7 +91,7 @@ export async function getPrivacyReport(): Promise<PrivacyReport> {
       category: "Check Results (MonitorEvents)",
       description: "Latency, status codes, error reasons, timestamps, probe region",
       collected: true,
-      retention: "90 days (Initiate), 1 year (Netrunner), 1 year+ (Construct)",
+      retention: "3 days (Starter), 45 days (Pro), 1 year (Agency & Scale)",
       purpose: "Uptime tracking, incident detection, SLA reports",
       canAnonymize: false,
       anonymized: false,

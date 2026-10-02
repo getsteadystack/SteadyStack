@@ -15,14 +15,30 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function SignupPage() {
+export default async function SignupPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    deal?: string;
+    plan?: string;
+    ref?: string;
+    returnUrl?: string;
+  }>;
+}) {
+  const resolvedParams = await searchParams;
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
   if (session?.user) {
+    if (resolvedParams?.deal) {
+      redirect(`/dashboard/settings?tab=billing&deal=${encodeURIComponent(resolvedParams.deal)}`);
+    }
+    if (resolvedParams?.plan) {
+      redirect(`/dashboard/settings?tab=billing&plan=${encodeURIComponent(resolvedParams.plan)}`);
+    }
     redirect("/dashboard");
   }
 
-  return <SignupClient />;
+  return <SignupClient deal={resolvedParams?.deal} plan={resolvedParams?.plan} />;
 }

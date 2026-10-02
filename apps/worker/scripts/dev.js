@@ -23,9 +23,12 @@ const devVarsPath = path.join(__dirname, "..", ".dev.vars");
 try {
   let contents = fs.existsSync(devVarsPath) ? fs.readFileSync(devVarsPath, "utf8") : "";
   if (!/^DB_USE_PG_DRIVER=\s*true\s*$/m.test(contents)) {
-    contents = contents.replace(/\r?\n$/, "") + (contents ? "\r\n" : "") + "DB_USE_PG_DRIVER=true\r\n";
+    contents =
+      contents.replace(/\r?\n$/, "") + (contents ? "\r\n" : "") + "DB_USE_PG_DRIVER=true\r\n";
     fs.writeFileSync(devVarsPath, contents);
-    console.log("[WorkerDev] Added DB_USE_PG_DRIVER=true to .dev.vars (required for local wrangler dev)");
+    console.log(
+      "[WorkerDev] Added DB_USE_PG_DRIVER=true to .dev.vars (required for local wrangler dev)",
+    );
   }
 } catch (err) {
   console.warn("[WorkerDev] Could not ensure DB_USE_PG_DRIVER in .dev.vars:", err.message);

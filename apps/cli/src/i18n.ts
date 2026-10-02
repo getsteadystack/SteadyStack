@@ -69,7 +69,8 @@ const es: Dict = {
   "auth.status.baseUrl": "URL base  :",
   "client.notLoggedIn": "✖ Sesión no iniciada. Ejecuta:",
   "client.orExport": "o exporta STEADYSTACK_API_KEY=<API_KEY>",
-  "monitors.list.empty": "No se encontraron monitores. Crea uno en https://steadystack.dev/dashboard",
+  "monitors.list.empty":
+    "No se encontraron monitores. Crea uno en https://steadystack.dev/dashboard",
   "monitors.list.header": "ID",
   "monitors.list.headerName": "NOMBRE",
   "monitors.list.headerStatus": "ESTADO",
@@ -147,7 +148,8 @@ const de: Dict = {
   "auth.status.baseUrl": "Basis-URL  :",
   "client.notLoggedIn": "✖ Nicht angemeldet. Führen Sie aus:",
   "client.orExport": "oder exportieren Sie STEADYSTACK_API_KEY=<API_KEY>",
-  "monitors.list.empty": "Keine Monitore gefunden. Erstellen Sie einen unter https://steadystack.dev/dashboard",
+  "monitors.list.empty":
+    "Keine Monitore gefunden. Erstellen Sie einen unter https://steadystack.dev/dashboard",
   "monitors.list.header": "ID",
   "monitors.list.headerName": "NAME",
   "monitors.list.headerStatus": "STATUS",
@@ -201,7 +203,8 @@ const ja: Dict = {
   "auth.status.notLoggedIn": "ログインしていません。実行してください：",
   "auth.status.loggedIn": "✔ ログイン中",
   "client.notLoggedIn": "✖ ログインしていません。実行してください：",
-  "monitors.list.empty": "モニターが見つかりません。https://steadystack.dev/dashboard で作成してください",
+  "monitors.list.empty":
+    "モニターが見つかりません。https://steadystack.dev/dashboard で作成してください",
   "monitors.create.success": "✔ モニターを作成しました: {name}",
   "trigger.success": "✔ {name} のチェックを開始しました",
   "import.success": "✔ {count} 件のモニターをインポートしました",
@@ -288,9 +291,7 @@ function detectSystemLocale(): CliLocale {
   const prefix = base.split("-")[0];
   if (prefix === "pt") return "pt-BR";
   if (prefix === "zh") return "zh-CN";
-  const match = (CLI_LOCALES as readonly string[]).find((l) =>
-    l.toLowerCase().startsWith(prefix),
-  );
+  const match = (CLI_LOCALES as readonly string[]).find((l) => l.toLowerCase().startsWith(prefix));
   return (match as CliLocale) ?? "en";
 }
 

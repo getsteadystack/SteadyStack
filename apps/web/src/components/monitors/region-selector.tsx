@@ -41,38 +41,40 @@ export function RegionSelector({ selectedRegions, onChange }: RegionSelectorProp
   };
 
   return (
-    <div className="space-y-4">
-      <label className="block text-[10px] font-bold text-primary/70 uppercase tracking-widest font-mono">
-        Monitoring Regions
-        <span className="ml-2 text-[10px] text-muted-foreground/60">
-          ({selectedRegions.length} selected)
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <label className="block text-[11px] font-mono font-medium text-muted-foreground uppercase tracking-wider">
+          Monitoring Regions
+        </label>
+        <span className="text-[11px] font-mono text-muted-foreground">
+          {selectedRegions.length} / {MAX_REGIONS} selected
         </span>
-      </label>
-
-      <div className="text-sm text-primary/60 font-mono mb-2">
-        Select up to {MAX_REGIONS} regions to monitor your service from. Leave empty for
-        single-region monitoring.
       </div>
 
+      <p className="text-xs text-muted-foreground">
+        Select up to {MAX_REGIONS} regions to monitor your service from. Leave empty for
+        single-region monitoring.
+      </p>
+
       {selectedRegions.length > MAX_REGIONS && (
-        <div className="px-3 py-2 mb-2 bg-red-500/10 border border-red-500/30 text-red-400 text-[10px] font-mono uppercase tracking-wider">
-          ⚠ Max {MAX_REGIONS} regions allowed on free plan. Extra regions will be ignored.
+        <div className="px-3 py-2 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-300 text-xs font-mono">
+          ⚠ Max {MAX_REGIONS} regions allowed on this tier. Extra regions will be ignored.
         </div>
       )}
 
-      <div className="border border-primary/20 bg-secondary/20 backdrop-blur-sm relative group/regions">
+      <div className="rounded-xl border border-border bg-background shadow-2xs relative">
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-primary/5 transition-colors font-mono"
+          className="w-full px-4 py-3 text-left flex items-center justify-between hover:bg-muted/40 transition-colors rounded-xl font-mono text-xs font-medium"
         >
-          <span className="text-sm text-foreground">
+          <span className="text-foreground">
             {selectedRegions.length === 0
-              ? "SELECT REGIONS..."
-              : `${selectedRegions.length} REGION${selectedRegions.length > 1 ? "S" : ""} ACTIVE`}
+              ? "Select regions..."
+              : `${selectedRegions.length} region${selectedRegions.length > 1 ? "s" : ""} active`}
           </span>
           <svg
-            className={`w-4 h-4 text-primary transition-transform ${isOpen ? "rotate-180" : ""}`}
+            className={`w-4 h-4 text-muted-foreground transition-transform ${isOpen ? "rotate-180" : ""}`}
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -82,36 +84,36 @@ export function RegionSelector({ selectedRegions, onChange }: RegionSelectorProp
         </button>
 
         {isOpen && (
-          <div className="border-t border-primary/20 p-4 max-h-96 overflow-y-auto custom-scrollbar bg-background/50">
+          <div className="border-t border-border p-4 max-h-96 overflow-y-auto custom-scrollbar bg-card rounded-b-xl space-y-4">
             {CONTINENTS.map((continent) => {
               const continentRegions = AVAILABLE_REGIONS.filter((r) => r.continent === continent);
               const allSelected = continentRegions.every((r) => selectedRegions.includes(r.code));
               const someSelected = continentRegions.some((r) => selectedRegions.includes(r.code));
 
               return (
-                <div key={continent} className="mb-4 last:mb-0">
+                <div key={continent} className="space-y-2">
                   <button
                     type="button"
                     onClick={() => selectAllInContinent(continent)}
-                    className="flex items-center gap-2 mb-2 text-xs font-bold font-mono text-primary/80 hover:text-primary transition-colors uppercase tracking-widest"
+                    className="flex items-center gap-2 text-xs font-semibold text-foreground hover:text-foreground/80 transition-colors uppercase tracking-wider font-mono cursor-pointer"
                   >
                     <div
-                      className={`w-4 h-4 border flex items-center justify-center transition-all ${
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-all ${
                         allSelected
-                          ? "bg-primary border-primary"
+                          ? "bg-foreground border-foreground text-background"
                           : someSelected
-                            ? "bg-primary/50 border-primary"
-                            : "border-primary/30"
+                            ? "bg-foreground/50 border-foreground text-background"
+                            : "border-border bg-background"
                       }`}
                     >
                       {(allSelected || someSelected) && (
-                        <Check className="w-3 h-3 text-primary-foreground" />
+                        <Check className="w-3 h-3 text-background" />
                       )}
                     </div>
                     {continent}
                   </button>
 
-                  <div className="space-y-1 ml-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 ml-6">
                     {continentRegions.map((region) => {
                       const isSelected = selectedRegions.includes(region.code);
 
@@ -120,21 +122,23 @@ export function RegionSelector({ selectedRegions, onChange }: RegionSelectorProp
                           key={region.code}
                           type="button"
                           onClick={() => toggleRegion(region.code)}
-                          className={`w-full flex items-center gap-3 px-3 py-2 text-xs font-mono transition-all ${
+                          className={`flex items-center gap-2.5 px-3 py-2 text-xs rounded-lg transition-all cursor-pointer ${
                             isSelected
-                              ? "bg-primary/10 text-primary border-l-2 border-primary"
-                              : "text-muted-foreground hover:bg-primary/5 hover:text-foreground"
+                              ? "bg-muted/80 text-foreground font-medium border border-border shadow-2xs"
+                              : "text-muted-foreground hover:bg-muted/40 hover:text-foreground border border-transparent"
                           }`}
                         >
                           <div
-                            className={`w-4 h-4 border flex items-center justify-center transition-all ${
-                              isSelected ? "bg-primary border-primary" : "border-primary/20"
+                            className={`w-3.5 h-3.5 rounded border flex items-center justify-center transition-all ${
+                              isSelected
+                                ? "bg-foreground border-foreground"
+                                : "border-border bg-background"
                             }`}
                           >
-                            {isSelected && <Check className="w-3 h-3 text-primary-foreground" />}
+                            {isSelected && <Check className="w-2.5 h-2.5 text-background" />}
                           </div>
-                          <span className="text-lg">{region.flag}</span>
-                          <span className="flex-1 text-left">{region.name}</span>
+                          <span className="text-base">{region.flag}</span>
+                          <span className="flex-1 text-left truncate">{region.name}</span>
                         </button>
                       );
                     })}

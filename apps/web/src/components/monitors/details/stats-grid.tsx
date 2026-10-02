@@ -20,56 +20,58 @@ export function MonitorStatsGrid({ monitor }: { monitor: any }) {
       : "0";
 
   // Downtime: assuming 1 minute interval for simplicity if we don't know duration.
-  // Ideally we sum duration based on timestamps.
   const intervalMinutes = (monitor.interval || 60) / 60;
   const downtimeMinutes = (downCount * intervalMinutes).toFixed(0);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-      <div className="flex flex-col gap-2 rounded-sm p-4 md:p-6 border border-primary/20 bg-card/40 backdrop-blur-sm relative group overflow-hidden">
-        <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div className="flex flex-col gap-2 rounded-2xl p-5 md:p-6 border border-border bg-card shadow-xs relative group overflow-hidden transition-all hover:border-border/80">
         <div className="flex justify-between items-center relative z-10">
-          <p className="text-primary/60 text-[10px] font-bold uppercase tracking-widest font-mono">
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider font-mono">
             Uptime (24h)
           </p>
-          <Activity className="size-4 text-primary" />
+          <div className="size-7 rounded-lg bg-accent/60 border border-border flex items-center justify-center text-foreground">
+            <Activity className="size-3.5" />
+          </div>
         </div>
-        <p className="text-foreground text-3xl font-bold font-mono tracking-tighter relative z-10">
+        <p className="text-foreground text-3xl font-bold font-mono tracking-tight relative z-10">
           {uptime}%
         </p>
-        <p className="text-primary text-xs font-bold font-mono flex items-center gap-1 relative z-10">
+        <p className="text-emerald-600 text-xs font-semibold font-mono flex items-center gap-1 relative z-10">
           <ArrowUpRight className="size-3" /> +0.02% from yesterday
         </p>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-sm p-4 md:p-6 border border-primary/20 bg-card/40 backdrop-blur-sm relative group overflow-hidden">
-        <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+      <div className="flex flex-col gap-2 rounded-2xl p-5 md:p-6 border border-border bg-card shadow-xs relative group overflow-hidden transition-all hover:border-border/80">
         <div className="flex justify-between items-center relative z-10">
-          <p className="text-primary/60 text-[10px] font-bold uppercase tracking-widest font-mono">
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider font-mono">
             Avg Latency
           </p>
-          <Clock className="size-4 text-primary" />
+          <div className="size-7 rounded-lg bg-accent/60 border border-border flex items-center justify-center text-foreground">
+            <Clock className="size-3.5" />
+          </div>
         </div>
-        <p className="text-foreground text-3xl font-bold font-mono tracking-tighter relative z-10">
+        <p className="text-foreground text-3xl font-bold font-mono tracking-tight relative z-10">
           {avgLatency}ms
         </p>
-        <p className="text-yellow-500 text-xs font-bold font-mono flex items-center gap-1 relative z-10">
+        <p className="text-amber-600 text-xs font-semibold font-mono flex items-center gap-1 relative z-10">
           <ArrowUpRight className="size-3" /> +15ms increase
         </p>
       </div>
 
-      <div className="flex flex-col gap-2 rounded-sm p-4 md:p-6 border border-primary/20 bg-card/40 backdrop-blur-sm relative group overflow-hidden">
-        <div className="absolute inset-0 bg-primary/5 translate-y-full group-hover:translate-y-0 transition-transform duration-500"></div>
+      <div className="flex flex-col gap-2 rounded-2xl p-5 md:p-6 border border-border bg-card shadow-xs relative group overflow-hidden transition-all hover:border-border/80">
         <div className="flex justify-between items-center relative z-10">
-          <p className="text-primary/60 text-[10px] font-bold uppercase tracking-widest font-mono">
+          <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-wider font-mono">
             Total Downtime
           </p>
-          <AlertTriangle className="size-4 text-primary" />
+          <div className="size-7 rounded-lg bg-accent/60 border border-border flex items-center justify-center text-foreground">
+            <AlertTriangle className="size-3.5" />
+          </div>
         </div>
-        <p className="text-foreground text-3xl font-bold font-mono tracking-tighter relative z-10">
+        <p className="text-foreground text-3xl font-bold font-mono tracking-tight relative z-10">
           {downtimeMinutes}m
         </p>
-        <p className="text-primary text-xs font-bold font-mono flex items-center gap-1 relative z-10">
+        <p className="text-muted-foreground text-xs font-semibold font-mono flex items-center gap-1 relative z-10">
           <ArrowDownRight className="size-3" /> stable
         </p>
       </div>

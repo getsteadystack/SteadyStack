@@ -10,10 +10,10 @@ async function getMonitorAccessScope(userId: string) {
   const active = await getActiveWorkspace();
   if (active?.id) {
     return {
-      OR: [{ organizationId: active.id }, { userId: userId }],
+      organizationId: active.id,
     };
   }
-  return { userId };
+  return { userId, organizationId: null };
 }
 
 export async function getIncidents() {

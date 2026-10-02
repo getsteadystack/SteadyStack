@@ -73,7 +73,12 @@ export default async function DocPage({ params }: { params: Promise<{ slug: stri
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Docs", item: `${BASE_URL}/docs` },
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Docs",
+            item: `${BASE_URL}/docs`,
+          },
           {
             "@type": "ListItem",
             position: 2,

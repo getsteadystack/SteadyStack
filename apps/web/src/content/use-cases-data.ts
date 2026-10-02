@@ -19,7 +19,7 @@ export const USE_CASES: Record<string, UseCaseItem> = {
       "Eliminate 3 AM pager noise with 4-of-7 multi-region consensus validation and native Docker probes.",
     badge: "For DevOps & SREs",
     description:
-      "SteadyStack executes multi-region edge checks across 7 sovereign global regions. When an endpoint fails in one region, our 4-of-7 quorum consensus engine verifies the outage across independent vantage points to eliminate localized ISP glitches.",
+      "SteadyStack executes multi-region edge checks across 7 global edge regions. When an endpoint fails in one region, our 4-of-7 quorum consensus engine verifies the outage across independent vantage points to eliminate localized ISP glitches.",
     heroGraphic: "terminal",
     keyMetrics: [
       {
@@ -253,7 +253,7 @@ export const USE_CASES: Record<string, UseCaseItem> = {
         detail: "Fast regex & JSON evaluation",
       },
       {
-        label: "Sovereign Regions",
+        label: "Edge Regions",
         value: "7 Global",
         detail: "4-of-7 Quorum consensus",
       },

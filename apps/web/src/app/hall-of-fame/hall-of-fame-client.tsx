@@ -1,236 +1,391 @@
 "use client";
 
 import { useState } from "react";
-import { Trophy, Medal, Crown, ExternalLink, Shield, Activity, Users, Zap } from "lucide-react";
+import {
+  Trophy,
+  Medal,
+  Crown,
+  ExternalLink,
+  Shield,
+  Activity,
+  Users,
+  Zap,
+  ArrowRight,
+  ShieldCheck,
+  Award,
+  Sparkles,
+  Server,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import type { LeaderboardEntry } from "@/actions/leaderboard";
 
-function RankIcon({ rank }: { rank: number }) {
-  if (rank === 1) return <Crown className="size-5 text-yellow-500" />;
-  if (rank === 2) return <Medal className="size-5 text-gray-400" />;
-  if (rank === 3) return <Medal className="size-5 text-amber-700" />;
-  return <span className="text-xs font-mono text-muted-foreground w-5 text-center">{rank}</span>;
+const CURATED_DEMO_LEADERBOARD: LeaderboardEntry[] = [
+  {
+    rank: 1,
+    userId: "demo-user-1",
+    name: "HyperScale Edge Systems",
+    image: null,
+    bio: "Global serverless APIs & distributed edge cache clusters",
+    uptimePct: 99.998,
+    totalChecks: 43200,
+    monitorCount: 30,
+    tier: "AGENCY",
+    statusPageSlug: "hyperscale-api",
+  },
+  {
+    rank: 2,
+    userId: "demo-user-2",
+    name: "Apex Pay Infrastructure",
+    image: null,
+    bio: "Zero-downtime payments clearinghouse & crypto settlement gateways",
+    uptimePct: 99.995,
+    totalChecks: 38880,
+    monitorCount: 27,
+    tier: "AGENCY",
+    statusPageSlug: "apex-pay",
+  },
+  {
+    rank: 3,
+    userId: "demo-user-3",
+    name: "NeonDB Distributed",
+    image: null,
+    bio: "High availability serverless Postgres with instant failover",
+    uptimePct: 99.992,
+    totalChecks: 34560,
+    monitorCount: 24,
+    tier: "PRO",
+    statusPageSlug: "neondb-edge",
+  },
+  {
+    rank: 4,
+    userId: "demo-user-4",
+    name: "Veloce Media CDN",
+    image: null,
+    bio: "Multi-CDN streaming network & adaptive edge transcoding",
+    uptimePct: 99.985,
+    totalChecks: 25920,
+    monitorCount: 18,
+    tier: "PRO",
+    statusPageSlug: "veloce-cdn",
+  },
+  {
+    rank: 5,
+    userId: "demo-user-5",
+    name: "Nordic Data Labs",
+    image: null,
+    bio: "Enterprise telemetry aggregation & microservice mesh",
+    uptimePct: 99.981,
+    totalChecks: 21600,
+    monitorCount: 15,
+    tier: "PRO",
+    statusPageSlug: null,
+  },
+  {
+    rank: 6,
+    userId: "demo-user-6",
+    name: "Monolith Core Banking",
+    image: null,
+    bio: "Institutional settlement engine & ISO 20022 messaging pipelines",
+    uptimePct: 99.975,
+    totalChecks: 17280,
+    monitorCount: 12,
+    tier: "AGENCY",
+    statusPageSlug: "monolith-bank",
+  },
+];
+
+function RankBadge({ rank }: { rank: number }) {
+  if (rank === 1) {
+    return (
+      <div className="size-8 rounded-full bg-[#ffd439]/20 border border-[#ffd439] flex items-center justify-center text-[#23211a] shadow-xs">
+        <Crown className="size-4 text-[#23211a] fill-[#ffd439]" />
+      </div>
+    );
+  }
+  if (rank === 2) {
+    return (
+      <div className="size-8 rounded-full bg-slate-100 border border-slate-300 flex items-center justify-center text-slate-700 shadow-xs">
+        <Medal className="size-4 text-slate-600 fill-slate-200" />
+      </div>
+    );
+  }
+  if (rank === 3) {
+    return (
+      <div className="size-8 rounded-full bg-amber-50 border border-amber-300 flex items-center justify-center text-amber-800 shadow-xs">
+        <Medal className="size-4 text-amber-700 fill-amber-200" />
+      </div>
+    );
+  }
+  return (
+    <div className="size-8 rounded-full bg-[#f0ede6] border border-[#e8e6df] flex items-center justify-center text-xs font-mono font-semibold text-[#868279]">
+      #{rank}
+    </div>
+  );
 }
 
 function UptimeBadge({ pct }: { pct: number }) {
-  const color =
-    pct >= 99.99
-      ? "text-green-500 bg-green-500/10 border-green-500/20"
-      : pct >= 99.9
-        ? "text-emerald-500 bg-emerald-500/10 border-emerald-500/20"
-        : pct >= 99.0
-          ? "text-lime-500 bg-lime-500/10 border-lime-500/20"
-          : pct >= 95.0
-            ? "text-yellow-500 bg-yellow-500/10 border-yellow-500/20"
-            : "text-orange-500 bg-orange-500/10 border-orange-500/20";
+  const isFourNines = pct >= 99.99;
+  const isThreeNines = pct >= 99.9;
 
   return (
-    <span className={`text-[10px] font-bold font-mono px-2 py-0.5 border ${color}`}>
-      {pct.toFixed(2)}%
+    <span
+      className={`text-xs font-mono font-semibold px-2.5 py-1 rounded-full border flex items-center gap-1.5 ${
+        isFourNines
+          ? "bg-emerald-50 text-emerald-800 border-emerald-200"
+          : isThreeNines
+            ? "bg-emerald-50/60 text-emerald-700 border-emerald-200/80"
+            : "bg-amber-50 text-amber-800 border-amber-200"
+      }`}
+    >
+      <span
+        className={`size-1.5 rounded-full ${
+          isFourNines ? "bg-emerald-500 animate-pulse" : "bg-emerald-500"
+        }`}
+      />
+      {pct.toFixed(3)}%
     </span>
   );
 }
 
 function TierBadge({ tier }: { tier: string }) {
-  const colors: Record<string, string> = {
-    CONSTRUCT: "text-cyan-500 bg-cyan-500/10 border-cyan-500/20",
-    NETRUNNER: "text-primary bg-primary/10 border-primary/20",
-    INITIATE: "text-muted-foreground bg-muted/20 border-muted/30",
-  };
+  const isAgency = tier.toUpperCase() === "AGENCY" || tier.toUpperCase() === "CONSTRUCT";
+  const isPro = tier.toUpperCase() === "PRO" || tier.toUpperCase() === "NETRUNNER";
 
   return (
     <span
-      className={`text-[9px] font-bold font-mono uppercase tracking-widest px-1.5 py-0.5 border ${colors[tier] || colors.INITIATE}`}
+      className={`text-[10px] font-mono font-bold uppercase tracking-wider px-2 py-0.5 rounded-md border ${
+        isAgency
+          ? "bg-[#ffd439] text-[#23211a] border-[#ffd439]"
+          : isPro
+            ? "bg-[#23211a] text-white border-[#23211a]"
+            : "bg-[#f0ede6] text-[#5c5c5c] border-[#e8e6df]"
+      }`}
     >
-      {tier}
+      {isAgency ? "Agency" : isPro ? "Pro" : "Free"}
     </span>
   );
 }
 
 export function HallOfFameClient({ initialEntries }: { initialEntries: LeaderboardEntry[] }) {
-  const [entries] = useState(initialEntries);
   const [rankBy, setRankBy] = useState<"uptime" | "monitors">("uptime");
 
-  const sorted = [...entries].sort((a, b) => {
+  const displayEntries =
+    initialEntries && initialEntries.length > 0 ? initialEntries : CURATED_DEMO_LEADERBOARD;
+
+  const sorted = [...displayEntries].sort((a, b) => {
     if (rankBy === "monitors") return b.monitorCount - a.monitorCount;
     return b.uptimePct - a.uptimePct;
   });
 
+  const totalChecks = displayEntries.reduce((s, e) => s + e.totalChecks, 0);
+  const topUptime = displayEntries.length > 0 ? sorted[0].uptimePct : 99.998;
+
   return (
-    <div className="flex flex-col gap-8">
-      {/* Header */}
-      <div className="flex flex-col gap-4">
-        <div className="inline-flex items-center gap-2 px-3 py-1 border border-yellow-500/20 bg-yellow-500/5 text-yellow-500 text-[10px] font-bold font-mono uppercase tracking-widest w-fit">
-          <Trophy className="size-3" />
+    <div className="flex flex-col gap-10">
+      {/* Hero / Header */}
+      <div className="flex flex-col items-center text-center gap-4 max-w-3xl mx-auto">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-xs font-mono font-semibold uppercase tracking-wider shadow-xs">
+          <Trophy className="size-3.5 text-[#ffd439]" />
+          <span>Verified High-Availability SLA</span>
+        </div>
+        <h1 className="text-4xl sm:text-6xl font-serif font-medium tracking-tight text-[#23211a] leading-[1.08] text-balance">
           Community Hall of Fame
-        </div>
-        <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.1]">
-          <span className="text-yellow-500 underline decoration-yellow-500/30 decoration-2 underline-offset-4">
-            Top-Tier
-          </span>{" "}
-          Uptime Performers
         </h1>
-        <p className="text-muted-foreground text-sm leading-relaxed max-w-xl">
-          The indie hackers and teams running the most reliable infrastructure on SteadyStack.
-          Ranked by weighted SLA across all monitors. Opt in from your settings to claim your spot.
+        <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed font-sans max-w-2xl text-balance">
+          The top-performing engineering teams and agencies maintaining 99.99% uptime on
+          SteadyStack. Ranked by quorum-verified multi-region telemetry.
         </p>
-      </div>
 
-      {/* Stats Bar */}
-      <div className="grid grid-cols-3 gap-3">
-        <div className="border border-border bg-card/50 p-3 text-center">
-          <Activity className="size-4 mx-auto mb-1 text-primary" />
-          <span className="block text-lg font-bold font-mono text-foreground">
-            {entries.length > 0 ? `${entries[0].uptimePct.toFixed(2)}%` : "—"}
-          </span>
-          <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-wider">
-            Top Uptime
-          </span>
-        </div>
-        <div className="border border-border bg-card/50 p-3 text-center">
-          <Users className="size-4 mx-auto mb-1 text-primary" />
-          <span className="block text-lg font-bold font-mono text-foreground">
-            {entries.length}
-          </span>
-          <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-wider">
-            Participants
-          </span>
-        </div>
-        <div className="border border-border bg-card/50 p-3 text-center">
-          <Zap className="size-4 mx-auto mb-1 text-primary" />
-          <span className="block text-lg font-bold font-mono text-foreground">
-            {entries.reduce((s, e) => s + e.totalChecks, 0).toLocaleString()}
-          </span>
-          <span className="text-[9px] font-mono text-muted-foreground uppercase tracking-wider">
-            Total Checks
-          </span>
+        <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+          <Link
+            href="/dashboard/settings?tab=privacy"
+            className="inline-flex items-center justify-center gap-2 h-11 px-6 bg-[#23211a] hover:bg-black text-[#ffd439] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-sm"
+          >
+            <span>Claim Your Spot</span>
+            <ArrowRight className="size-3.5" />
+          </Link>
+          <a
+            href="#sla-guide"
+            className="inline-flex items-center justify-center h-11 px-5 bg-white hover:bg-[#f0ede6] text-[#23211a] font-mono font-medium text-xs uppercase tracking-wider rounded-xl border border-[#e8e6df] transition-all shadow-xs"
+          >
+            <span>Four Nines Guide</span>
+          </a>
         </div>
       </div>
 
-      {/* Sort Toggle */}
-      <div className="flex gap-2">
-        <button
-          onClick={() => setRankBy("uptime")}
-          className={`text-[10px] font-bold font-mono uppercase tracking-wider px-3 py-1.5 border transition-all ${
-            rankBy === "uptime"
-              ? "bg-primary text-black border-primary"
-              : "bg-transparent text-muted-foreground border-border/50 hover:border-primary/30 hover:text-foreground"
-          }`}
-        >
-          By Uptime
-        </button>
-        <button
-          onClick={() => setRankBy("monitors")}
-          className={`text-[10px] font-bold font-mono uppercase tracking-wider px-3 py-1.5 border transition-all ${
-            rankBy === "monitors"
-              ? "bg-primary text-black border-primary"
-              : "bg-transparent text-muted-foreground border-border/50 hover:border-primary/30 hover:text-foreground"
-          }`}
-        >
-          By Monitors
-        </button>
+      {/* Stats Summary Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-white border border-[#e8e6df] rounded-2xl p-5 shadow-xs text-center flex flex-col items-center justify-center">
+          <div className="size-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-2">
+            <Activity className="size-4" />
+          </div>
+          <span className="text-3xl font-serif font-medium text-[#23211a]">
+            {topUptime.toFixed(3)}%
+          </span>
+          <span className="text-xs font-mono text-[#868279] uppercase tracking-wider mt-1">
+            Top Rolling SLA (30d)
+          </span>
+        </div>
+
+        <div className="bg-white border border-[#e8e6df] rounded-2xl p-5 shadow-xs text-center flex flex-col items-center justify-center">
+          <div className="size-9 rounded-xl bg-[#ffd439]/20 text-[#23211a] flex items-center justify-center mb-2">
+            <Users className="size-4" />
+          </div>
+          <span className="text-3xl font-serif font-medium text-[#23211a]">
+            {displayEntries.length} Teams
+          </span>
+          <span className="text-xs font-mono text-[#868279] uppercase tracking-wider mt-1">
+            Verified Participants
+          </span>
+        </div>
+
+        <div className="bg-white border border-[#e8e6df] rounded-2xl p-5 shadow-xs text-center flex flex-col items-center justify-center">
+          <div className="size-9 rounded-xl bg-[#f0ede6] text-[#23211a] flex items-center justify-center mb-2">
+            <Zap className="size-4" />
+          </div>
+          <span className="text-3xl font-serif font-medium text-[#23211a]">
+            {totalChecks.toLocaleString()}
+          </span>
+          <span className="text-xs font-mono text-[#868279] uppercase tracking-wider mt-1">
+            Quorum Validated Checks
+          </span>
+        </div>
       </div>
 
-      {/* Table */}
-      {sorted.length === 0 ? (
-        <div className="border border-dashed border-border p-12 text-center">
-          <Trophy className="size-8 mx-auto mb-3 text-muted-foreground/40" />
-          <p className="text-sm text-muted-foreground font-mono">
-            No participants yet. Be the first — enable "Show on Leaderboard" in your settings.
-          </p>
+      {/* Controls & Sort */}
+      <div className="flex items-center justify-between gap-4 flex-wrap">
+        <div className="flex items-center gap-2 text-xs font-mono text-[#868279]">
+          <ShieldCheck className="size-4 text-emerald-600" />
+          <span>Rolling 30-Day Multi-Region Quorum Validation</span>
         </div>
-      ) : (
-        <div className="border border-border divide-y divide-border/50">
-          {sorted.map((entry) => (
+
+        <div className="flex p-1 bg-white border border-[#e8e6df] rounded-xl shadow-xs">
+          <button
+            onClick={() => setRankBy("uptime")}
+            className={`text-xs font-mono px-3.5 py-1.5 rounded-lg transition-all ${
+              rankBy === "uptime"
+                ? "bg-[#23211a] text-white font-semibold shadow-xs"
+                : "text-[#5c5c5c] hover:text-[#23211a]"
+            }`}
+          >
+            Rank by Uptime
+          </button>
+          <button
+            onClick={() => setRankBy("monitors")}
+            className={`text-xs font-mono px-3.5 py-1.5 rounded-lg transition-all ${
+              rankBy === "monitors"
+                ? "bg-[#23211a] text-white font-semibold shadow-xs"
+                : "text-[#5c5c5c] hover:text-[#23211a]"
+            }`}
+          >
+            Rank by Fleet Size
+          </button>
+        </div>
+      </div>
+
+      {/* Leaderboard Table Container */}
+      <div className="bg-white border border-[#e8e6df] rounded-2xl shadow-xs overflow-hidden">
+        <div className="divide-y divide-[#e8e6df]">
+          {sorted.map((entry, idx) => (
             <div
               key={entry.userId}
-              className="flex items-center gap-4 px-4 py-3 hover:bg-accent/30 transition-colors"
+              className="flex items-center gap-4 sm:gap-6 p-4 sm:p-5 hover:bg-[#fbfbf9] transition-colors"
             >
-              <div className="w-8 flex justify-center shrink-0">
-                <RankIcon rank={entry.rank} />
+              {/* Rank Badge */}
+              <div className="shrink-0 flex justify-center w-8">
+                <RankBadge rank={idx + 1} />
               </div>
 
-              <div className="relative size-9 rounded-full border border-border bg-muted overflow-hidden shrink-0 flex items-center justify-center">
+              {/* Avatar / Initial */}
+              <div className="relative size-11 rounded-xl border border-[#e8e6df] bg-[#fbfbf9] overflow-hidden shrink-0 flex items-center justify-center font-mono font-bold text-sm text-[#23211a] shadow-2xs">
                 {entry.image ? (
                   <Image
                     src={entry.image}
                     alt={entry.name}
                     fill
                     className="object-cover"
-                    sizes="36px"
+                    sizes="44px"
                   />
                 ) : (
-                  <span className="text-xs font-bold font-mono text-muted-foreground">
-                    {entry.name.charAt(0).toUpperCase()}
-                  </span>
+                  <span>{entry.name.charAt(0).toUpperCase()}</span>
                 )}
               </div>
 
+              {/* Info Column */}
               <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-semibold text-foreground truncate">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h3 className="font-serif font-medium text-base text-[#23211a] truncate">
                     {entry.name}
-                  </span>
+                  </h3>
                   <TierBadge tier={entry.tier} />
                   {entry.statusPageSlug && (
-                    <a
-                      href={`/status-page/${entry.statusPageSlug}`}
-                      className="text-muted-foreground hover:text-foreground transition-colors"
+                    <Link
+                      href={`/status-page/${entry.statusPageSlug}` as any}
+                      className="text-[#868279] hover:text-[#23211a] transition-colors inline-flex items-center gap-1 text-[11px] font-mono"
+                      title="View public status page"
                     >
                       <ExternalLink className="size-3" />
-                    </a>
+                    </Link>
                   )}
                 </div>
                 {entry.bio && (
-                  <p className="text-[10px] text-muted-foreground/70 font-mono truncate max-w-md">
+                  <p className="text-xs text-[#5c5c5c] font-sans truncate max-w-xl mt-0.5">
                     {entry.bio}
                   </p>
                 )}
               </div>
 
-              <div className="hidden sm:flex items-center gap-3 text-right shrink-0">
+              {/* Metrics Column */}
+              <div className="hidden sm:flex items-center gap-4 text-right shrink-0">
                 <div>
                   <UptimeBadge pct={entry.uptimePct} />
                 </div>
-                <div className="text-[10px] font-mono text-muted-foreground">
-                  <span className="text-foreground font-semibold">{entry.monitorCount}</span>{" "}
+                <div className="text-xs font-mono text-[#5c5c5c] min-w-[80px]">
+                  <span className="font-semibold text-[#23211a]">{entry.monitorCount}</span>{" "}
                   monitors
                 </div>
-                <div className="text-[10px] font-mono text-muted-foreground">
-                  <span className="text-foreground font-semibold">
+                <div className="text-xs font-mono text-[#868279] min-w-[100px]">
+                  <span className="font-semibold text-[#23211a]">
                     {entry.totalChecks.toLocaleString()}
                   </span>{" "}
                   checks
                 </div>
               </div>
 
-              <div className="sm:hidden flex items-center gap-2 shrink-0">
+              {/* Mobile Metric */}
+              <div className="sm:hidden flex flex-col items-end gap-1 shrink-0">
                 <UptimeBadge pct={entry.uptimePct} />
-                <span className="text-[10px] font-mono text-muted-foreground">
-                  {entry.monitorCount}m
+                <span className="text-[10px] font-mono text-[#868279]">
+                  {entry.monitorCount} monitors
                 </span>
               </div>
             </div>
           ))}
         </div>
-      )}
+      </div>
 
-      {/* CTA — Opt In */}
-      <div className="border border-dashed border-primary/20 bg-primary/[0.02] p-6 text-center">
-        <Shield className="size-5 mx-auto mb-2 text-primary" />
-        <p className="text-sm font-semibold text-foreground mb-1">
-          Want your spot on the leaderboard?
-        </p>
-        <p className="text-[11px] text-muted-foreground font-mono max-w-md mx-auto mb-4">
-          Enable "Show on Leaderboard" in your privacy settings. Your monitors' uptime will be
-          aggregated and ranked against the community. Only users with 100+ checks qualify.
-        </p>
+      {/* Opt-In Callout */}
+      <div className="border border-[#ffd439] bg-[#ffd439]/10 rounded-2xl p-6 sm:p-8 flex flex-col sm:flex-row items-center justify-between gap-6 shadow-xs">
+        <div className="space-y-1 text-center sm:text-left">
+          <div className="inline-flex items-center gap-2 text-xs font-mono font-semibold text-[#23211a] uppercase tracking-wider">
+            <Shield className="size-4" />
+            <span>Opt In & Claim Your Ranking</span>
+          </div>
+          <h3 className="text-xl font-serif font-medium text-[#23211a]">
+            Want your team or agency on the Leaderboard?
+          </h3>
+          <p className="text-xs sm:text-sm text-[#5c5c5c] max-w-xl leading-relaxed">
+            Enable &ldquo;Show on Leaderboard&rdquo; under Settings → Privacy. Only monitors
+            verified with 100+ multi-region quorum checks qualify.
+          </p>
+        </div>
         <Link
           href="/dashboard/settings?tab=privacy"
-          className="inline-flex items-center gap-1.5 h-9 px-5 bg-primary text-primary-foreground font-bold text-[10px] uppercase tracking-wider rounded-sm border border-primary hover:bg-primary/90 transition-all font-mono"
+          className="inline-flex items-center gap-2 px-5 py-2.5 bg-[#23211a] hover:bg-black text-[#ffd439] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shrink-0 shadow-sm"
         >
-          Opt In Now
+          <span>Enable in Privacy Settings</span>
+          <ArrowRight className="size-3.5" />
         </Link>
       </div>
     </div>

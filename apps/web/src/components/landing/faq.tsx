@@ -1,42 +1,39 @@
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Sparkles } from "lucide-react";
+import Link from "next/link";
 
 export default function FAQ() {
   const faqs = [
     {
-      q: "How fast are the checks performed, and are there interval limits per tier?",
-      a: `Verification checks execute natively at the edge. The check frequency depends on your subscription tier: the Initiate (Free) tier supports 3-minute standard check intervals (1-minute intervals for your first 10 monitors) with 2-of-3 quorum consensus across 3 primary edge regions, the Netrunner plan supports down to 30 seconds across all 7 sovereign regions with 4-of-7 quorum consensus, and the Construct (Enterprise) plan supports high-frequency telemetry checks down to 10 seconds. All checks are backed by an independent out-of-band Hetzner sentinel.`,
+      q: "How fast are checks performed, and are there interval limits per tier?",
+      a: `Verification checks execute natively across our global edge Durable Objects. The Free tier supports 3-minute checks for up to 50 active monitors with 3-region quorum consensus. The Pro plan supports checks down to 30 seconds across 7 global regions with 4-of-7 quorum consensus, and Enterprise Scale supports 10-second high-frequency telemetry.`,
     },
     {
-      q: "What is multi-region consensus verification, and how does it prevent false alerts?",
-      a: "Outages on the Internet are often localized due to routing anomalies or regional network drops. When a SteadyStack edge probe detects that your monitor is DOWN, it triggers an immediate local re-check and queries our other sovereign regions. SteadyStack requires 4 of 7 global regions to independently confirm the failure before opening an incident (2-of-3 on the free tier). This voting system isolates regional route flaps from true global outages.",
+      q: "What is multi-region quorum consensus, and how does it eradicate 3 AM false alarms?",
+      a: "Internet routing glitches and localized carrier flukes often cause a single monitor probe to time out even when the website is online for 99.9% of real users. SteadyStack never pages your team on a single probe timeout; we query other edge nodes concurrently and require 4 of 7 global regions to confirm downtime before opening an incident. This voting system completely isolates transit hiccups from true global outages.",
     },
     {
-      q: "How do private probes monitor internal infrastructure behind firewalls?",
-      a: "Our lightweight dockerized probes run internally on your own secure private subnets. Instead of requiring you to open incoming firewall ports or set up public DNS records, the private probe establishes a secure outbound WebSocket control channel to our edge Durable Objects. The probe securely polls jobs, executes them locally, and pushes metrics back to SteadyStack, ensuring zero inbound security risks.",
+      q: "How do white-label status pages and custom CNAME domains work for clients?",
+      a: "Every client workspace in your agency account can have its own dedicated status portal on a custom domain (e.g., status.clientdomain.com). SteadyStack automatically provisions and renews SSL certificates, removes all third-party vendor watermarks, and allows you to customize the agency footer and client branding.",
     },
     {
-      q: "What notification channels are supported for dispatches?",
-      a: "Alerts can be routed dynamically based on severity thresholds. We support instant dispatches to Slack, Discord webhooks, Microsoft Teams, and email. For team alerting rotation, the Construct plan integrates directly with pager services like PagerDuty or custom webhook endpoints to execute automated disaster recovery actions.",
+      q: "Can I automate monthly client SLA audit reports (PDF)?",
+      a: "Yes. The Pro Agency and Enterprise tiers include automated monthly SLA PDF exports. On the 1st of each month (or on-demand), SteadyStack compiles 99.99% uptime proof, regional latency breakdowns, and resolved incident logs into a branded executive PDF you can hand over to clients during retainer renewals.",
     },
     {
-      q: "What are the exact capabilities and limits of the Initiate (Free) plan?",
-      a: `The Initiate plan is designed for side projects, indie developers, and commercial applications. Free plan includes commercial use permitted in writing with 50 active monitors (3-minute standard interval, 1-minute interval for your first 10 monitors), 3 primary edge regions with 2-of-3 quorum consensus, 1 public status page, and transparent probe telemetry. It requires no credit card and supports HTTP, SSL/TLS, DNS, and Heartbeat checks with 3 days of log retention.`,
+      q: "Can I monitor private infrastructure behind corporate firewalls?",
+      a: "Our lightweight Dockerized probe runs inside your client's private VPC or on-premise subnet. It establishes an outbound-only WebSocket control channel to our edge mesh. It pulls monitoring jobs, executes them internally against staging APIs or private databases, and sends encrypted metrics back without opening any inbound firewall ports.",
     },
     {
-      q: "Can I monitor protocols other than standard web pages?",
-      a: "Yes. SteadyStack supports comprehensive system checks including HTTP/HTTPS, SSL/TLS certificate handshakes, DNS records (A, MX, TXT, CAA), TCP port reachability, ICMP PING, and multi-step browser sequence simulations. Note that advanced protocols like TCP/Ping and browser sequences require upgrading to a paid tier (Netrunner or higher).",
+      q: "What alert channels are supported for team and client notifications?",
+      a: "Alerts can be routed dynamically based on severity. SteadyStack natively supports Slack, Discord webhooks, Microsoft Teams, email, SMS, PagerDuty, and OpsGenie. You can route dev team alerts to Slack while dispatching client-facing incident notifications only when an outage exceeds their SLA threshold.",
     },
     {
-      q: "How does the SSL/TLS monitoring module work?",
-      a: "The SSL monitoring module proactively connects to your secure endpoints to verify the entire certificate chain. It checks the certificate authority trust, key strength compliance, subject alternative names (SANs), certificate transparency logs, and revocation status via OCSP stapling. You will receive warning alerts 30 days prior to expiration to prevent unexpected certificate lapses.",
+      q: "What protocols are supported beyond standard HTTP/HTTPS?",
+      a: "SteadyStack supports full HTTP/HTTPS with custom headers and payload validation, SSL/TLS certificate transparency and expiry auditing (with 30-day proactive warnings), DNS record integrity (A, AAAA, MX, TXT, CAA), TCP port reachability, and Cron dead-man heartbeats.",
     },
     {
-      q: "Can I customize the look of my public status pages?",
-      a: "Absolutely. SteadyStack supports custom themes, status grid layouts, and white-labeling. You can map public pages to your own custom domain, configure responsive grid widgets, and select themes (such as Matrix Green, Cyberpunk Pink, or Terminal Dark). Paid plans allow you to completely remove SteadyStack branding.",
-    },
-    {
-      q: "How secure is my telemetry data, and what is your log retention policy?",
-      a: `All client settings, credentials, and telemetry headers are encrypted at rest and in transit. Raw event logs and latency metrics are retained depending on your tier: 3 days for the Initiate tier, 30 days for the Netrunner tier, and up to 1 full year for the Construct tier. High-tier plans also support full automated data exports to external storage objects without vendor lock-in.`,
+      q: "Is telemetry data encrypted, and what is your log retention policy?",
+      a: "All client configurations, webhook secrets, and telemetry logs are encrypted at rest and in transit. Raw event logs and latency metrics are retained for 30 days on Free, and up to 1 full year on Pro Agency and Enterprise Scale, with automated S3/R2 backup capabilities.",
     },
   ];
 
@@ -55,41 +52,58 @@ export default function FAQ() {
 
   return (
     <section
-      className="py-28 bg-background relative overflow-hidden content-visibility-auto"
+      className="py-24 md:py-32 bg-[#fbfbf9] text-[#23211a] relative overflow-hidden border-b border-[#e8e6df]"
       id="faq"
     >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <div className="max-w-3xl mx-auto px-6">
-        {/* Header */}
-        <div className="flex flex-col items-center text-center mb-16">
-          <div className="inline-flex items-center gap-2 mb-4 text-xs font-semibold text-primary uppercase tracking-wider">
-            <span>Support</span>
+
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+        {/* Section Header (Twin.so Serif Style) */}
+        <div className="flex flex-col items-center text-center mb-16 md:mb-20">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-[11px] font-mono font-bold uppercase tracking-wider mb-5 shadow-xs">
+            <Sparkles className="size-3.5 text-[#ffd439]" />
+            <span>Support & Insights</span>
           </div>
-          <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground mb-4">
-            Frequently asked questions
+
+          <h2 className="text-3xl sm:text-5xl md:text-6xl font-serif font-medium tracking-tight text-[#23211a] mb-6 text-balance leading-[1.08]">
+            Frequently asked questions.
           </h2>
-          <p className="text-muted-foreground text-sm leading-relaxed max-w-md">
-            Find immediate answers regarding SteadyStack's global network, subscription models, and
-            telemetry configurations.
+
+          <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed max-w-lg mx-auto text-balance">
+            Everything you need to know about SteadyStack&apos;s global consensus mesh, white-label
+            portals, and agency workflows.
           </p>
         </div>
 
-        {/* Minimalist Separator Layout */}
-        <div className="divide-y divide-border border-t border-b border-border">
-          {faqs.map((item, i) => (
-            <details key={i} className="group overflow-hidden transition-all duration-300">
-              <summary className="flex items-center justify-between py-5 cursor-pointer font-semibold text-foreground hover:text-primary transition-colors list-none outline-none focus-visible:ring-1 focus-visible:ring-primary/50 [&::-webkit-details-marker]:hidden">
-                <span className="text-sm sm:text-base tracking-tight">{item.q}</span>
-                <ChevronDown className="size-4 text-muted-foreground/60 group-open:rotate-180 group-open:text-primary transition-all duration-300 shrink-0 ml-4" />
+        {/* FAQ Accordion List (Twin.so Style) */}
+        <div className="space-y-3.5 text-left">
+          {faqs.map((faq, idx) => (
+            <details
+              key={idx}
+              className="group border border-[#e8e6df] rounded-2xl bg-white p-5 sm:p-6 transition-all duration-200 open:shadow-md hover:border-black/20"
+            >
+              <summary className="flex items-center justify-between cursor-pointer list-none text-base sm:text-lg font-serif font-medium text-[#23211a] gap-4">
+                <span>{faq.q}</span>
+                <div className="size-8 rounded-full bg-[#f4f2eb] border border-[#e8e6df] flex items-center justify-center shrink-0 text-[#868279] group-open:rotate-180 group-open:bg-[#ffd439]/30 group-open:text-[#23211a] transition-all">
+                  <ChevronDown className="size-4" />
+                </div>
               </summary>
-              <div className="pb-5 text-muted-foreground text-xs leading-relaxed transition-all duration-300">
-                {item.a}
+              <div className="mt-4 pt-4 border-t border-[#e8e6df] text-xs sm:text-sm text-[#5c5c5c] leading-relaxed font-sans">
+                {faq.a}
               </div>
             </details>
           ))}
+        </div>
+
+        {/* Helpdesk Callout Footer */}
+        <div className="mt-12 p-6 rounded-2xl bg-white border border-[#e8e6df] text-center text-xs font-mono shadow-xs">
+          <span className="text-[#5c5c5c]">Have a specialized architecture question?</span>{" "}
+          <Link href={"/docs" as any} className="font-bold text-[#23211a] hover:underline">
+            Talk directly to our engineering team →
+          </Link>
         </div>
       </div>
     </section>

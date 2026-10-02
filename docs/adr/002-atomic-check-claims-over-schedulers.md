@@ -1,6 +1,6 @@
 # ADR-002: Atomic check claims over scheduler infrastructure
 
-*Accepted — 2026-09*
+_Accepted — 2026-09_
 
 ## Context
 
@@ -14,7 +14,7 @@ three independent execution contexts:
    schedule an immediate re-check.
 
 Any of these can run concurrently — and in multi-region deployments, several
-workers run concurrently *by design* (see ADR-001). Monitors must be claimed
+workers run concurrently _by design_ (see ADR-001). Monitors must be claimed
 before execution so that a due monitor is checked **exactly once** per interval,
 no matter how many engines wake up at the same minute.
 
@@ -37,7 +37,7 @@ claims due monitors with a single atomic conditional `updateMany`:
 const claimed = await prisma.monitor.updateMany({
   where: {
     id: { in: dueMonitorIds },
-    nextCheckAt: { lte: now },          // still due — nobody claimed it yet
+    nextCheckAt: { lte: now }, // still due — nobody claimed it yet
   },
   data: { nextCheckAt: new Date(now + intervalMs) }, // push the claim forward
 });
@@ -56,7 +56,7 @@ backoff on failure) apply to all engines uniformly.
 - **Engines are interchangeable and stateless.** Any subset can run: worker
   only, cron route only, both at once, or dev-mode in-process scheduling.
 - **At-least-once with a practical exactly-once window.** If a worker crashes
-  *after* claiming but *before* running the check, that interval is skipped —
+  _after_ claiming but _before_ running the check, that interval is skipped —
   a lost check is less harmful than a duplicated one (it self-heals at the next
   tick, and the missed interval is honestly reflected in SLA data rather than
   double-counted).

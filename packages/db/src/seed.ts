@@ -1,4 +1,4 @@
-import { randomBytes, scryptSync } from "node:crypto";
+import { createHash, randomBytes, scryptSync } from "node:crypto";
 import prisma from "./index.js";
 import {
   type MonitorType,
@@ -1504,7 +1504,7 @@ export async function seedDatabase(options: SeedOptions = {}) {
   }
   log(`🔔 Notification Channels: ${createdChannels.length}`);
   log(`📁 Status Page Groups: ${groupNames.length}`);
-  log(`🌐 Status Page: http://localhost:3000/status/${statusPageSlug}`);
+  log(`🌐 Status Page: http://localhost:3000/status-page/${statusPageSlug}`);
   log(`📊 Dashboard: http://localhost:3000/dashboard`);
   log("========================================================\n");
 

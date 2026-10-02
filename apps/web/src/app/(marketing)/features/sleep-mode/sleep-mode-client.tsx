@@ -143,27 +143,28 @@ export function SleepModeClient() {
             Sleep Mode Engine
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground leading-[1.1]">
-            If we call you at <span className="text-primary">3 AM</span>,
+            If we page you at <span className="text-primary">3 AM</span>,
             <br />
             <span className="underline decoration-primary/30 decoration-2 underline-offset-4">
               it&apos;s real.
             </span>
           </h1>
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed max-w-lg">
-            Solo devs hate waking up for false alarms. SteadyStack runs every check through a{" "}
+            Engineering teams hate waking up for false alarms. SteadyStack runs every check through
+            our{" "}
             <strong className="text-foreground font-semibold">
-              5-vector verification pipeline
+              multi-region quorum consensus engine
             </strong>{" "}
-            before alerting you. Two-second blips, regional ISP hiccups, and flapping containers get
-            filtered. Real outages break through.
+            before paging on-call personnel. Two-second blips, regional ISP hiccups, and flapping
+            containers get filtered automatically. Real outages break through immediately.
           </p>
           <div className="flex flex-wrap gap-4 pt-2">
             <Link
-              href="/signup?plan=netrunner"
+              href="/signup"
               className="inline-flex items-center gap-2 h-11 px-6 bg-primary text-primary-foreground font-bold text-xs rounded-lg border border-primary hover:bg-primary/90 transition-all shadow-sm"
             >
               <Sparkles className="size-3.5" />
-              Get The Sleep Plan — $19/mo
+              Start Free Trial — 50 Monitors
             </Link>
             <Link
               href="/#pricing"
@@ -351,25 +352,25 @@ export function SleepModeClient() {
         <div className="relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 border border-primary/20 bg-primary/5 text-primary text-[10px] font-bold font-mono uppercase tracking-widest mb-4">
             <Moon className="size-3" />
-            The Sleep Plan
+            Agency Plan
           </div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-foreground mb-3">
-            Upgrade to Netrunner — <span className="text-primary">$19/mo</span>
+            Upgrade to Agency — <span className="text-primary">$39/mo</span>
           </h2>
           <p className="text-muted-foreground text-sm leading-relaxed max-w-lg mx-auto mb-6">
-            The Sleep Plan isn&apos;t a gimmick — it&apos;s our Netrunner tier with 30-second
-            checks, 5-vector verification, anomaly detection, and flapping suppression. You get
-            alerts accurate enough to trust with your sleep.
+            Agency tier gives you 30-second checks, 4-of-7 multi-region quorum verification, anomaly
+            detection, and flapping suppression. You get alerts accurate enough to trust with your
+            sleep.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3 mb-8">
             {[
-              "5-Vector Verification",
+              "4-of-7 Quorum Verification",
               "30-Second Checks",
-              "Multi-Region Mesh",
+              "Multi-Region Edge Mesh",
               "Anomaly Detection",
               "Flapping Suppression",
               "Circuit Breaker",
-              "250 Monitors",
+              "Up to 10 Clients",
             ].map((feature) => (
               <span
                 key={feature}
@@ -383,7 +384,7 @@ export function SleepModeClient() {
             href="/signup?plan=netrunner"
             className="inline-flex items-center gap-1.5 h-11 px-8 bg-primary text-primary-foreground font-bold text-sm rounded-lg border border-primary hover:bg-primary/90 transition-all shadow-sm"
           >
-            Get The Sleep Plan — $19/mo
+            Upgrade to Agency — $39/mo
           </Link>
         </div>
       </div>

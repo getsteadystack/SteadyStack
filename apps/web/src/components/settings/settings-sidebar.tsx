@@ -65,19 +65,19 @@ export function SettingsSidebar() {
         {/* Toggle Collapse Header */}
         <div
           className={cn(
-            "hidden md:flex items-center pb-2 border-b border-slate-800/80 mb-1",
-            isCollapsed ? "justify-center" : "justify-between px-3",
+            "hidden md:flex items-center pb-2 border-b border-border mb-1",
+            isCollapsed ? "justify-center" : "justify-between px-2",
           )}
         >
           {!isCollapsed && (
-            <span className="font-mono text-xs uppercase tracking-widest text-slate-400 font-semibold">
-              Settings
+            <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
+              Settings Nav
             </span>
           )}
           <button
             onClick={toggleCollapse}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-            className="p-1.5 rounded-md text-slate-400 hover:text-slate-100 hover:bg-slate-800/60 transition-colors"
+            className="p-1 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors cursor-pointer"
           >
             {isCollapsed ? (
               <PanelLeftOpen className="size-4" />
@@ -97,15 +97,20 @@ export function SettingsSidebar() {
                 href={`/dashboard/settings?tab=${item.tab}`}
                 title={isCollapsed ? item.name : undefined}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-md transition-all font-mono text-sm uppercase tracking-wider shrink-0",
+                  "flex items-center gap-2.5 px-3 py-2 rounded-xl transition-all text-xs font-medium shrink-0",
                   isCollapsed ? "md:justify-center md:px-2" : "",
                   isActive
-                    ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 shadow-sm"
-                    : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-200 hover:border-slate-700/50 border border-transparent",
+                    ? "bg-foreground text-background shadow-sm"
+                    : "text-muted-foreground hover:bg-muted/70 hover:text-foreground",
                 )}
               >
-                <item.icon className="size-4 shrink-0" />
-                {!isCollapsed && <span className="font-bold truncate">{item.name}</span>}
+                <item.icon
+                  className={cn(
+                    "size-4 shrink-0",
+                    isActive ? "text-[#ffd439]" : "text-muted-foreground",
+                  )}
+                />
+                {!isCollapsed && <span className="truncate">{item.name}</span>}
               </Link>
             );
           })}

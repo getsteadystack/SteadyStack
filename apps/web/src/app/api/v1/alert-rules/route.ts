@@ -98,7 +98,9 @@ export async function POST(req: NextRequest) {
 
     if (channels.length !== channelIds.length) {
       return NextResponse.json(
-        { error: "One or more notification channels not found or unauthorized" },
+        {
+          error: "One or more notification channels not found or unauthorized",
+        },
         { status: 400 },
       );
     }

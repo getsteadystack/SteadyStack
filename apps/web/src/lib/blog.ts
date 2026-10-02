@@ -14,7 +14,7 @@ export const postSchema = z.object({
   title: z.string(),
   description: z.string(),
   date: z.string(),
-  category: z.enum(["Engineering", "Product", "Guides"]),
+  category: z.enum(["Engineering", "Product", "Guides", "Agency"]),
   readTime: z.string(),
   tags: z.array(z.string()).default([]),
   author: z.string().default("SteadyStack Team"),

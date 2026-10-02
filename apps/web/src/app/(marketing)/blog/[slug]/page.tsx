@@ -87,7 +87,11 @@ export default async function BlogPostPage({ params }: { params: Promise<{ slug:
     datePublished: date,
     dateModified: date,
     author: { "@type": "Person", name: author, url: "https://steadystack.dev" },
-    creator: { "@type": "Person", name: author, url: "https://steadystack.dev" },
+    creator: {
+      "@type": "Person",
+      name: author,
+      url: "https://steadystack.dev",
+    },
     publisher: {
       "@type": "Organization",
       name: "SteadyStack",

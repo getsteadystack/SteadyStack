@@ -147,16 +147,15 @@ export default function IntegrationsPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.04] to-transparent pointer-events-none" />
         <div className="max-w-4xl mx-auto px-6 flex flex-col items-center text-center gap-5 relative">
           <div className="inline-flex items-center gap-2 px-3 py-1 border border-primary/20 bg-primary/5 text-primary text-[10px] font-bold font-mono uppercase tracking-widest">
-            <Webhook className="size-3" />
-            8 Notification Channels
+            <Webhook className="size-3" />8 Notification Channels
           </div>
           <h1 className="text-4xl sm:text-5xl font-extrabold tracking-tight text-foreground">
             Alerts where your team lives
           </h1>
           <p className="text-muted-foreground text-sm max-w-xl leading-relaxed">
-            Every channel below attaches to any of the five alert triggers —
-            status change, latency, SSL expiry, DNS watchdog, domain expiry —
-            and fires only when a quorum of regions confirms the failure.
+            Every channel below attaches to any of the five alert triggers — status change, latency,
+            SSL expiry, DNS watchdog, domain expiry — and fires only when a quorum of regions
+            confirms the failure.
           </p>
           <div className="flex items-center gap-3 pt-2">
             <Link
@@ -194,7 +193,9 @@ export default function IntegrationsPage() {
                     </div>
                     <div>
                       <h2 className="text-sm font-bold text-foreground">{channel.name}</h2>
-                      <p className="text-[11px] text-muted-foreground font-mono">{channel.tagline}</p>
+                      <p className="text-[11px] text-muted-foreground font-mono">
+                        {channel.tagline}
+                      </p>
                     </div>
                   </div>
                   <span
@@ -245,11 +246,13 @@ export default function IntegrationsPage() {
               alert rules
             </Link>{" "}
             connect them to monitors. Create channels once under{" "}
-            <span className="text-foreground font-mono text-[11px]">Alerts → Notification Channels</span>,
-            then attach them to rules with a trigger condition. Every channel has a{" "}
-            <span className="text-foreground">Send Test</span> button that fires a real
-            notification — and cleans it up immediately, so no test PagerDuty
-            incident lingers. Full walkthrough in the{" "}
+            <span className="text-foreground font-mono text-[11px]">
+              Alerts → Notification Channels
+            </span>
+            , then attach them to rules with a trigger condition. Every channel has a{" "}
+            <span className="text-foreground">Send Test</span> button that fires a real notification
+            — and cleans it up immediately, so no test PagerDuty incident lingers. Full walkthrough
+            in the{" "}
             <Link href="/docs/alert-channels" className="text-primary hover:underline">
               alert channels guide
             </Link>
@@ -263,7 +266,8 @@ export default function IntegrationsPage() {
         <div className="max-w-4xl mx-auto px-6 text-center space-y-4">
           <h3 className="text-2xl font-bold text-foreground">Wire up your first channel</h3>
           <p className="text-xs text-muted-foreground max-w-md mx-auto">
-            Free tier includes 50 monitors, Slack, Discord, and email alerting with quorum verification.
+            Free tier includes 50 monitors, Slack, Discord, and email alerting with quorum
+            verification.
           </p>
           <div className="flex justify-center gap-3 pt-2">
             <Link

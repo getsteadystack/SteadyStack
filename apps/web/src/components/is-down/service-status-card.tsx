@@ -42,35 +42,24 @@ export function ServiceStatusCard({ service, initialProbe }: ServiceStatusCardPr
   };
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-card/60 p-6 md:p-8 backdrop-blur-xl shadow-xl">
-      {/* Background glow according to status */}
-      <div
-        className={`absolute -right-24 -top-24 h-72 w-72 rounded-full blur-3xl opacity-20 pointer-events-none ${
-          currentStatus === "OPERATIONAL"
-            ? "bg-emerald-500"
-            : currentStatus === "DEGRADED"
-              ? "bg-amber-500"
-              : "bg-rose-500"
-        }`}
-      />
-
+    <div className="relative overflow-hidden rounded-2xl border border-[#e8e6df] bg-white p-6 sm:p-8 shadow-xs font-sans">
       <div className="relative z-10 space-y-6">
         {/* Header row with Service details and Live Status Badge */}
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl border border-border bg-muted/50 text-2xl font-bold font-mono text-foreground shadow-xs">
+            <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-[#e8e6df] bg-[#fbfbf9] text-2xl font-serif font-medium text-[#23211a] shadow-xs">
               {service.name.charAt(0)}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-2xl font-extrabold tracking-tight text-foreground">
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#23211a]">
                   {service.name}
                 </h2>
-                <Badge variant="outline" className="font-mono text-xs text-muted-foreground">
+                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full font-mono text-xs text-[#868279] border border-[#e8e6df] bg-[#fbfbf9]">
                   {service.domain}
-                </Badge>
+                </span>
               </div>
-              <p className="text-sm text-muted-foreground line-clamp-1 mt-0.5">
+              <p className="text-xs sm:text-sm text-[#5c5c5c] font-sans line-clamp-1 mt-0.5">
                 {service.description}
               </p>
             </div>
@@ -79,15 +68,15 @@ export function ServiceStatusCard({ service, initialProbe }: ServiceStatusCardPr
           {/* Status Badge */}
           <div className="flex items-center gap-3">
             <div
-              className={`flex items-center gap-2.5 rounded-full px-4 py-2 text-sm font-semibold border ${
+              className={`flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-mono font-semibold uppercase tracking-wider border ${
                 currentStatus === "OPERATIONAL"
-                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-700"
                   : currentStatus === "DEGRADED"
-                    ? "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
-                    : "border-rose-500/30 bg-rose-500/10 text-rose-600 dark:text-rose-400"
+                    ? "border-amber-200 bg-amber-50 text-amber-700"
+                    : "border-rose-200 bg-rose-50 text-rose-700"
               }`}
             >
-              <span className="relative flex h-2.5 w-2.5">
+              <span className="relative flex h-2 w-2">
                 <span
                   className={`absolute inline-flex h-full w-full animate-ping rounded-full opacity-75 ${
                     currentStatus === "OPERATIONAL"
@@ -98,7 +87,7 @@ export function ServiceStatusCard({ service, initialProbe }: ServiceStatusCardPr
                   }`}
                 />
                 <span
-                  className={`relative inline-flex h-2.5 w-2.5 rounded-full ${
+                  className={`relative inline-flex h-2 w-2 rounded-full ${
                     currentStatus === "OPERATIONAL"
                       ? "bg-emerald-500"
                       : currentStatus === "DEGRADED"
@@ -120,76 +109,75 @@ export function ServiceStatusCard({ service, initialProbe }: ServiceStatusCardPr
 
         {/* Real-time telemetry metrics grid */}
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 md:gap-4">
-          <div className="rounded-xl border border-border/80 bg-background/50 p-4">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
-              <Activity className="h-3.5 w-3.5 text-primary" />
+          <div className="rounded-xl border border-[#e8e6df] bg-[#fbfbf9] p-4">
+            <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-[#868279] uppercase tracking-wider mb-1">
+              <Activity className="h-3.5 w-3.5 text-[#23211a]" />
               <span>Edge Latency</span>
             </div>
-            <div className="text-2xl font-bold font-mono text-foreground">
+            <div className="text-2xl font-serif font-medium text-[#23211a]">
               {latency > 0 ? `${latency} ms` : "Timeout"}
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">Primary edge roundtrip</p>
+            <p className="text-[11px] text-[#868279] mt-0.5 font-sans">Primary edge roundtrip</p>
           </div>
 
-          <div className="rounded-xl border border-border/80 bg-background/50 p-4">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+          <div className="rounded-xl border border-[#e8e6df] bg-[#fbfbf9] p-4">
+            <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-[#868279] uppercase tracking-wider mb-1">
+              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
               <span>24h Global Uptime</span>
             </div>
-            <div className="text-2xl font-bold font-mono text-emerald-500">
+            <div className="text-2xl font-serif font-medium text-emerald-700">
               {currentStatus === "OPERATIONAL" ? "99.98%" : "98.40%"}
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">Edge consensus</p>
+            <p className="text-[11px] text-[#868279] mt-0.5 font-sans">Edge consensus</p>
           </div>
 
-          <div className="rounded-xl border border-border/80 bg-background/50 p-4">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
-              <Globe2 className="h-3.5 w-3.5 text-cyan-500" />
+          <div className="rounded-xl border border-[#e8e6df] bg-[#fbfbf9] p-4">
+            <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-[#868279] uppercase tracking-wider mb-1">
+              <Globe2 className="h-3.5 w-3.5 text-[#23211a]" />
               <span>Vantage Points</span>
             </div>
-            <div className="text-2xl font-bold font-mono text-foreground">7 Regions</div>
-            <p className="text-xs text-muted-foreground mt-0.5">NA, EU, APAC Edge DOs</p>
+            <div className="text-2xl font-serif font-medium text-[#23211a]">7 Regions</div>
+            <p className="text-[11px] text-[#868279] mt-0.5 font-sans">NA, EU, APAC Edge Nodes</p>
           </div>
 
-          <div className="rounded-xl border border-border/80 bg-background/50 p-4">
-            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground mb-1">
-              <Clock className="h-3.5 w-3.5 text-muted-foreground" />
+          <div className="rounded-xl border border-[#e8e6df] bg-[#fbfbf9] p-4">
+            <div className="flex items-center gap-1.5 text-[11px] font-mono font-semibold text-[#868279] uppercase tracking-wider mb-1">
+              <Clock className="h-3.5 w-3.5 text-[#868279]" />
               <span>Last Checked</span>
             </div>
-            <div className="text-xl font-bold font-mono text-foreground truncate">
+            <div className="text-xl font-serif font-medium text-[#23211a] truncate">
               {lastChecked}
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">Edge consensus mesh</p>
+            <p className="text-[11px] text-[#868279] mt-0.5 font-sans">Edge consensus mesh</p>
           </div>
         </div>
 
         {/* Live Action Bar */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 border-t border-border/60">
-          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#e8e6df]">
+          <div className="flex items-center gap-2 text-xs font-mono text-[#868279]">
             <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-            <span>Telemetry verified by SteadyStack Autonomous Edge Network</span>
+            <span>Verified by SteadyStack Autonomous Edge Network</span>
           </div>
 
           <div className="flex items-center gap-2.5 w-full sm:w-auto">
             <Button
-              variant="outline"
               size="sm"
               onClick={handleRefresh}
               disabled={isPending}
-              className="w-full sm:w-auto font-medium"
+              className="w-full sm:w-auto font-mono text-xs font-semibold uppercase tracking-wider bg-[#23211a] hover:bg-black text-[#ffd439] hover:text-[#ffd439] rounded-xl h-9 shadow-xs transition-all"
             >
-              <RefreshCw className={`mr-2 h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
-              {isPending ? "Probing Edge..." : "Run Live Global Probe"}
+              <RefreshCw className={`mr-1.5 h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
+              {isPending ? "Probing Edge..." : "Run Live Probe"}
             </Button>
 
             <a
               href={service.officialStatusUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center justify-center rounded-lg border border-border px-3 py-1.5 text-xs font-medium text-foreground hover:bg-accent transition-colors shrink-0"
+              className="inline-flex items-center justify-center rounded-xl border border-[#e8e6df] bg-white px-3.5 py-1.5 text-xs font-mono font-medium text-[#23211a] hover:bg-[#fbfbf9] hover:border-[#23211a]/40 transition-colors shrink-0 h-9 shadow-xs"
             >
               <span>Official Status</span>
-              <ExternalLink className="ml-1.5 h-3.5 w-3.5 text-muted-foreground" />
+              <ExternalLink className="ml-1.5 h-3.5 w-3.5 text-[#868279]" />
             </a>
           </div>
         </div>

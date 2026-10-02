@@ -13,7 +13,7 @@ interface LogLine {
   timestamp: string;
 }
 
-type TerminalTheme = "cyan" | "matrix" | "amber" | "red";
+type TerminalTheme = "amber" | "cyan" | "matrix" | "red";
 
 const WORKER_URL = process.env.NEXT_PUBLIC_WORKER_URL || "http://localhost:8787";
 
@@ -30,56 +30,56 @@ const THEME_STYLES: Record<
     accent: string;
   }
 > = {
+  amber: {
+    success: "text-[#ffd439]",
+    error: "text-rose-400",
+    info: "text-amber-300",
+    input: "text-white font-bold",
+    stream: "text-amber-200",
+    border: "border-white/10",
+    bg: "#1a1916",
+    accent: "text-[#ffd439]",
+  },
   cyan: {
     success: "text-emerald-400",
     error: "text-rose-400",
-    info: "text-cyan-400",
+    info: "text-sky-300",
     input: "text-white font-bold",
-    stream: "text-sky-400",
-    border: "border-cyan-500/20",
-    bg: "#090d16",
-    accent: "text-cyan-400",
+    stream: "text-sky-300",
+    border: "border-sky-500/20",
+    bg: "#0f172a",
+    accent: "text-sky-400",
   },
   matrix: {
     success: "text-emerald-400 font-bold",
-    error: "text-red-500",
-    info: "text-emerald-500",
-    input: "text-emerald-300 font-bold",
-    stream: "text-emerald-400",
-    border: "border-emerald-500/30",
-    bg: "#05120a",
+    error: "text-rose-400",
+    info: "text-emerald-300",
+    input: "text-emerald-200 font-bold",
+    stream: "text-emerald-300",
+    border: "border-emerald-500/20",
+    bg: "#0f1c14",
     accent: "text-emerald-400",
-  },
-  amber: {
-    success: "text-amber-400",
-    error: "text-red-400",
-    info: "text-amber-500",
-    input: "text-amber-200 font-bold",
-    stream: "text-amber-300",
-    border: "border-amber-500/30",
-    bg: "#140e06",
-    accent: "text-amber-400",
   },
   red: {
     success: "text-emerald-400",
-    error: "text-red-400 font-bold",
-    info: "text-red-400",
-    input: "text-red-200 font-bold",
-    stream: "text-rose-400",
-    border: "border-red-500/30",
-    bg: "#160808",
-    accent: "text-red-400",
+    error: "text-rose-400 font-bold",
+    info: "text-rose-300",
+    input: "text-rose-200 font-bold",
+    stream: "text-rose-300",
+    border: "border-rose-500/20",
+    bg: "#1c1010",
+    accent: "text-rose-400",
   },
 };
 
 const ASCII_BANNER = `
- ██████╗ ██╗   ██╗██╗     ███████╗███████╗ ██████╗ ██╗   ██╗ █████╗ ██████╗ ██████╗ 
- ██╔══██╗██║   ██║██║     ██╔════╝██╔════╝██╔════╝ ██║   ██║██╔══██╗██╔══██╗██╔══██╗
- ██████╔╝██║   ██║██║     ███████╗█████╗  ██║  ███╗██║   ██║███████║██████╔╝██║  ██║
- ██╔═══╝ ██║   ██║██║     ╚════██║██╔══╝  ██║   ██║██║   ██║██╔══██║██╔══██╗██║  ██║
- ██║     ╚██████╔╝███████╗███████║███████╗╚██████╔╝╚██████╔╝██║  ██║██║  ██║██████╔╝
- ╚═╝      ╚═════╝ ╚══════╝╚══════╝╚══════╝ ╚═════╝  ╚═════╝ ╚═╝  ╚═╝╚═╝  ╚═╝╚═════╝ 
-                 -- CYBERNETIC INTEL NODE v2.4.0 --
+  ███████╗████████╗███████╗ █████╗ ██████╗ ██╗   ██╗███████╗████████╗ █████╗  ██████╗██╗  ██╗
+  ██╔════╝╚══██╔══╝██╔════╝██╔══██╗██╔══██╗╚██╗ ██╔╝██╔════╝╚══██╔══╝██╔══██╗██╔════╝██║ ██╔╝
+  ███████╗   ██║   █████╗  ███████║██║  ██║ ╚████╔╝ ███████╗   ██║   ███████║██║     █████╔╝ 
+  ╚════██║   ██║   ██╔══╝  ██╔══██║██║  ██║  ╚██╔╝  ╚════██║   ██║   ██╔══██║██║     ██╔═██╗ 
+  ███████║   ██║   ███████╗██║  ██║██████╔╝   ██║   ███████║   ██║   ██║  ██║╚██████╗██║  ██╗
+  ╚══════╝   ╚═╝   ╚══════╝╚═╝  ╚═╝╚═════╝    ╚═╝   ╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝╚═╝  ╚═╝
+                    -- EDGE TELEMETRY SENTINEL v3.0 --
 `;
 
 export function TerminalView() {
@@ -88,7 +88,7 @@ export function TerminalView() {
   const [history, setHistory] = useState<LogLine[]>([]);
   const [cmdHistory, setCmdHistory] = useState<string[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
-  const [theme, setTheme] = useState<TerminalTheme>("cyan");
+  const [theme, setTheme] = useState<TerminalTheme>("amber");
   const terminalEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 

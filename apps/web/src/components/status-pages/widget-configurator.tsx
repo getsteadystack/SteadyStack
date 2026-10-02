@@ -86,7 +86,7 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
   const statusPageUrl = `${baseUrl}/status-page/${pageSlug}`;
 
   const shieldMarkdown = `[![Status](${shieldUrl})](${statusPageUrl})`;
-  const shieldHtml = `<a href="${statusPageUrl}"><img src="${shieldUrl}" alt="SteadyStack Status" /></a>`;
+  const shieldHtml = `<a href="${statusPageUrl}"><img src="${shieldUrl}" alt="System Status" /></a>`;
 
   const handleCopyShieldMd = async () => {
     try {
@@ -135,14 +135,14 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
   return (
     <div className="space-y-6">
       {/* Enable/Disable Toggle */}
-      <div className="rounded-sm border border-primary/20 bg-card/40 p-6 backdrop-blur-sm">
+      <div className="rounded-2xl border border-border bg-card p-6 shadow-xs">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Globe className="size-5 text-primary" />
+            <div className="p-2 rounded-xl bg-muted border border-border text-foreground">
+              <Globe className="size-4.5 text-foreground" />
+            </div>
             <div>
-              <h3 className="text-sm font-bold font-mono uppercase tracking-tight text-foreground">
-                Enable Widget
-              </h3>
+              <h3 className="text-base font-serif font-medium text-foreground">Enable Widget</h3>
               <p className="text-xs text-muted-foreground">
                 Allow external websites to embed your status badge
               </p>
@@ -154,13 +154,13 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
             aria-checked={enabled}
             onClick={() => setEnabled(!enabled)}
             className={cn(
-              "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background",
-              enabled ? "bg-primary" : "bg-muted",
+              "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border transition-colors focus:outline-none shadow-2xs",
+              enabled ? "bg-foreground border-foreground" : "bg-muted border-border",
             )}
           >
             <span
               className={cn(
-                "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-background shadow-lg ring-0 transition-transform",
+                "pointer-events-none inline-block size-4.5 transform rounded-full bg-background shadow-2xs ring-0 transition-transform mt-0.5 ml-0.5",
                 enabled ? "translate-x-5" : "translate-x-0",
               )}
             />
@@ -171,11 +171,13 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
       {enabled && (
         <>
           {/* Allowed Domains */}
-          <div className="rounded-sm border border-primary/20 bg-card/40 p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <Globe className="size-5 text-primary" />
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-muted border border-border text-foreground">
+                <Globe className="size-4.5 text-foreground" />
+              </div>
               <div>
-                <h3 className="text-sm font-bold font-mono uppercase tracking-tight text-foreground">
+                <h3 className="text-base font-serif font-medium text-foreground">
                   Allowed Domains
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -188,82 +190,83 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
               onChange={(e) => setAllowedDomains(e.target.value)}
               placeholder="example.com&#10;*.example.org&#10;subdomain.example.net"
               rows={4}
-              className="w-full bg-background/50 border border-primary/20 rounded-sm p-3 text-sm font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/50 resize-none"
+              className="w-full bg-background border border-border rounded-xl p-3 text-xs font-mono text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-foreground/40 resize-none shadow-2xs"
             />
-            <div className="mt-2 text-xs text-muted-foreground/60 font-mono space-y-1">
+            <div className="text-xs text-muted-foreground font-mono space-y-1">
               <p>• One domain per line, or comma-separated</p>
               <p>
-                • Use <code className="text-primary/80">*</code> to allow all domains
+                • Use <code className="text-foreground font-semibold">*</code> to allow all domains
               </p>
               <p>
-                • Use <code className="text-primary/80">*.example.com</code> for wildcard subdomains
+                • Use <code className="text-foreground font-semibold">*.example.com</code> for
+                wildcard subdomains
               </p>
               <p>• Leave empty to block all cross-origin requests</p>
             </div>
           </div>
 
           {/* Badge Text Customization */}
-          <div className="rounded-sm border border-primary/20 bg-card/40 p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <Type className="size-5 text-primary" />
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-muted border border-border text-foreground">
+                <Type className="size-4.5 text-foreground" />
+              </div>
               <div>
-                <h3 className="text-sm font-bold font-mono uppercase tracking-tight text-foreground">
-                  Badge Text
-                </h3>
+                <h3 className="text-base font-serif font-medium text-foreground">Badge Text</h3>
                 <p className="text-xs text-muted-foreground">Customize the status messages</p>
               </div>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-green-500 font-bold mb-1 block">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-emerald-700 dark:text-emerald-400 font-semibold mb-1 block">
                   Operational
                 </label>
                 <input
                   type="text"
                   value={badgeText.operational}
                   onChange={(e) => setBadgeText({ ...badgeText, operational: e.target.value })}
-                  className="w-full bg-background/50 border border-green-500/20 rounded-sm p-2 text-sm font-mono text-foreground focus:outline-none focus:border-green-500/50"
+                  className="w-full bg-background border border-border rounded-xl p-2.5 text-xs text-foreground focus:outline-none focus:border-foreground/40 shadow-2xs"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-yellow-500 font-bold mb-1 block">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-amber-700 dark:text-amber-400 font-semibold mb-1 block">
                   Partial Outage
                 </label>
                 <input
                   type="text"
                   value={badgeText.partial}
                   onChange={(e) => setBadgeText({ ...badgeText, partial: e.target.value })}
-                  className="w-full bg-background/50 border border-yellow-500/20 rounded-sm p-2 text-sm font-mono text-foreground focus:outline-none focus:border-yellow-500/50"
+                  className="w-full bg-background border border-border rounded-xl p-2.5 text-xs text-foreground focus:outline-none focus:border-foreground/40 shadow-2xs"
                 />
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-red-500 font-bold mb-1 block">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-red-700 dark:text-red-400 font-semibold mb-1 block">
                   Major Outage
                 </label>
                 <input
                   type="text"
                   value={badgeText.major}
                   onChange={(e) => setBadgeText({ ...badgeText, major: e.target.value })}
-                  className="w-full bg-background/50 border border-red-500/20 rounded-sm p-2 text-sm font-mono text-foreground focus:outline-none focus:border-red-500/50"
+                  className="w-full bg-background border border-border rounded-xl p-2.5 text-xs text-foreground focus:outline-none focus:border-foreground/40 shadow-2xs"
                 />
               </div>
             </div>
           </div>
 
           {/* Theme Customization */}
-          <div className="rounded-sm border border-primary/20 bg-card/40 p-6 backdrop-blur-sm">
-            <div className="flex items-center gap-3 mb-4">
-              <Palette className="size-5 text-primary" />
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-muted border border-border text-foreground">
+                <Palette className="size-4.5 text-foreground" />
+              </div>
               <div>
-                <h3 className="text-sm font-bold font-mono uppercase tracking-tight text-foreground">
-                  Widget Theme
-                </h3>
+                <h3 className="text-base font-serif font-medium text-foreground">Widget Theme</h3>
                 <p className="text-xs text-muted-foreground">Customize colors and style</p>
               </div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold mb-2 block">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium mb-2 block">
                   Background Color
                 </label>
                 <div className="flex items-center gap-2">
@@ -271,18 +274,18 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
                     type="color"
                     value={theme.bgColor}
                     onChange={(e) => setTheme({ ...theme, bgColor: e.target.value })}
-                    className="w-10 h-10 rounded-sm border border-primary/20 cursor-pointer"
+                    className="size-9 rounded-xl border border-border cursor-pointer p-0.5 bg-background shadow-2xs"
                   />
                   <input
                     type="text"
                     value={theme.bgColor}
                     onChange={(e) => setTheme({ ...theme, bgColor: e.target.value })}
-                    className="flex-1 bg-background/50 border border-primary/20 rounded-sm p-2 text-sm font-mono text-foreground focus:outline-none focus:border-primary/50 uppercase"
+                    className="flex-1 bg-background border border-border rounded-xl p-2 text-xs font-mono text-foreground focus:outline-none focus:border-foreground/40 uppercase shadow-2xs"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold mb-2 block">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium mb-2 block">
                   Text Color
                 </label>
                 <div className="flex items-center gap-2">
@@ -290,24 +293,24 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
                     type="color"
                     value={theme.textColor}
                     onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
-                    className="w-10 h-10 rounded-sm border border-primary/20 cursor-pointer"
+                    className="size-9 rounded-xl border border-border cursor-pointer p-0.5 bg-background shadow-2xs"
                   />
                   <input
                     type="text"
                     value={theme.textColor}
                     onChange={(e) => setTheme({ ...theme, textColor: e.target.value })}
-                    className="flex-1 bg-background/50 border border-primary/20 rounded-sm p-2 text-sm font-mono text-foreground focus:outline-none focus:border-primary/50 uppercase"
+                    className="flex-1 bg-background border border-border rounded-xl p-2 text-xs font-mono text-foreground focus:outline-none focus:border-foreground/40 uppercase shadow-2xs"
                   />
                 </div>
               </div>
               <div>
-                <label className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold mb-2 block">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium mb-2 block">
                   Border Radius
                 </label>
                 <select
                   value={theme.borderRadius}
                   onChange={(e) => setTheme({ ...theme, borderRadius: e.target.value })}
-                  className="w-full bg-background/50 border border-primary/20 rounded-sm p-2 text-sm font-mono text-foreground focus:outline-none focus:border-primary/50"
+                  className="w-full bg-background border border-border rounded-xl p-2 text-xs font-mono text-foreground focus:outline-none focus:border-foreground/40 shadow-2xs cursor-pointer"
                 >
                   <option value="0px">Square (0px)</option>
                   <option value="4px">Subtle (4px)</option>
@@ -326,11 +329,13 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
           <EmbedCodeGenerator slug={pageSlug} />
 
           {/* Embeddable Status Shields (SVG Badges) */}
-          <div className="rounded-sm border border-primary/20 bg-card/40 p-6 backdrop-blur-sm space-y-6">
+          <div className="rounded-2xl border border-border bg-card p-6 shadow-xs space-y-6">
             <div className="flex items-center gap-3">
-              <Code2 className="size-5 text-primary" />
+              <div className="p-2 rounded-xl bg-muted border border-border text-foreground">
+                <Code2 className="size-4.5 text-foreground" />
+              </div>
               <div>
-                <h3 className="text-sm font-bold font-mono uppercase tracking-tight text-foreground">
+                <h3 className="text-base font-serif font-medium text-foreground">
                   Status Shield Badge (SVG)
                 </h3>
                 <p className="text-xs text-muted-foreground">
@@ -341,29 +346,29 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
             </div>
 
             {/* Config options */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-b border-primary/10 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-b border-border py-4">
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono uppercase tracking-widest text-primary/70 font-bold block">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium block">
                   Badge Style
                 </label>
                 <select
                   value={shieldStyle}
                   onChange={(e) => setShieldStyle(sanitizeShieldStyle(e.target.value))}
-                  className="w-full bg-background/50 border border-primary/20 rounded-sm p-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary/50"
+                  className="w-full bg-background border border-border rounded-xl p-2 text-xs font-mono text-foreground focus:outline-none focus:border-foreground/40 shadow-2xs cursor-pointer"
                 >
                   <option value="flat">Flat (Shields.io style)</option>
-                  <option value="outline">Outline (Cyberpunk Glow)</option>
+                  <option value="outline">Outline (Glow style)</option>
                 </select>
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono uppercase tracking-widest text-primary/70 font-bold block">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium block">
                   Theme
                 </label>
                 <select
                   value={shieldTheme}
                   onChange={(e) => setShieldTheme(sanitizeShieldTheme(e.target.value))}
-                  className="w-full bg-background/50 border border-primary/20 rounded-sm p-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary/50"
+                  className="w-full bg-background border border-border rounded-xl p-2 text-xs font-mono text-foreground focus:outline-none focus:border-foreground/40 shadow-2xs cursor-pointer"
                 >
                   <option value="dark">Dark Theme</option>
                   <option value="light">Light Theme</option>
@@ -371,13 +376,13 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-mono uppercase tracking-widest text-primary/70 font-bold block">
+                <label className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium block">
                   Badge Size
                 </label>
                 <select
                   value={shieldSize}
                   onChange={(e) => setShieldSize(sanitizeShieldSize(e.target.value))}
-                  className="w-full bg-background/50 border border-primary/20 rounded-sm p-2 text-xs font-mono text-foreground focus:outline-none focus:border-primary/50"
+                  className="w-full bg-background border border-border rounded-xl p-2 text-xs font-mono text-foreground focus:outline-none focus:border-foreground/40 shadow-2xs cursor-pointer"
                 >
                   <option value="sm">Small (20px)</option>
                   <option value="lg">Large (32px)</option>
@@ -387,10 +392,10 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
 
             {/* Live Preview */}
             <div className="space-y-2">
-              <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground font-bold block">
+              <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium block">
                 Live Preview
               </span>
-              <div className="bg-black/40 border border-white/5 rounded-sm p-4 flex items-center justify-center min-h-[60px]">
+              <div className="bg-muted/30 border border-border rounded-xl p-4 flex items-center justify-center min-h-[60px]">
                 <img
                   src={`/api/badge/${encodeURIComponent(pageSlug)}.svg?style=${encodeURIComponent(
                     sanitizeShieldStyle(shieldStyle),
@@ -407,38 +412,46 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
             <div className="space-y-4">
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-primary/80 font-bold">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium">
                     Markdown Code (GitHub README)
                   </span>
                   <button
                     type="button"
                     onClick={handleCopyShieldMd}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm border bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 font-mono text-[10px] font-bold uppercase transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-background hover:bg-muted font-mono text-[11px] font-semibold uppercase text-foreground transition-all shadow-2xs cursor-pointer"
                   >
-                    {copiedShieldMd ? <Check className="size-3" /> : <Copy className="size-3" />}
+                    {copiedShieldMd ? (
+                      <Check className="size-3 text-emerald-600" />
+                    ) : (
+                      <Copy className="size-3" />
+                    )}
                     {copiedShieldMd ? "Copied" : "Copy"}
                   </button>
                 </div>
-                <pre className="bg-zinc-950 border border-zinc-800 rounded-sm p-3 text-xs font-mono text-zinc-300 overflow-x-auto whitespace-pre-wrap break-all">
+                <pre className="bg-muted/40 border border-border rounded-xl p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap break-all">
                   {shieldMarkdown}
                 </pre>
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-primary/80 font-bold">
+                  <span className="text-[11px] font-mono uppercase tracking-wider text-muted-foreground font-medium">
                     HTML Code
                   </span>
                   <button
                     type="button"
                     onClick={handleCopyShieldHtml}
-                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-sm border bg-primary/10 border-primary/20 text-primary hover:bg-primary/20 font-mono text-[10px] font-bold uppercase transition-all"
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border border-border bg-background hover:bg-muted font-mono text-[11px] font-semibold uppercase text-foreground transition-all shadow-2xs cursor-pointer"
                   >
-                    {copiedShieldHtml ? <Check className="size-3" /> : <Copy className="size-3" />}
+                    {copiedShieldHtml ? (
+                      <Check className="size-3 text-emerald-600" />
+                    ) : (
+                      <Copy className="size-3" />
+                    )}
                     {copiedShieldHtml ? "Copied" : "Copy"}
                   </button>
                 </div>
-                <pre className="bg-zinc-950 border border-zinc-800 rounded-sm p-3 text-xs font-mono text-zinc-300 overflow-x-auto whitespace-pre-wrap break-all">
+                <pre className="bg-muted/40 border border-border rounded-xl p-3 text-xs font-mono text-foreground overflow-x-auto whitespace-pre-wrap break-all">
                   {shieldHtml}
                 </pre>
               </div>
@@ -448,12 +461,14 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
       )}
 
       {/* Save Button */}
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between pt-2">
         {message && (
           <div
             className={cn(
-              "flex items-center gap-2 text-sm font-mono",
-              message.type === "success" ? "text-green-500" : "text-red-500",
+              "flex items-center gap-2 text-xs font-mono font-medium",
+              message.type === "success"
+                ? "text-emerald-600 dark:text-emerald-400"
+                : "text-red-600 dark:text-red-400",
             )}
           >
             {message.type === "success" ? (
@@ -468,11 +483,15 @@ export function WidgetConfigurator({ pageId, pageSlug, initialConfig }: WidgetCo
           onClick={handleSave}
           disabled={isPending}
           className={cn(
-            "flex items-center gap-2 px-6 py-3 bg-primary text-primary-foreground rounded-sm font-mono font-bold uppercase tracking-wider text-sm transition-all ml-auto",
-            isPending ? "opacity-50 cursor-not-allowed" : "hover:bg-primary/90",
+            "flex items-center gap-2 px-6 py-2.5 bg-foreground text-background rounded-xl font-mono font-semibold uppercase tracking-wider text-xs transition-all ml-auto shadow-xs cursor-pointer",
+            isPending ? "opacity-50 cursor-not-allowed" : "hover:bg-foreground/90",
           )}
         >
-          {isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+          {isPending ? (
+            <Loader2 className="size-3.5 animate-spin" />
+          ) : (
+            <Save className="size-3.5" />
+          )}
           Save Widget Settings
         </button>
       </div>

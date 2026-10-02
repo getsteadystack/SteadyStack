@@ -1,0 +1,30 @@
+model Client {
+  id             String        @id @default(cuid())
+  name           String
+  color          String        @default("#10b981") // Agency-assigned brand color for UI
+  website        String?
+  contactEmail   String?
+  notes          String?
+  userId         String
+  user           User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  organizationId String?
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  emailReportsEnabled   Boolean   @default(false)
+  reportRecipientEmails String?
+  reportTargetSla       Float     @default(99.9)
+  lastReportSentAt      DateTime?
+
+  portalToken           String?   @unique
+  portalPinHash         String?
+  portalEnabled         Boolean   @default(true)
+
+  monitors   Monitor[]
+  statusPage StatusPage?
+
+  @@index([userId])
+  @@index([organizationId])
+  @@index([portalToken])
+}

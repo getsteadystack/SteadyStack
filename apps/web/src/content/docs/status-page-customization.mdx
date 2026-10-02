@@ -29,7 +29,7 @@ are live-previewed as you type; hit **Save Changes** to persist.
 Pick one of four built-in themes — **Sentry Dark** (the cyberpunk default),
 **Loops Dark**, **Loops Light**, **Monochrome** — or build your own with five
 color pickers: background, text, operational, degraded, and outage. Choosing a
-custom color switches the theme to *Custom* automatically; the palette is
+custom color switches the theme to _Custom_ automatically; the palette is
 stored with the page and applied everywhere.
 
 ## Custom domain
@@ -47,7 +47,7 @@ feature flag, not the DNS.
 
 - **Allow indexing** — on by default. Turn off for internal-only pages; a
   `noindex` is emitted for private and password-protected pages regardless.
-- **Feature in Community Showcase** — list a *public* page in the
+- **Feature in Community Showcase** — list a _public_ page in the
   [showcase gallery](/showcase).
 - **Meta title / meta description** — override the generated `<title>` and
   description for search results.
@@ -55,12 +55,12 @@ feature flag, not the DNS.
 
 ## Access control
 
-| Mode | Behavior |
-| :--- | :------- |
-| Public | Anyone with the URL; indexed if allowed |
-| Password-protected | Viewer must enter the password you set |
-| IP whitelist | Comma-separated IPs (e.g. `192.168.1.1, 10.0.0.1`); others get no access |
-| Private | Not publicly listed or indexed; plan-gated |
+| Mode               | Behavior                                                                 |
+| :----------------- | :----------------------------------------------------------------------- |
+| Public             | Anyone with the URL; indexed if allowed                                  |
+| Password-protected | Viewer must enter the password you set                                   |
+| IP whitelist       | Comma-separated IPs (e.g. `192.168.1.1, 10.0.0.1`); others get no access |
+| Private            | Not publicly listed or indexed; plan-gated                               |
 
 Password and IP whitelist can be combined for defense in depth.
 
@@ -73,13 +73,13 @@ they can switch manually.
 
 ## Tracker customization
 
-Two switches change how history is *rendered* (not what is measured — the SLA
+Two switches change how history is _rendered_ (not what is measured — the SLA
 math is defined in [the methodology spec](/docs/sla-methodology)):
 
-- **Bar type** — *Absolute* shows real per-bucket status from check data;
-  *Manual* shows your overridden status (use with maintenance windows so a
+- **Bar type** — _Absolute_ shows real per-bucket status from check data;
+  _Manual_ shows your overridden status (use with maintenance windows so a
   planned downtime doesn't paint the timeline red).
-- **Card type** — *Duration* shows percent-uptime per card; *Requests* shows
+- **Card type** — _Duration_ shows percent-uptime per card; _Requests_ shows
   check counts.
 
 Visibility toggles:
@@ -109,13 +109,13 @@ trend (improving/stable/degrading) are computed over this window.
 - Post **incident updates** from the page editor; subscribers with incident
   notifications enabled are emailed on create and resolve.
 - Schedule **maintenance windows** to pre-warn visitors — combine with the
-  *Manual* bar type (above) so the timeline reflects planned work, not outages.
+  _Manual_ bar type (above) so the timeline reflects planned work, not outages.
 - Subscribers manage their own preferences through the link in every email
   (`/subscribe/manage/…`).
 
 <Check>
-After any access-control change (password, whitelist, private), test the page
-in a private browser window — caches can briefly serve the previous state.
+  After any access-control change (password, whitelist, private), test the page
+  in a private browser window — caches can briefly serve the previous state.
 </Check>
 
 ## Embedding and automation

@@ -84,7 +84,11 @@ export const getLeaderboard = unstable_cache(
         const uid = s.monitor?.userId;
         if (!uid) continue;
         if (!userStats.has(uid)) {
-          userStats.set(uid, { totalUp: 0, totalDown: 0, monitorIds: new Set() });
+          userStats.set(uid, {
+            totalUp: 0,
+            totalDown: 0,
+            monitorIds: new Set(),
+          });
         }
         const stat = userStats.get(uid)!;
         stat.totalUp += s.checksUp;
@@ -96,7 +100,11 @@ export const getLeaderboard = unstable_cache(
         const uid = monitorUserMap.get(e.monitorId);
         if (!uid) continue;
         if (!userStats.has(uid)) {
-          userStats.set(uid, { totalUp: 0, totalDown: 0, monitorIds: new Set() });
+          userStats.set(uid, {
+            totalUp: 0,
+            totalDown: 0,
+            monitorIds: new Set(),
+          });
         }
         const stat = userStats.get(uid)!;
         if (e.status === "UP") {

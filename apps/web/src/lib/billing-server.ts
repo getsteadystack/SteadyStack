@@ -92,25 +92,43 @@ export async function getUserPlan(userId: string): Promise<PlanTier> {
 export async function getUserUsageSummary(userId: string): Promise<UsageSummary> {
   const plan = await getUserPlan(userId);
 
-  const [monitorsCount, alertChannelsCount, statusPagesCount, eventsCount, subscription] =
-    await Promise.all([
-      db.monitor.count({ where: { userId } }),
-      db.notificationChannel.count({ where: { userId } }),
-      db.statusPage.count({ where: { userId } }),
-      db.monitorEvent.count({
-        where: {
-          monitor: { userId },
-          timestamp: {
-            gte: new Date(new Date().setDate(1)), // Beginning of current month
-          },
+  const [
+    clientsCount,
+    monitorsCount,
+    alertChannelsCount,
+    statusPagesCount,
+    eventsCount,
+    subscription,
+  ] = await Promise.all([
+    db.client.count({ where: { userId } }).catch(() => 0),
+    db.monitor.count({ where: { userId } }),
+    db.notificationChannel.count({ where: { userId } }),
+    db.statusPage.count({ where: { userId } }),
+    db.monitorEvent.count({
+      where: {
+        monitor: { userId },
+        timestamp: {
+          gte: new Date(new Date().setDate(1)), // Beginning of current month
         },
-      }),
-      db.subscription.findUnique({ where: { userId } }).catch(() => null),
-    ]);
+      },
+    }),
+    db.subscription.findUnique({ where: { userId } }).catch(() => null),
+  ]);
 
   const limits = getPlanLimits(plan, subscription?.tierVersion);
 
   const warnings: UsageWarning[] = [];
+
+  const clientPct = Math.round((clientsCount / (limits.maxClients || 1)) * 100);
+  if (clientPct >= 80 && limits.maxClients < 999999) {
+    warnings.push({
+      resource: "clients",
+      label: "Active Clients",
+      used: clientsCount,
+      limit: limits.maxClients,
+      percentage: clientPct,
+    });
+  }
 
   const monitorPct = Math.round((monitorsCount / limits.maxMonitors) * 100);
   if (monitorPct >= 80) {
@@ -160,6 +178,8 @@ export async function getUserUsageSummary(userId: string): Promise<UsageSummary>
   }
 
   return {
+    clientsUsed: clientsCount,
+    clientsLimit: limits.maxClients,
     monitorsUsed: monitorsCount,
     monitorsLimit: limits.maxMonitors,
     alertChannelsUsed: alertChannelsCount,
@@ -436,7 +456,7 @@ export async function assertTeamLimits(
       return {
         allowed: false,
         error:
-          "Multi-seat team collaboration and member invitations require The Construct plan ($79/mo). Upgrade to invite team members and collaborate.",
+          "Multi-seat team collaboration and member invitations require the Agency Pro plan ($99/mo). Upgrade to invite team members and collaborate.",
         plan,
         maxSeats: limits.maxSeats,
       };

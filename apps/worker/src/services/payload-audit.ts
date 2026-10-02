@@ -1,11 +1,9 @@
-import { RE2JS } from "re2js";
-
 export async function auditPayload(targetUrl: string, pattern: string) {
   try {
     const response = await fetch(targetUrl, {
       method: "GET",
       headers: {
-        "User-Agent": "SteadyStack-Payload-Scanner/1.0",
+        "User-Agent": "Payload-Scanner/1.0",
       },
       redirect: "follow",
     });
@@ -16,26 +14,21 @@ export async function auditPayload(targetUrl: string, pattern: string) {
 
     const body = await response.text();
     const truncatedBody =
-      body.length > 200000
-        ? body.substring(0, 200000) + "\n\n...[TRUNCATED BY STEADYSTACK SENTINEL]..."
-        : body;
+      body.length > 200000 ? body.substring(0, 200000) + "\n\n...[TRUNCATED]..." : body;
 
-    let matches: { index: number; length: number }[] = [];
+    const matches: { index: number; length: number }[] = [];
     let success = false;
     let errorMessage: string | undefined = undefined;
 
     if (pattern) {
       try {
-        const regex = RE2JS.compile(pattern, RE2JS.CASE_INSENSITIVE | RE2JS.MULTILINE);
-        const matcher = regex.matcher(truncatedBody);
-        while (matcher.find()) {
-          const index = matcher.start();
-          const length = matcher.end() - index;
+        const regex = new RegExp(pattern, "gim");
+        let match: RegExpExecArray | null;
+        while ((match = regex.exec(truncatedBody)) !== null) {
           matches.push({
-            index,
-            length,
+            index: match.index,
+            length: match[0].length,
           });
-          // Limit total matches for performance
           if (matches.length > 500) break;
         }
         success = matches.length > 0;

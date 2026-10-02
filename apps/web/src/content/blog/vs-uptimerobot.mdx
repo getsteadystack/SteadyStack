@@ -67,8 +67,13 @@ SteadyStack operates natively on Cloudflare's global edge runtime across soverei
 
 ```ts
 // SteadyStack Edge Quorum Consensus Logic (Simplified)
-async function verifyTargetHealth(targetUrl: string, regions: ProbeRegion[]): Promise<HealthStatus> {
-  const probeResults = await Promise.all(regions.map((r) => r.check(targetUrl)));
+async function verifyTargetHealth(
+  targetUrl: string,
+  regions: ProbeRegion[],
+): Promise<HealthStatus> {
+  const probeResults = await Promise.all(
+    regions.map((r) => r.check(targetUrl)),
+  );
   const failures = probeResults.filter((r) => !r.ok).length;
   const quorumRequired = Math.ceil((regions.length + 1) / 2);
 

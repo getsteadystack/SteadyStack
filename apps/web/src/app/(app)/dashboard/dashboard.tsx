@@ -12,6 +12,7 @@ import { HolidayModeBanner } from "@/components/dashboard/holiday-mode-banner";
 import { useMonitors, useDashboardStats } from "@/hooks/use-monitors";
 import { LayoutGrid, List, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import type { OnboardingStatus } from "@/actions/onboarding";
 import type { UsageSummary } from "@/lib/billing";
 
@@ -21,8 +22,8 @@ const GlobeVisualization = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="border border-primary/20 bg-zinc-950/40 backdrop-blur-md rounded-xl h-[480px] animate-pulse flex items-center justify-center font-mono text-zinc-500 text-[10px] uppercase tracking-wider">
-        Initializing 3D Vector Space Matrix...
+      <div className="border border-border bg-card rounded-2xl h-[480px] animate-pulse flex items-center justify-center font-mono text-muted-foreground text-xs uppercase tracking-wider shadow-xs">
+        Initializing 3D Consensus Mesh...
       </div>
     ),
   },
@@ -85,49 +86,47 @@ export default function Dashboard({
       <DashboardStats stats={stats} />
 
       {/* View Mode Selector bar */}
-      <div className="flex justify-between items-center px-1 border-b border-zinc-900 pb-3">
-        <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">
-          Nodes Dashboard Management
-        </span>
-        <div className="flex items-center gap-1.5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1 border-b border-[#e8e6df] pb-4 pt-2">
+        <div className="flex items-center gap-2.5">
+          <h2 className="font-serif text-xl font-semibold tracking-tight text-foreground">
+            Monitored Infrastructure
+          </h2>
+          <span className="font-mono text-xs px-2.5 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+            {monitors.length} Total
+          </span>
+        </div>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
           <Button
-            variant="outline"
+            variant={showGlobe ? "default" : "outline"}
             size="sm"
             onClick={handleToggleGlobe}
-            className={`h-8 px-3 font-mono text-[10px] uppercase tracking-wider ${
-              showGlobe
-                ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
-                : "border-zinc-800 bg-zinc-950/20 text-zinc-400 hover:text-zinc-200"
-            }`}
+            className="h-8 px-3.5 text-xs font-medium rounded-xl cursor-pointer shadow-xs"
           >
-            <Globe className="size-3 mr-1.5 animate-pulse" />
-            Globe Matrix
+            <Globe
+              className={cn(
+                "size-3.5 mr-1.5",
+                showGlobe ? "text-[#ffd439]" : "text-muted-foreground",
+              )}
+            />
+            3D Globe
           </Button>
           <Button
-            variant="outline"
+            variant={viewMode === "list" ? "default" : "outline"}
             size="sm"
             onClick={() => handleToggleView("list")}
-            className={`h-8 px-3 font-mono text-[10px] uppercase tracking-wider ${
-              viewMode === "list"
-                ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
-                : "border-zinc-800 bg-zinc-950/20 text-zinc-400 hover:text-zinc-200"
-            }`}
+            className="h-8 px-3.5 text-xs font-medium rounded-xl cursor-pointer shadow-xs"
           >
-            <List className="size-3 mr-1.5" />
-            Table
+            <List className="size-3.5 mr-1.5" />
+            Table View
           </Button>
           <Button
-            variant="outline"
+            variant={viewMode === "grid" ? "default" : "outline"}
             size="sm"
             onClick={() => handleToggleView("grid")}
-            className={`h-8 px-3 font-mono text-[10px] uppercase tracking-wider ${
-              viewMode === "grid"
-                ? "border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 hover:text-primary"
-                : "border-zinc-800 bg-zinc-950/20 text-zinc-400 hover:text-zinc-200"
-            }`}
+            className="h-8 px-3.5 text-xs font-medium rounded-xl cursor-pointer shadow-xs"
           >
-            <LayoutGrid className="size-3 mr-1.5" />
-            Grid Matrix
+            <LayoutGrid className="size-3.5 mr-1.5" />
+            Grid View
           </Button>
         </div>
       </div>

@@ -1,0 +1,89 @@
+---
+title: "Agency & Multi-Tenant Onboarding"
+description: "A complete step-by-step guide for digital agencies, MSPs, and hosting consultants to monitor client portfolios, automate monthly SLA reports, and deploy white-label status portals."
+section: "Getting Started"
+order: 3
+badge: "Agency"
+lastUpdated: "2026-10-02"
+---
+
+Welcome to **SteadyStack for Agencies**. Whether you manage 10 client websites or 500+ client production applications across WordPress, Shopify, Next.js, and custom APIs, SteadyStack is built to turn uptime monitoring into a high-margin client retainer service.
+
+Traditional monitoring tools charge prohibitive per-monitor fees and spam your engineering team with 3:00 AM localized network blips. SteadyStack provides:
+
+1. **Zero False Alarms**: Multi-region edge quorum verification stops phantom alerts.
+2. **Client Scoping & Tagging**: Organize monitors by client name, SLA tier, and billing cycle.
+3. **Automated Monthly Executive PDFs**: Prove your retainer's value with auto-generated SLA reports delivered directly to your clients.
+4. **Branded White-Label Portals**: Host client status pages on your own agency domain (e.g., `status.youragency.com`) with your custom logo, typography, and theme.
+
+---
+
+## 1. Setting Up Your Agency Workspace
+
+When you create your account, configure your agency workspace settings:
+
+1. Navigate to **Dashboard → Settings → Organization**.
+2. Set your **Agency Brand Name** and upload your **Primary Logo**.
+3. Choose your default notification routing channels (e.g., Agency Slack `#client-alerts` channel).
+4. Invite your agency team members with role-based access control (Admin, Developer, Viewer).
+
+---
+
+## 2. Organizing Client Monitors with Tagging
+
+Use structured namespaces for tags to keep hundreds of client websites organized:
+
+- `client:<client-name>` (e.g. `client:acme-corp`, `client:nike-retail`)
+- `tier:<sla-level>` (e.g. `tier:gold`, `tier:silver`, `tier:bronze`)
+- `stack:<tech>` (e.g. `stack:wordpress`, `stack:shopify`, `stack:nextjs`)
+
+```bash
+# Example creating a tagged client monitor via SteadyStack CLI
+steadystack monitor create \
+  --name "Acme Corp E-Commerce Store" \
+  --url "https://store.acmecorp.com" \
+  --interval 60 \
+  --tags "client:acme-corp,tier:gold,stack:shopify"
+```
+
+---
+
+## 3. Creating a Client-Specific White-Label Status Page
+
+Give your client a real-time branded window into their infrastructure availability:
+
+1. Go to **Dashboard → Status Pages → Create New Status Page**.
+2. Assign a custom slug or bind your custom subdomain (e.g. `acme.agency-status.com`).
+3. Select which monitors belong to this client using the `client:acme-corp` tag filter.
+4. Choose an editorial theme (such as **Sentry Dark**, **Loops Light**, or your custom agency hex colors).
+5. Set the access mode:
+   - **Public**: Accessible to all client team members.
+   - **Password Protected**: Guarded with a client-specific passcode.
+   - **Restricted Token**: Generated view token with revocable access.
+
+---
+
+## 4. Enabling Automated Monthly SLA Reports
+
+Convert uptime metrics into quantifiable retainer ROI:
+
+| Feature                         | Description                                                          | Benefit                                |
+| :------------------------------ | :------------------------------------------------------------------- | :------------------------------------- |
+| **Scheduled Delivery**          | Dispatches on the 1st of every month at 00:00 UTC                    | Zero manual report compilation         |
+| **Executive Summary**           | Uptime % SLA (99.99%), total synthetic checks, average latency       | Clear client-ready metrics             |
+| **Outage Root Cause Breakdown** | Itemizes verified incidents with error codes and resolution duration | Full transparency & accountability     |
+| **Agency Branded Header**       | Includes your agency logo, contact info, and custom disclaimer       | Reinforces your monthly retainer value |
+
+Navigate to **Dashboard → Reports → Scheduled Automations** to configure the recipient client emails and enable PDF generation.
+
+---
+
+## 5. Agency Best Practices
+
+> [!TIP]
+> **Combine Homepage & Cache-Busting Health Checks**
+> Don't just ping the homepage. For CMS sites like WordPress, monitor `https://client.com/` for CDN/DNS availability and `https://client.com/wp-json/wp/v2/types` or an uncached API endpoint to catch PHP-FPM and database connection dropouts.
+
+- **Set 60-Second Quorum Intervals**: Instant incident detection without false alarm risk.
+- **Configure Separate Alert Rules**: Route critical production outages to PagerDuty / SMS, and minor latency degradations to internal agency Slack channels.
+- **Track SSL Expiration**: Set 30-day SSL expiry alerts so your agency renews certificates before client browsers display security warnings.

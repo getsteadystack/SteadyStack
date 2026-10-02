@@ -15,13 +15,20 @@ const OFFLINE_URL = "/offline.html";
 
 const PRECACHE_URLS = [OFFLINE_URL, "/favicon.svg", "/icon.svg"];
 
+const isDev =
+  self.location.hostname === "localhost" ||
+  self.location.hostname === "127.0.0.1" ||
+  self.location.hostname.endsWith(".localhost");
+
 self.addEventListener("install", (event) => {
+  if (isDev) {
+    self.skipWaiting();
+    return;
+  }
   event.waitUntil(
     (async () => {
       const cache = await caches.open(`steadystack-precache-${VERSION}`);
       await cache.addAll(PRECACHE_URLS);
-      // Take over immediately once installed so the first offline visit after
-      // a reload is already covered.
       await self.skipWaiting();
     })(),
   );
@@ -30,6 +37,12 @@ self.addEventListener("install", (event) => {
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     (async () => {
+      if (isDev) {
+        const names = await caches.keys();
+        await Promise.all(names.map((name) => caches.delete(name)));
+        await self.registration.unregister();
+        return;
+      }
       const names = await caches.keys();
       await Promise.all(
         names
@@ -42,6 +55,8 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+  if (isDev) return;
+
   const { request } = event;
 
   // Only GET navigations/static assets; never touch non-GET (mutations) or

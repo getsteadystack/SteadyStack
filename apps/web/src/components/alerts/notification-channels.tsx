@@ -204,43 +204,40 @@ export function NotificationChannels({
     });
   };
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex items-center justify-between">
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center justify-between pb-2 border-b border-border/80">
         <div className="flex flex-col">
-          <h3 className="text-lg font-bold text-foreground font-mono uppercase tracking-tight">
-            Notification Channels
-          </h3>
-          <p className="text-xs text-primary/60 font-mono">Configure dispatch protocols</p>
+          <h3 className="text-xl font-serif font-medium text-foreground">Notification Channels</h3>
+          <p className="text-xs text-muted-foreground font-sans mt-0.5">
+            Configure dispatch channels and alerts for outage notifications
+          </p>
         </div>
 
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogTrigger asChild>
-            <Button
-              variant="outline"
-              className="bg-primary/10 hover:bg-primary/20 text-primary border-primary/50 hover:border-primary font-mono uppercase tracking-wider gap-2"
-            >
-              <Plus className="size-4" /> Add Channel
+            <Button className="bg-foreground hover:bg-foreground/90 text-background font-medium text-xs rounded-xl shadow-xs gap-2 h-9 px-4 cursor-pointer">
+              <Plus className="size-4 text-[#ffd439]" /> Add Channel
             </Button>
           </DialogTrigger>
-          <DialogContent className="dark sm:max-w-[480px] max-h-[85vh] overflow-y-auto border-primary/20 bg-zinc-950 backdrop-blur-xl text-foreground">
+          <DialogContent className="sm:max-w-[480px] max-h-[85vh] overflow-y-auto border-border bg-card text-foreground rounded-2xl shadow-xl">
             <DialogHeader>
-              <DialogTitle className="font-mono uppercase tracking-wider text-primary">
-                New Channel
+              <DialogTitle className="font-serif text-xl font-medium text-foreground">
+                New Notification Channel
               </DialogTitle>
-              <DialogDescription>
-                Configure an alert destination for system downtime.
+              <DialogDescription className="text-xs text-muted-foreground">
+                Configure an alert destination for incident and downtime notifications.
               </DialogDescription>
             </DialogHeader>
 
             {/* Channel Type Selector Tabs */}
-            <div className="grid grid-cols-5 gap-1 p-1 bg-zinc-900 border border-primary/10 rounded-lg mb-4 text-[11px] font-mono">
+            <div className="grid grid-cols-5 gap-1 p-1 bg-muted/60 border border-border rounded-xl mb-4 text-xs font-mono">
               <button
                 type="button"
                 onClick={() => setActiveTab("discord")}
-                className={`py-1.5 px-2 rounded font-bold transition-all text-center ${
+                className={`py-1.5 px-2 rounded-lg font-medium transition-all text-center cursor-pointer ${
                   activeTab === "discord"
-                    ? "bg-[#5865F2] text-white shadow-sm"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-[#5865F2] text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                 }`}
               >
                 Discord
@@ -248,10 +245,10 @@ export function NotificationChannels({
               <button
                 type="button"
                 onClick={() => setActiveTab("slack")}
-                className={`py-1.5 px-2 rounded font-bold transition-all text-center ${
+                className={`py-1.5 px-2 rounded-lg font-medium transition-all text-center cursor-pointer ${
                   activeTab === "slack"
-                    ? "bg-[#E01E5A] text-white shadow-sm"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-[#E01E5A] text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                 }`}
               >
                 Slack
@@ -259,10 +256,10 @@ export function NotificationChannels({
               <button
                 type="button"
                 onClick={() => setActiveTab("email")}
-                className={`py-1.5 px-2 rounded font-bold transition-all text-center ${
+                className={`py-1.5 px-2 rounded-lg font-medium transition-all text-center cursor-pointer ${
                   activeTab === "email"
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-foreground text-background shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                 }`}
               >
                 Email
@@ -270,10 +267,10 @@ export function NotificationChannels({
               <button
                 type="button"
                 onClick={() => setActiveTab("pagerduty")}
-                className={`py-1.5 px-2 rounded font-bold transition-all text-center ${
+                className={`py-1.5 px-2 rounded-lg font-medium transition-all text-center cursor-pointer ${
                   activeTab === "pagerduty"
-                    ? "bg-[#06AC38] text-white shadow-sm"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-[#06AC38] text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                 }`}
               >
                 PagerDuty
@@ -281,10 +278,10 @@ export function NotificationChannels({
               <button
                 type="button"
                 onClick={() => setActiveTab("opsgenie")}
-                className={`py-1.5 px-2 rounded font-bold transition-all text-center ${
+                className={`py-1.5 px-2 rounded-lg font-medium transition-all text-center cursor-pointer ${
                   activeTab === "opsgenie"
-                    ? "bg-[#0052CC] text-white shadow-sm"
-                    : "text-zinc-400 hover:text-white"
+                    ? "bg-[#0052CC] text-white shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-background/50"
                 }`}
               >
                 Opsgenie
@@ -636,49 +633,46 @@ export function NotificationChannels({
           return (
             <div
               key={channel.id}
-              className="bg-black/40 border border-primary/20 p-5 flex flex-col gap-4 relative group hover:border-primary/50 transition-all backdrop-blur-sm"
+              className="bg-card border border-border p-5 rounded-2xl flex flex-col gap-4 shadow-xs hover:border-foreground/20 transition-all"
             >
-              <div className="absolute top-0 right-0 w-2 h-2 border-t border-r border-primary/0 group-hover:border-primary transition-colors"></div>
-              <div className="absolute bottom-0 left-0 w-2 h-2 border-b border-l border-primary/0 group-hover:border-primary transition-colors"></div>
-
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 overflow-hidden">
-                  <div className="size-10 shrink-0 bg-primary/5 border border-primary/10 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                  <div className="size-10 shrink-0 bg-muted border border-border rounded-xl flex items-center justify-center transition-colors">
                     <Icon className={`size-5 ${getColor(channel.type)}`} />
                   </div>
                   <div className="flex flex-col overflow-hidden">
-                    <span className="text-sm font-bold text-foreground font-mono uppercase truncate">
+                    <span className="text-sm font-semibold text-foreground font-sans truncate">
                       {channel.name}
                     </span>
                     <span
-                      className="text-[10px] text-primary/50 font-mono truncate"
+                      className="text-xs text-muted-foreground font-mono truncate"
                       title={getDetail(channel)}
                     >
                       {getDetail(channel)}
                     </span>
                   </div>
                 </div>
-                <span className="bg-primary/10 text-primary border border-primary/20 text-[10px] font-bold px-2 py-0.5 uppercase tracking-wider">
+                <span className="bg-muted text-foreground border border-border text-[10px] font-mono font-medium px-2 py-0.5 rounded-full uppercase tracking-wider">
                   {channel.type}
                 </span>
               </div>
 
-              <div className="flex gap-2 mt-2">
+              <div className="flex gap-2 mt-auto pt-2 border-t border-border">
                 <Button
                   disabled={isPending}
                   onClick={() => handleTest(channel.id)}
-                  variant="ghost"
-                  className="flex-1 border border-primary/20 hover:bg-primary/10 hover:border-primary/40 text-primary/50 hover:text-primary text-[10px] font-bold py-2 uppercase tracking-wider transition-all font-mono h-auto"
+                  variant="outline"
+                  className="flex-1 border-border hover:bg-muted text-foreground text-xs font-medium py-1.5 rounded-xl transition-all h-8 cursor-pointer"
                 >
-                  <Terminal className="size-3 mr-2" /> Test
+                  <Terminal className="size-3 mr-1.5 text-muted-foreground" /> Test
                 </Button>
                 <Button
                   disabled={isPending}
                   onClick={() => handleDelete(channel.id)}
-                  variant="ghost"
-                  className="flex-1 border border-red-500/20 hover:bg-red-500/10 hover:border-red-500/40 text-red-500/50 hover:text-red-500 text-[10px] font-bold py-2 uppercase tracking-wider transition-all font-mono h-auto"
+                  variant="outline"
+                  className="flex-1 border-border hover:bg-rose-500/10 hover:border-rose-500/30 text-rose-600 dark:text-rose-400 text-xs font-medium py-1.5 rounded-xl transition-all h-8 cursor-pointer"
                 >
-                  <Trash2 className="size-3 mr-2" /> Delete
+                  <Trash2 className="size-3 mr-1.5" /> Delete
                 </Button>
               </div>
             </div>
@@ -686,10 +680,16 @@ export function NotificationChannels({
         })}
 
         {channels.length === 0 && (
-          <div className="col-span-full border border-dashed border-primary/20 p-8 flex flex-col items-center justify-center text-center gap-2 text-primary/50">
-            <Terminal className="size-8 mb-2 opacity-50" />
-            <p className="font-mono text-sm">No notification channels initialized</p>
-            <p className="text-xs">Add a channel to receive system alerts</p>
+          <div className="col-span-full border border-dashed border-border bg-card rounded-2xl p-10 flex flex-col items-center justify-center text-center gap-2 text-muted-foreground">
+            <div className="p-3 bg-muted rounded-2xl border border-border text-foreground mb-1">
+              <Bell className="size-6" />
+            </div>
+            <p className="font-serif text-base font-medium text-foreground">
+              No notification channels initialized
+            </p>
+            <p className="text-xs text-muted-foreground font-sans">
+              Add Slack, Discord, or Email to receive instant downtime alerts.
+            </p>
           </div>
         )}
       </div>

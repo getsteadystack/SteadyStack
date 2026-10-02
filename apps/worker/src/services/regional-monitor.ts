@@ -5,17 +5,19 @@
  * Evaluates results using the 4-of-7 Quorum Consensus Engine.
  */
 
-import { isPrivateOrInternalUrlAsync, decryptSecret, DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 import {
-  CLOUDFLARE_PROBE_REGIONS,
-  FREE_TIER_PROBE_REGIONS,
+  isPrivateOrInternalUrlAsync,
+  decryptSecret,
+  DEFAULT_CHECK_TIMEOUT_SECONDS,
+} from "@steadystack/core";
+import {
   getRegionByCode,
   type DOLocationHint,
   STEADYSTACK_CANONICAL_USER_AGENT,
 } from "@steadystack/shared";
 import type { ProbeCheckResult } from "@steadystack/types";
 import type { Env } from "../env";
-import { evaluateQuorum, type QuorumConfig } from "./quorum-engine";
+import { evaluateQuorum } from "./quorum-engine";
 
 export interface RegionalCheckResult {
   region: string;

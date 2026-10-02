@@ -3,6 +3,7 @@
 import prisma from "@steadystack/db";
 import { auth } from "@steadystack/auth";
 import { headers } from "next/headers";
+import { getActiveWorkspace } from "@/actions/team";
 
 export type DailySlaData = {
   date: string;
@@ -63,6 +64,7 @@ export type SlaReport = {
 export interface SlaReportOptions {
   monitorId?: string;
   statusPageId?: string;
+  clientId?: string;
   range?: "7d" | "30d" | "90d" | "this-month" | "last-month" | "custom";
   startDate?: string | Date;
   endDate?: string | Date;
@@ -172,6 +174,30 @@ export async function getComprehensiveSlaReport(
       monitors = [monitor];
       scopeName = monitor.name;
     }
+  } else if (options.clientId) {
+    const client = await prisma.client.findFirst({
+      where: {
+        id: options.clientId,
+        ...(userId ? { userId } : {}),
+      },
+      select: {
+        name: true,
+        monitors: {
+          select: {
+            id: true,
+            name: true,
+            type: true,
+            url: true,
+            interval: true,
+          },
+        },
+      },
+    });
+
+    if (client) {
+      scopeName = client.name;
+      monitors = client.monitors;
+    }
   } else if (options.statusPageId) {
     const statusPage = await prisma.statusPage.findFirst({
       where: {
@@ -201,8 +227,9 @@ export async function getComprehensiveSlaReport(
       monitors = statusPage.monitors.map((m) => m.monitor);
     }
   } else if (userId) {
+    const active = await getActiveWorkspace();
     monitors = await prisma.monitor.findMany({
-      where: { userId },
+      where: active?.id ? { organizationId: active.id } : { userId, organizationId: null },
       select: { id: true, name: true, type: true, url: true, interval: true },
       orderBy: { name: "asc" },
     });

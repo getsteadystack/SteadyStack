@@ -80,7 +80,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     if (channels.length !== body.channelIds.length) {
       return NextResponse.json(
-        { error: "One or more notification channels not found or unauthorized" },
+        {
+          error: "One or more notification channels not found or unauthorized",
+        },
         { status: 400 },
       );
     }

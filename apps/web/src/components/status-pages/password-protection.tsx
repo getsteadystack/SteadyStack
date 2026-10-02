@@ -77,7 +77,7 @@ export function PasswordProtection({ pageId, title }: { pageId: string; title: s
         </form>
 
         <p className="mt-8 text-center text-[10px] text-white/20 uppercase tracking-[0.3em]">
-          Secured by SteadyStack
+          Encrypted & Protected Access Portal
         </p>
       </div>
     </div>

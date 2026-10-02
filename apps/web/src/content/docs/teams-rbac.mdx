@@ -15,18 +15,18 @@ a courtesy, not the security boundary.
 
 ## Roles
 
-| Capability | Owner | Admin | Member | Viewer |
-| --- | :-: | :-: | :-: | :-: |
-| View monitors, incidents, SLA reports | ✅ | ✅ | ✅ | ✅ |
-| Create / edit / delete monitors | ✅ | ✅ | ✅ | — |
-| Acknowledge and resolve incidents | ✅ | ✅ | ✅ | — |
-| Create / edit alert channels & rules | ✅ | ✅ | — | — |
-| Create / edit status pages | ✅ | ✅ | — | — |
-| Invite members, change roles | ✅ | ✅ | — | — |
-| Remove members | ✅ | ✅ | — | — |
-| Rename or delete the workspace | ✅ | — | — | — |
-| Manage billing and subscription | ✅ | — | — | — |
-| Delete the workspace | ✅ | — | — | — |
+| Capability                            | Owner | Admin | Member | Viewer |
+| ------------------------------------- | :---: | :---: | :----: | :----: |
+| View monitors, incidents, SLA reports |  ✅   |  ✅   |   ✅   |   ✅   |
+| Create / edit / delete monitors       |  ✅   |  ✅   |   ✅   |   —    |
+| Acknowledge and resolve incidents     |  ✅   |  ✅   |   ✅   |   —    |
+| Create / edit alert channels & rules  |  ✅   |  ✅   |   —    |   —    |
+| Create / edit status pages            |  ✅   |  ✅   |   —    |   —    |
+| Invite members, change roles          |  ✅   |  ✅   |   —    |   —    |
+| Remove members                        |  ✅   |  ✅   |   —    |   —    |
+| Rename or delete the workspace        |  ✅   |   —   |   —    |   —    |
+| Manage billing and subscription       |  ✅   |   —   |   —    |   —    |
+| Delete the workspace                  |  ✅   |   —   |   —    |   —    |
 
 Notes:
 
@@ -35,7 +35,7 @@ Notes:
 - An Owner can transfer ownership in **Settings → Team**; the transfer demotes
   them to Admin and promotes the target member. Deleting a workspace requires
   being the Owner, so ownership can't end up in a state where nobody can delete it.
-- Admins manage the *content* of the workspace (monitors, alerting, status
+- Admins manage the _content_ of the workspace (monitors, alerting, status
   pages, membership). Billing and workspace-level deletion stay with the Owner.
 - Members work with monitors and incidents day-to-day. They cannot alter the
   alerting topology, which prevents an accidental "nobody gets paged" mistake.
@@ -43,8 +43,8 @@ Notes:
   engineers from adjacent teams.
 
 <Check>
-Changing a member's role takes effect on their next request; there is no need
-to log out and back in. Active sessions re-read role on each server action.
+  Changing a member's role takes effect on their next request; there is no need
+  to log out and back in. Active sessions re-read role on each server action.
 </Check>
 
 ## Inviting members
@@ -87,9 +87,9 @@ created in** — they are not personal credentials:
   in dotfiles.
 
 <Tip>
-Create one key per integration (CI, Terraform, scripts) rather than sharing a
-single key. If an integration leaks, you rotate one key without touching the
-rest.
+  Create one key per integration (CI, Terraform, scripts) rather than sharing a
+  single key. If an integration leaks, you rotate one key without touching the
+  rest.
 </Tip>
 
 ## How enforcement works

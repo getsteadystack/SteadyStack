@@ -45,7 +45,7 @@ export async function importThirdPartyMonitors(projects: IntegrationProject[]) {
 
     // 2. Count existing monitors
     const existingCount = await prisma.monitor.count({
-      where: { userId },
+      where: active?.id ? { organizationId: active.id } : { userId, organizationId: null },
     });
 
     const maxMonitors = userTier === "INITIATE" ? 50 : userTier === "NETRUNNER" ? 200 : 9999;

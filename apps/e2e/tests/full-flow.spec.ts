@@ -54,7 +54,9 @@ test.describe("E2E Critical Flow", () => {
       // Success: redirect to /dashboard (see sign-up-form onSuccess).
       await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
       // Dashboard stats render client-side ("Active Monitors" stat card).
-      await expect(page.getByText("Active Monitors")).toBeVisible({ timeout: 20_000 });
+      await expect(page.getByText("Active Monitors")).toBeVisible({
+        timeout: 20_000,
+      });
     });
 
     await test.step("Create Monitor", async () => {
@@ -63,20 +65,22 @@ test.describe("E2E Critical Flow", () => {
       // The monitor type defaults to HTTP — no interaction needed.
       // Form fields are plain inputs with name attributes; the labels are
       // not wired with htmlFor, so target the inputs by name.
-      await page
-        .locator('input[name="name"]')
-        .fill(MONITOR.name);
+      await page.locator('input[name="name"]').fill(MONITOR.name);
       await page.locator('input[name="url"]').fill(MONITOR.url);
 
       await page.getByRole("button", { name: "Create Monitor" }).click();
 
       // Success returns to the monitors list.
-      await expect(page).toHaveURL(/\/dashboard\/monitors(\/|$)/, { timeout: 20_000 });
+      await expect(page).toHaveURL(/\/dashboard\/monitors(\/|$)/, {
+        timeout: 20_000,
+      });
     });
 
     await test.step("Verify Listing", async () => {
       await page.goto("/dashboard/monitors");
-      await expect(page.getByText(MONITOR.name).first()).toBeVisible({ timeout: 15_000 });
+      await expect(page.getByText(MONITOR.name).first()).toBeVisible({
+        timeout: 15_000,
+      });
     });
 
     await test.step("Delete Monitor", async () => {
@@ -95,9 +99,9 @@ test.describe("E2E Critical Flow", () => {
       await dialog.getByRole("button", { name: "Confirm Destruction" }).click();
 
       // Row disappears from the list.
-      await expect(
-        page.locator("tr", { hasText: MONITOR.name }),
-      ).toHaveCount(0, { timeout: 15_000 });
+      await expect(page.locator("tr", { hasText: MONITOR.name })).toHaveCount(0, {
+        timeout: 15_000,
+      });
     });
   });
 });

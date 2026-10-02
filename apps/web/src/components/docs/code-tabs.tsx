@@ -28,12 +28,12 @@ export function CodeTabs({ tabs, filename }: CodeTabsProps) {
   };
 
   return (
-    <div className="my-6 rounded-xl border border-border bg-card overflow-hidden shadow-xs">
+    <div className="my-6 rounded-2xl border border-[#2e2c26] bg-[#1a1915] text-white overflow-hidden shadow-xl">
       {/* Header bar with tabs and copy button */}
-      <div className="flex items-center justify-between px-3 py-1.5 bg-muted/40 border-b border-border">
-        <div className="flex items-center gap-1 overflow-x-auto scrollbar-none">
+      <div className="flex items-center justify-between px-3 py-2 bg-[#23211a] border-b border-[#2e2c26]">
+        <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
           {filename && (
-            <span className="text-[11px] font-mono text-muted-foreground mr-3 px-1 border-r border-border/80">
+            <span className="text-[11px] font-mono text-white/60 mr-3 px-1 border-r border-white/15">
               {filename}
             </span>
           )}
@@ -41,10 +41,10 @@ export function CodeTabs({ tabs, filename }: CodeTabsProps) {
             <button
               key={tab.label}
               onClick={() => setActiveTab(idx)}
-              className={`px-2.5 py-1 rounded text-xs font-mono transition-all ${
+              className={`px-3 py-1 rounded-lg text-xs font-mono transition-all cursor-pointer ${
                 activeTab === idx
-                  ? "bg-primary/10 text-primary font-bold border border-primary/20"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                  ? "bg-white/15 text-[#ffd439] font-bold border border-[#ffd439]/40 shadow-xs"
+                  : "text-white/60 hover:text-white hover:bg-white/10"
               }`}
             >
               {tab.label}
@@ -55,16 +55,18 @@ export function CodeTabs({ tabs, filename }: CodeTabsProps) {
         <button
           onClick={handleCopy}
           aria-label="Copy code"
-          className="p-1.5 rounded-md hover:bg-muted/70 text-muted-foreground hover:text-foreground transition-all ml-2"
+          className="p-1.5 rounded-lg hover:bg-white/10 text-white/70 hover:text-white transition-all ml-2 cursor-pointer"
         >
-          {copied ? <Check className="size-3.5 text-emerald-400" /> : <Copy className="size-3.5" />}
+          {copied ? <Check className="size-3.5 text-[#ffd439]" /> : <Copy className="size-3.5" />}
         </button>
       </div>
 
       {/* Code content */}
-      <pre className="p-4 text-xs font-mono text-foreground/90 overflow-x-auto leading-relaxed scrollbar-thin">
+      <pre className="p-4 sm:p-5 text-xs font-mono text-zinc-100 overflow-x-auto leading-relaxed scrollbar-thin selection:bg-[#ffd439]/30 selection:text-[#ffd439]">
         <code>{currentTab?.code}</code>
       </pre>
     </div>
   );
 }
+
+export default CodeTabs;

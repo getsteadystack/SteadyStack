@@ -49,7 +49,7 @@ export async function sendDiscordAlert(
   }
 
   const payload = {
-    username: "SteadyStack",
+    username: "System Sentinel",
     embeds: [
       {
         title: title,
@@ -97,7 +97,7 @@ export async function sendDiscordAlert(
             : []),
         ],
         footer: {
-          text: "SteadyStack Sentinel • Monitoring Infrastructure",
+          text: "System Sentinel • Monitoring Infrastructure",
         },
         timestamp: data.timestamp,
       },

@@ -4,6 +4,7 @@ import LandingFooter from "@/components/landing/footer";
 import { DNSAnalyzer } from "./analyzer";
 import { ToolSchema } from "@/components/seo/tool-schema";
 import { ToolContentSection } from "@/components/tools/tool-content-section";
+import { ShieldCheck } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -32,22 +33,26 @@ export const metadata: Metadata = {
 
 export default function DNSSentinelPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-[#fbfbf9] text-[#23211a] flex flex-col font-sans">
       <ToolSchema
         name="MX & DNS Record Lookup Analyzer"
         description="Free MX and DNS record lookup tool to audit SPF/DKIM/DMARC health scores. Verify email deliverability and security with SteadyStack's DNS sentinel."
         url="https://steadystack.dev/tools/dns-sentinel"
       />
       <LandingHeader />
-      <main className="container mx-auto pt-32 pb-16 px-4 md:px-6 flex-1">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <div className="text-center space-y-4 mb-16">
-            <h1 className="text-4xl md:text-5xl font-extrabold tracking-tighter bg-linear-to-r from-primary via-green-500 to-primary bg-clip-text text-transparent pb-2 uppercase italic">
+      <main className="container mx-auto pt-32 pb-20 px-4 sm:px-6 md:px-8 flex-1">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="text-center space-y-4 mb-10 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-xs font-mono font-semibold uppercase tracking-wider shadow-xs">
+              <ShieldCheck className="size-3.5 text-[#ffd439]" />
+              <span>Free DNS Telemetry</span>
+            </div>
+            <h1 className="text-4xl sm:text-6xl font-serif font-medium tracking-tight text-[#23211a] leading-[1.08] text-balance">
               DNS Pulse Sentinel
             </h1>
-            <p className="text-muted-foreground text-lg md:text-xl max-w-3xl mx-auto font-mono">
-              [RESOLVING ENDPOINT RECORDSETS... ] Evaluate your domain's email deliverability and
-              security integrity.
+            <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed font-sans text-balance">
+              Audit your domain&apos;s email authentication records, MX routing, SPF lookup
+              boundaries, and DMARC enforcement health in seconds.
             </p>
           </div>
 

@@ -31,42 +31,42 @@ curl "https://app.steadystack.dev/api/v1/monitors" \
 
 ### Error codes
 
-| Status | When |
-| :----- | :--- |
-| `400`  | Missing/invalid fields, malformed JSON body |
-| `401`  | Missing header, unknown key, or expired key |
-| `403`  | Key lacks `write` scope, or plan quota/feature limit exceeded |
+| Status | When                                                                                    |
+| :----- | :-------------------------------------------------------------------------------------- |
+| `400`  | Missing/invalid fields, malformed JSON body                                             |
+| `401`  | Missing header, unknown key, or expired key                                             |
+| `403`  | Key lacks `write` scope, or plan quota/feature limit exceeded                           |
 | `404`  | Resource does not exist **or belongs to another workspace** (ownership is never leaked) |
-| `409`  | Status-page slug already taken |
+| `409`  | Status-page slug already taken                                                          |
 
 ---
 
 ## API Endpoints Overview
 
-| Method   | Endpoint                        | Description                              | Scope   |
-| :------- | :------------------------------ | :--------------------------------------- | :------ |
-| `GET`    | `/api/v1/monitors`              | List monitors (filter by tag, status)    | `read`  |
-| `POST`   | `/api/v1/monitors`              | Create a monitor                         | `write` |
-| `GET`    | `/api/v1/monitors/:id`          | Monitor details incl. alert rules        | `read`  |
-| `PATCH`  | `/api/v1/monitors/:id`          | Update monitor fields                    | `write` |
-| `DELETE` | `/api/v1/monitors/:id`          | Delete monitor                           | `write` |
-| `GET`    | `/api/v1/alert-channels`        | List notification channels               | `read`  |
-| `POST`   | `/api/v1/alert-channels`        | Create notification channel              | `write` |
-| `GET`    | `/api/v1/alert-channels/:id`    | Channel details                          | `read`  |
-| `PATCH`  | `/api/v1/alert-channels/:id`    | Update channel name/config               | `write` |
-| `DELETE` | `/api/v1/alert-channels/:id`    | Delete channel                           | `write` |
-| `GET`    | `/api/v1/alert-rules`           | List alert rules (filter by monitorId)   | `read`  |
-| `POST`   | `/api/v1/alert-rules`           | Create alert rule                        | `write` |
-| `GET`    | `/api/v1/alert-rules/:id`       | Rule details                             | `read`  |
-| `PATCH`  | `/api/v1/alert-rules/:id`       | Update rule / rewire channels            | `write` |
-| `DELETE` | `/api/v1/alert-rules/:id`       | Delete rule                              | `write` |
-| `GET`    | `/api/v1/status-pages`          | List hosted status pages                 | `read`  |
-| `POST`   | `/api/v1/status-pages`          | Create hosted status page                | `write` |
-| `GET`    | `/api/v1/status-pages/:id`      | Status page details incl. monitors       | `read`  |
-| `PATCH`  | `/api/v1/status-pages/:id`      | Update status page                       | `write` |
-| `DELETE` | `/api/v1/status-pages/:id`      | Delete status page                       | `write` |
-| `GET`    | `/api/v1/regions`               | List sovereign probe regions             | `read`  |
-| `POST`   | `/api/v1/probes/instant`        | Run a one-off multi-region probe         | `read`  |
+| Method   | Endpoint                     | Description                            | Scope   |
+| :------- | :--------------------------- | :------------------------------------- | :------ |
+| `GET`    | `/api/v1/monitors`           | List monitors (filter by tag, status)  | `read`  |
+| `POST`   | `/api/v1/monitors`           | Create a monitor                       | `write` |
+| `GET`    | `/api/v1/monitors/:id`       | Monitor details incl. alert rules      | `read`  |
+| `PATCH`  | `/api/v1/monitors/:id`       | Update monitor fields                  | `write` |
+| `DELETE` | `/api/v1/monitors/:id`       | Delete monitor                         | `write` |
+| `GET`    | `/api/v1/alert-channels`     | List notification channels             | `read`  |
+| `POST`   | `/api/v1/alert-channels`     | Create notification channel            | `write` |
+| `GET`    | `/api/v1/alert-channels/:id` | Channel details                        | `read`  |
+| `PATCH`  | `/api/v1/alert-channels/:id` | Update channel name/config             | `write` |
+| `DELETE` | `/api/v1/alert-channels/:id` | Delete channel                         | `write` |
+| `GET`    | `/api/v1/alert-rules`        | List alert rules (filter by monitorId) | `read`  |
+| `POST`   | `/api/v1/alert-rules`        | Create alert rule                      | `write` |
+| `GET`    | `/api/v1/alert-rules/:id`    | Rule details                           | `read`  |
+| `PATCH`  | `/api/v1/alert-rules/:id`    | Update rule / rewire channels          | `write` |
+| `DELETE` | `/api/v1/alert-rules/:id`    | Delete rule                            | `write` |
+| `GET`    | `/api/v1/status-pages`       | List hosted status pages               | `read`  |
+| `POST`   | `/api/v1/status-pages`       | Create hosted status page              | `write` |
+| `GET`    | `/api/v1/status-pages/:id`   | Status page details incl. monitors     | `read`  |
+| `PATCH`  | `/api/v1/status-pages/:id`   | Update status page                     | `write` |
+| `DELETE` | `/api/v1/status-pages/:id`   | Delete status page                     | `write` |
+| `GET`    | `/api/v1/regions`            | List global edge probe regions         | `read`  |
+| `POST`   | `/api/v1/probes/instant`     | Run a one-off multi-region probe       | `read`  |
 
 ---
 
@@ -158,7 +158,9 @@ curl "https://app.steadystack.dev/api/v1/monitors/cm0monitor0001abcd" \
         "trigger": "STATUS_CHANGE",
         "targetStatus": "DOWN",
         "enabled": true,
-        "channels": [{ "id": "cm0chan0001abcd", "name": "oncall-slack", "type": "SLACK" }]
+        "channels": [
+          { "id": "cm0chan0001abcd", "name": "oncall-slack", "type": "SLACK" }
+        ]
       }
     ]
   }
@@ -244,7 +246,9 @@ curl -X POST "https://app.steadystack.dev/api/v1/alert-channels" \
     "id": "cm0chan0001abcd",
     "name": "oncall-slack",
     "type": "SLACK",
-    "config": { "webhookUrl": "https://hooks.slack.com/services/T000/B000/xxxx" }
+    "config": {
+      "webhookUrl": "https://hooks.slack.com/services/T000/B000/xxxx"
+    }
   }
 }
 ```
@@ -301,7 +305,9 @@ curl "https://app.steadystack.dev/api/v1/alert-rules?monitorId=cm0monitor0001abc
       "comparison": null,
       "targetStatus": "DOWN",
       "enabled": true,
-      "channels": [{ "id": "cm0chan0001abcd", "name": "oncall-slack", "type": "SLACK" }]
+      "channels": [
+        { "id": "cm0chan0001abcd", "name": "oncall-slack", "type": "SLACK" }
+      ]
     }
   ],
   "count": 1
@@ -337,7 +343,9 @@ curl -X POST "https://app.steadystack.dev/api/v1/alert-rules" \
     "comparison": "GT",
     "targetStatus": null,
     "enabled": true,
-    "channels": [{ "id": "cm0chan0001abcd", "name": "oncall-slack", "type": "SLACK" }]
+    "channels": [
+      { "id": "cm0chan0001abcd", "name": "oncall-slack", "type": "SLACK" }
+    ]
   }
 }
 ```
@@ -395,7 +403,12 @@ curl "https://app.steadystack.dev/api/v1/status-pages" \
       "showUptime": true,
       "showResponseTime": true,
       "monitors": [
-        { "id": "cm0spmon0001abcd", "monitorId": "cm0monitor0001abcd", "displayName": "Checkout API", "sortOrder": 0 }
+        {
+          "id": "cm0spmon0001abcd",
+          "monitorId": "cm0monitor0001abcd",
+          "displayName": "Checkout API",
+          "sortOrder": 0
+        }
       ],
       "createdAt": "2026-05-11T08:00:00.000Z"
     }
@@ -463,7 +476,7 @@ curl -X DELETE "https://app.steadystack.dev/api/v1/status-pages/cm0page0001abcd"
 
 ### `GET /api/v1/regions`
 
-The sovereign probe regions available for `checkRegions` and instant probes.
+The global edge probe regions available for `checkRegions` and instant probes.
 
 ```bash
 curl "https://app.steadystack.dev/api/v1/regions" \
@@ -475,13 +488,48 @@ curl "https://app.steadystack.dev/api/v1/regions" \
 ```json
 {
   "data": [
-    { "code": "wnam", "name": "North America West", "location": "San Jose, CA, USA", "flag": "🇺🇸" },
-    { "code": "enam", "name": "North America East", "location": "Ashburn, VA, USA", "flag": "🇺🇸" },
-    { "code": "weur", "name": "Western Europe", "location": "Frankfurt, Germany", "flag": "🇩🇪" },
-    { "code": "eeur", "name": "Eastern Europe", "location": "Warsaw, Poland", "flag": "🇵🇱" },
-    { "code": "apac", "name": "Asia Pacific South", "location": "Singapore", "flag": "🇸🇬" },
-    { "code": "apac-ne", "name": "Asia Pacific Northeast", "location": "Tokyo, Japan", "flag": "🇯🇵" },
-    { "code": "apac-se", "name": "Asia Pacific Southeast", "location": "Sydney, Australia", "flag": "🇦🇺" }
+    {
+      "code": "wnam",
+      "name": "North America West",
+      "location": "San Jose, CA, USA",
+      "flag": "🇺🇸"
+    },
+    {
+      "code": "enam",
+      "name": "North America East",
+      "location": "Ashburn, VA, USA",
+      "flag": "🇺🇸"
+    },
+    {
+      "code": "weur",
+      "name": "Western Europe",
+      "location": "Frankfurt, Germany",
+      "flag": "🇩🇪"
+    },
+    {
+      "code": "eeur",
+      "name": "Eastern Europe",
+      "location": "Warsaw, Poland",
+      "flag": "🇵🇱"
+    },
+    {
+      "code": "apac",
+      "name": "Asia Pacific South",
+      "location": "Singapore",
+      "flag": "🇸🇬"
+    },
+    {
+      "code": "apac-ne",
+      "name": "Asia Pacific Northeast",
+      "location": "Tokyo, Japan",
+      "flag": "🇯🇵"
+    },
+    {
+      "code": "apac-se",
+      "name": "Asia Pacific Southeast",
+      "location": "Sydney, Australia",
+      "flag": "🇦🇺"
+    }
   ],
   "count": 7
 }
@@ -515,8 +563,24 @@ curl -X POST "https://app.steadystack.dev/api/v1/probes/instant" \
     "quorumPass": true,
     "quorumRatio": "2/2",
     "regions": [
-      { "region": "wnam", "name": "North America West", "flag": "🇺🇸", "status": "UP", "httpCode": 200, "latencyMs": 189, "error": null },
-      { "region": "weur", "name": "Western Europe", "flag": "🇩🇪", "status": "UP", "httpCode": 200, "latencyMs": 239, "error": null }
+      {
+        "region": "wnam",
+        "name": "North America West",
+        "flag": "🇺🇸",
+        "status": "UP",
+        "httpCode": 200,
+        "latencyMs": 189,
+        "error": null
+      },
+      {
+        "region": "weur",
+        "name": "Western Europe",
+        "flag": "🇩🇪",
+        "status": "UP",
+        "httpCode": 200,
+        "latencyMs": 239,
+        "error": null
+      }
     ],
     "checkedAt": "2026-09-16T12:04:31.000Z"
   }

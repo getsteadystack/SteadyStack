@@ -43,7 +43,9 @@ export async function applyTemplate(
 
   const limits = tierLimits[tier] ?? tierLimits.INITIATE;
 
-  const existingCount = await prisma.monitor.count({ where: { userId } });
+  const existingCount = await prisma.monitor.count({
+    where: active?.id ? { organizationId: active.id } : { userId, organizationId: null },
+  });
   const remainingSlots = limits.maxMonitors - existingCount;
 
   if (remainingSlots <= 0) {

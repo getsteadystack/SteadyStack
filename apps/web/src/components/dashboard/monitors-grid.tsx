@@ -162,10 +162,8 @@ export function MonitorsGrid({ monitors }: MonitorsGridProps) {
       {/* Grid Controller Toolbar */}
       <div className="flex items-center justify-between px-1">
         <div className="flex items-center gap-2">
-          <LayoutGrid className="size-4.5 text-primary" />
-          <h2 className="text-sm font-bold text-foreground uppercase tracking-wider">
-            Operational Matrix Grid
-          </h2>
+          <LayoutGrid className="size-4 text-[#ffd439]" />
+          <h3 className="text-sm font-serif font-semibold text-foreground">Monitored Endpoints</h3>
         </div>
 
         <div className="flex items-center gap-2">
@@ -174,7 +172,7 @@ export function MonitorsGrid({ monitors }: MonitorsGridProps) {
               variant="outline"
               size="sm"
               onClick={handleReset}
-              className="h-8 border-red-500/20 bg-red-500/5 text-red-500 hover:bg-red-500/10 font-mono text-[10px] uppercase tracking-wider"
+              className="h-8 border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-medium rounded-xl cursor-pointer"
             >
               <RotateCcw className="size-3 mr-1.5" />
               Reset Layout
@@ -182,18 +180,14 @@ export function MonitorsGrid({ monitors }: MonitorsGridProps) {
           )}
 
           <Button
-            variant="outline"
+            variant={isEditMode ? "default" : "outline"}
             size="sm"
             onClick={() => setIsEditMode(!isEditMode)}
-            className={`h-8 font-mono text-[10px] uppercase tracking-wider transition-colors ${
-              isEditMode
-                ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500/20"
-                : "border-primary/20 bg-primary/5 text-primary hover:bg-primary/10"
-            }`}
+            className="h-8 text-xs font-medium rounded-xl cursor-pointer shadow-xs"
           >
             {isEditMode ? (
               <>
-                <Save className="size-3 mr-1.5" />
+                <Save className="size-3 mr-1.5 text-[#ffd439]" />
                 Done Configuring
               </>
             ) : (
@@ -204,10 +198,10 @@ export function MonitorsGrid({ monitors }: MonitorsGridProps) {
       </div>
 
       {isEditMode && (
-        <div className="flex items-center gap-2 p-3.5 border border-primary/10 bg-primary/5 rounded-lg">
-          <AlertCircle className="size-4 text-primary shrink-0" />
-          <p className="text-xs text-primary/80 font-mono">
-            DRAG handles to rearrange nodes. Click RESIZE controls inside cards to resize grids.
+        <div className="flex items-center gap-2.5 p-3.5 border border-[#e8e6df] bg-[#f4f3ee] rounded-2xl">
+          <AlertCircle className="size-4 text-[#23211a] shrink-0" />
+          <p className="text-xs text-[#5c5c5c] font-sans">
+            Drag cards to rearrange endpoints. Use the card controls to resize individual tiles.
           </p>
         </div>
       )}

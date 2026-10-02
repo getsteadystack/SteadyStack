@@ -66,26 +66,25 @@ export function PublicView({
 
   // Dynamic Theme Colors
   const theme = (page.theme as any) || {
-    value: "cyberpunk",
+    value: "modern",
     colors: {
-      bg: "#0f0e13",
-      text: "#edeef0",
-      primary: "#e15639",
+      bg: "#09090b",
+      text: "#fafafa",
+      primary: "#10b981",
       degraded: "#f59e0b",
-      error: "#f87171",
+      error: "#ef4444",
     },
   };
   const colors = theme.colors || {
-    bg: "#0f0e13",
-    text: "#edeef0",
-    primary: "#e15639",
+    bg: "#09090b",
+    text: "#fafafa",
+    primary: "#10b981",
     degraded: "#f59e0b",
-    error: "#f87171",
+    error: "#ef4444",
   };
+
   const customStyle = {
-    "--bg-page": colors.bg || "#0f0e13",
-    "--text-page": colors.text || "#edeef0",
-    "--primary-page": colors.primary || "#e15639",
+    "--primary-page": colors.primary || "#10b981",
     "--degraded-page": colors.degraded || "#f59e0b",
     "--error-page": colors.error || "#ef4444",
   } as React.CSSProperties;
@@ -93,134 +92,102 @@ export function PublicView({
   return (
     <div
       style={customStyle}
-      className="min-h-screen bg-(--bg-page) text-(--text-page) font-mono selection:bg-(--primary-page)/20 relative overflow-hidden transition-colors duration-500"
+      className="min-h-screen bg-background text-foreground font-sans selection:bg-emerald-500/20 relative overflow-hidden transition-colors duration-300"
     >
       <AnalyticsTracker pageId={page.id} />
-      <style
-        dangerouslySetInnerHTML={{
-          __html: `
-            :root {
-                --primary: ${colors.primary || "#e15639"};
-            }
-            .text-primary { color: var(--primary-page) !important; }
-            .bg-primary { background-color: var(--primary-page) !important; }
-            .border-primary { border-color: var(--primary-page) !important; }
-            .from-primary { --tw-gradient-from: var(--primary-page) !important; }
-            .via-primary { --tw-gradient-via: var(--primary-page) !important; }
-            .to-primary { --tw-gradient-to: var(--primary-page) !important; }
-            .text-primary\/60 { color: color-mix(in srgb, var(--primary-page) 60%, transparent) !important; }
-            .text-primary\/50 { color: color-mix(in srgb, var(--primary-page) 50%, transparent) !important; }
-            .text-primary\/40 { color: color-mix(in srgb, var(--primary-page) 40%, transparent) !important; }
-            .text-primary\/30 { color: color-mix(in srgb, var(--primary-page) 30%, transparent) !important; }
-            .bg-primary\/20 { background-color: color-mix(in srgb, var(--primary-page) 20%, transparent) !important; }
-            .bg-primary\/10 { background-color: color-mix(in srgb, var(--primary-page) 10%, transparent) !important; }
-            .bg-primary\/5 { background-color: color-mix(in srgb, var(--primary-page) 5%, transparent) !important; }
-            .border-primary\/50 { border-color: color-mix(in srgb, var(--primary-page) 50%, transparent) !important; }
-            .border-primary\/30 { border-color: color-mix(in srgb, var(--primary-page) 30%, transparent) !important; }
-            .border-primary\/20 { border-color: color-mix(in srgb, var(--primary-page) 20%, transparent) !important; }
-            .border-primary\/10 { border-color: color-mix(in srgb, var(--primary-page) 10%, transparent) !important; }
-            
-            .text-red-500 { color: var(--error-page) !important; }
-            .bg-red-500 { background-color: var(--error-page) !important; }
-            .border-red-500\/20 { border-color: color-mix(in srgb, var(--error-page) 20%, transparent) !important; }
-            .border-red-500\/40 { border-color: color-mix(in srgb, var(--error-page) 40%, transparent) !important; }
-            .bg-red-500\/10 { background-color: color-mix(in srgb, var(--error-page) 10%, transparent) !important; }
-            .bg-red-500\/5 { background-color: color-mix(in srgb, var(--error-page) 5%, transparent) !important; }
+      {page.customCss && <style dangerouslySetInnerHTML={{ __html: page.customCss }} />}
 
-            .text-yellow-500 { color: var(--degraded-page) !important; }
-            .bg-yellow-500 { background-color: var(--degraded-page) !important; }
-            .border-yellow-500\/20 { border-color: color-mix(in srgb, var(--degraded-page) 20%, transparent) !important; }
-            .border-yellow-500\/40 { border-color: color-mix(in srgb, var(--degraded-page) 40%, transparent) !important; }
-            .bg-yellow-500\/10 { background-color: color-mix(in srgb, var(--degraded-page) 10%, transparent) !important; }
-            .bg-yellow-500\/5 { background-color: color-mix(in srgb, var(--degraded-page) 5%, transparent) !important; }
+      {/* Subtle Background Glow / Grid */}
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.08),rgba(255,255,255,0))] dark:bg-[radial-gradient(ellipse_80%_80%_at_50%_-20%,rgba(16,185,129,0.12),rgba(0,0,0,0))] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(var(--border)_1px,transparent_1px)] [background-size:24px_24px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)] opacity-40 pointer-events-none" />
 
-            .text-amber-500 { color: var(--degraded-page) !important; }
-            .bg-amber-500 { background-color: var(--degraded-page) !important; }
-            .border-amber-500\/20 { border-color: color-mix(in srgb, var(--degraded-page) 20%, transparent) !important; }
-            .border-amber-500\/40 { border-color: color-mix(in srgb, var(--degraded-page) 40%, transparent) !important; }
-            .bg-amber-500\/10 { background-color: color-mix(in srgb, var(--degraded-page) 10%, transparent) !important; }
-            .bg-amber-500\/5 { background-color: color-mix(in srgb, var(--degraded-page) 5%, transparent) !important; }
-
-            ${page.customCss || ""}
-        `,
-        }}
-      />
-
-      {/* Background Dots FX */}
-      <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none z-0"></div>
-
-      <div className="relative z-10 max-w-4xl mx-auto px-4 py-8 md:py-12">
+      <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 py-8 md:py-12">
         {page.isDemo && (
-          <div className="bg-primary/5 border border-primary/20 p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold uppercase tracking-wider text-primary rounded-sm shadow-[0_0_15px_-5px_rgba(var(--primary-page),0.3)]">
+          <div className="bg-primary/5 border border-primary/20 p-4 mb-6 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-bold uppercase tracking-wider text-primary rounded-2xl shadow-xs">
             <div className="flex items-center gap-2">
               <Sparkles className="size-4 animate-pulse" />
-              <span>SteadyStack Interactive Theme Demo ({theme.value})</span>
+              <span>Interactive Theme Demo ({theme.value})</span>
             </div>
             <a
               href="/showcase"
-              className="px-3 py-1 bg-primary text-black hover:opacity-90 transition-opacity whitespace-nowrap"
+              className="px-3.5 py-1.5 bg-primary text-primary-foreground rounded-xl hover:opacity-90 transition-opacity whitespace-nowrap text-xs font-mono font-medium"
             >
               Back to Showcase
             </a>
           </div>
         )}
-        {/* Navbar */}
-        <div className="flex items-center justify-between py-6 mb-8 border-b border-primary/10">
+
+        {/* Top Navbar */}
+        <header className="flex flex-col sm:flex-row items-center justify-between py-4 mb-8 border-b border-border/80 gap-4">
           {/* Logo & Title */}
           {page.homepageUrl ? (
             <a
               href={page.homepageUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 hover:opacity-80 transition-opacity"
+              className="flex items-center gap-3 hover:opacity-80 transition-opacity group"
             >
               {page.logo ? (
-                <div className="relative size-10 shrink-0">
+                <div className="relative size-10 rounded-xl overflow-hidden border border-border bg-card shadow-xs">
                   <Image
                     src={page.logo}
                     alt={page.title}
                     fill
                     sizes="40px"
-                    className="rounded-md object-cover border border-primary/20 shadow-[0_0_15px_-3px_rgba(34,197,94,0.3)]"
+                    className="object-cover"
                   />
                 </div>
               ) : (
-                <div className="size-10 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xl shadow-[0_0_15px_-3px_rgba(34,197,94,0.3)]">
+                <div className="size-10 rounded-xl bg-foreground text-background flex items-center justify-center font-bold font-mono text-base shadow-xs group-hover:scale-105 transition-transform">
                   {page.title.charAt(0).toUpperCase()}
                 </div>
               )}
-              <span className="font-bold tracking-tight hidden md:block">{page.title}</span>
+              <div>
+                <span className="font-bold tracking-tight text-base text-foreground block">
+                  {page.title}
+                </span>
+                <span className="text-[11px] font-mono text-muted-foreground block">
+                  Status Portal
+                </span>
+              </div>
             </a>
           ) : (
             <div className="flex items-center gap-3">
               {page.logo ? (
-                <div className="relative size-10 shrink-0">
+                <div className="relative size-10 rounded-xl overflow-hidden border border-border bg-card shadow-xs">
                   <Image
                     src={page.logo}
                     alt={page.title}
                     fill
                     sizes="40px"
-                    className="rounded-md object-cover border border-primary/20 shadow-[0_0_15px_-3px_rgba(34,197,94,0.3)]"
+                    className="object-cover"
                   />
                 </div>
               ) : (
-                <div className="size-10 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center text-primary font-bold text-xl shadow-[0_0_15px_-3px_rgba(34,197,94,0.3)]">
+                <div className="size-10 rounded-xl bg-foreground text-background flex items-center justify-center font-bold font-mono text-base shadow-xs">
                   {page.title.charAt(0).toUpperCase()}
                 </div>
               )}
-              <span className="font-bold tracking-tight hidden md:block">{page.title}</span>
+              <div>
+                <span className="font-bold tracking-tight text-base text-foreground block">
+                  {page.title}
+                </span>
+                <span className="text-[11px] font-mono text-muted-foreground block">
+                  Status Portal
+                </span>
+              </div>
             </div>
           )}
 
           {/* Nav Links */}
-          <div className="flex items-center gap-1 md:gap-2">
+          <div className="flex items-center p-1 rounded-full bg-muted/60 border border-border">
             <button
               type="button"
               onClick={() => scrollToSection("status")}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
                 activeNav === "status"
-                  ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
-                  : "text-primary/60 hover:text-primary hover:bg-primary/5"
+                  ? "bg-background text-foreground shadow-xs font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {tHeadings("status")}
@@ -228,10 +195,10 @@ export function PublicView({
             <button
               type="button"
               onClick={() => scrollToSection("monitors")}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
                 activeNav === "monitors"
-                  ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
-                  : "text-primary/60 hover:text-primary hover:bg-primary/5"
+                  ? "bg-background text-foreground shadow-xs font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {tHeadings("monitors")}
@@ -239,10 +206,10 @@ export function PublicView({
             <button
               type="button"
               onClick={() => scrollToSection("events")}
-              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all ${
+              className={`px-3.5 py-1.5 rounded-full text-xs font-medium transition-all ${
                 activeNav === "events"
-                  ? "bg-primary/10 text-primary border border-primary/20 shadow-sm"
-                  : "text-primary/60 hover:text-primary hover:bg-primary/5"
+                  ? "bg-background text-foreground shadow-xs font-semibold"
+                  : "text-muted-foreground hover:text-foreground"
               }`}
             >
               {tHeadings("events")}
@@ -256,7 +223,7 @@ export function PublicView({
                 href={page.contactUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 rounded-md border border-primary/20 hover:bg-primary/10 hover:border-primary/40 text-primary transition-all flex items-center justify-center shadow-[0_4px_10px_-4px_rgba(0,0,0,0.5)] active:translate-y-0.5"
+                className="p-2 rounded-xl border border-border bg-card hover:bg-muted text-muted-foreground hover:text-foreground transition-all flex items-center justify-center shadow-xs"
                 title="Contact Support"
               >
                 <Mail className="size-4" />
@@ -264,10 +231,12 @@ export function PublicView({
             )}
 
             <button
+              type="button"
               onClick={() => setIsSubscribeModalOpen(true)}
-              className="px-4 py-2 rounded-md border border-primary/20 hover:bg-primary/10 hover:border-primary/40 text-xs font-bold uppercase tracking-wider transition-all shadow-[0_4px_10px_-4px_rgba(0,0,0,0.5)] active:translate-y-0.5"
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-primary text-primary-foreground text-xs font-medium hover:bg-primary/90 transition-all shadow-xs cursor-pointer"
             >
-              {tActions("get_updates")}
+              <Zap className="size-3.5" />
+              <span>{tActions("get_updates")}</span>
             </button>
           </div>
 
@@ -280,66 +249,53 @@ export function PublicView({
             pageTitle={page.title}
             monitors={page.monitors}
           />
-        </div>
+        </header>
 
         {/* Global Status Banner */}
-        <div
+        <section
           id="status"
-          className={`scroll-mt-8 relative overflow-hidden rounded-sm border p-8 md:p-10 mb-16 transition-all duration-500 group ${
+          className={`scroll-mt-8 relative overflow-hidden rounded-3xl border p-6 sm:p-8 md:p-10 mb-10 transition-all duration-300 shadow-sm ${
             allUp
-              ? "bg-[rgba(34,197,94,0.03)] border-primary/20 hover:border-primary/40 hover:bg-[rgba(34,197,94,0.06)]"
-              : "bg-[rgba(239,68,68,0.03)] border-red-500/20 hover:border-red-500/40 hover:bg-[rgba(239,68,68,0.06)]"
+              ? "bg-emerald-500/[0.04] border-emerald-500/20 dark:bg-emerald-950/20 dark:border-emerald-500/30"
+              : "bg-rose-500/[0.04] border-rose-500/20 dark:bg-rose-950/20 dark:border-rose-500/30"
           }`}
         >
-          {/* Glow Effect */}
-          <div
-            className={`absolute -top-24 -left-24 size-48 rounded-full blur-[100px] opacity-10 pointer-events-none ${allUp ? "bg-primary" : "bg-red-500"}`}
-          ></div>
-
-          <div className="relative z-20 flex flex-col md:flex-row items-center justify-center gap-8 md:gap-12">
-            {/* Icon Circle */}
+          <div className="relative z-10 flex flex-col sm:flex-row items-center justify-center gap-5 sm:gap-8 text-center sm:text-left">
+            {/* Status Icon */}
             <div
-              className={`size-20 md:size-24 rounded-full flex items-center justify-center border transition-all duration-500 relative group-hover:scale-105 ${
+              className={`size-16 sm:size-20 rounded-2xl flex items-center justify-center border transition-all duration-300 shrink-0 ${
                 allUp
-                  ? "border-primary/30 text-primary bg-primary/5 shadow-sm"
-                  : "border-red-500/30 text-red-500 bg-red-500/5 shadow-sm animate-pulse"
+                  ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-400 shadow-xs"
+                  : "bg-rose-500/10 border-rose-500/20 text-rose-600 dark:text-rose-400 shadow-xs animate-pulse"
               }`}
             >
-              {/* Inner Ring */}
-              <div
-                className={`absolute inset-1 rounded-full border border-dashed opacity-30 ${allUp ? "border-primary" : "border-red-500"}`}
-              ></div>
-
               {allUp ? (
-                <CheckCircle className="size-10 md:size-12 stroke-[1.5]" />
+                <CheckCircle className="size-9 sm:size-11 stroke-[1.75]" />
               ) : (
-                <AlertTriangle className="size-10 md:size-12 stroke-[1.5]" />
+                <AlertTriangle className="size-9 sm:size-11 stroke-[1.75]" />
               )}
             </div>
 
             {/* Text Stack */}
-            <div className="text-center md:text-left space-y-2">
-              <h2
-                className={`text-3xl md:text-5xl font-bold font-mono tracking-tighter ${allUp ? "text-primary shadow-primary/20 drop-shadow-lg" : "text-red-500 shadow-red-500/20 drop-shadow-lg"}`}
-                style={{
-                  textShadow: allUp
-                    ? "0 0 20px rgba(34,197,94,0.4)"
-                    : "0 0 20px rgba(239,68,68,0.4)",
-                }}
-              >
+            <div className="space-y-1.5">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground">
                 {allUp ? tStatus("operational") : tStatus("issue_detected")}
               </h2>
 
-              <div
-                className={`flex flex-col md:flex-row items-center md:items-start gap-2 md:gap-4 ${allUp ? "text-primary/70" : "text-red-500/70"}`}
-              >
-                <p className="text-sm font-mono uppercase tracking-[0.2em] font-bold">
+              <div className="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs font-mono text-muted-foreground">
+                <span
+                  className={`font-semibold ${
+                    allUp
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-rose-600 dark:text-rose-400"
+                  }`}
+                >
                   {allUp ? tStatus("system_integrity_100") : tStatus("critical_failures")}
-                </p>
+                </span>
 
-                <span className="hidden md:inline opacity-30">|</span>
+                <span className="opacity-40">&middot;</span>
 
-                <p className="text-sm font-mono opacity-60">
+                <span>
                   {format.dateTime(new Date(), {
                     month: "short",
                     day: "2-digit",
@@ -349,75 +305,75 @@ export function PublicView({
                     hour12: false,
                     timeZoneName: "short",
                   })}
-                </p>
+                </span>
               </div>
             </div>
           </div>
-        </div>
+        </section>
 
         {/* Active Incidents Container */}
         {activeIncidents.length > 0 && (
-          <div className="mb-12 space-y-6">
-            <div className="flex items-center gap-2 pb-2 border-b border-red-500/20">
+          <section className="mb-10 space-y-4">
+            <div className="flex items-center gap-2 pb-2 border-b border-rose-500/20">
               <span className="relative flex h-2.5 w-2.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-red-500"></span>
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-500 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
               </span>
-              <h3 className="text-xs font-bold text-red-500 uppercase tracking-[0.2em] font-mono">
+              <h3 className="text-xs font-bold text-rose-600 dark:text-rose-400 uppercase tracking-wider font-mono">
                 Active Outages & Incidents
               </h3>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3">
               {activeIncidents.map((inc) => (
                 <div
                   key={inc.id}
-                  className="relative overflow-hidden rounded-sm border border-red-500/30 bg-red-500/[0.02] p-6 hover:bg-red-500/[0.04] transition-all duration-300"
+                  className="relative overflow-hidden rounded-2xl border border-rose-500/30 bg-rose-500/[0.03] p-5 sm:p-6 transition-all"
                 >
-                  <div className="absolute top-0 left-0 w-[3px] h-full bg-red-500"></div>
+                  <div className="absolute top-0 left-0 w-1.5 h-full bg-rose-500"></div>
 
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div>
-                      <h4 className="text-base font-bold text-red-500 tracking-tight">
+                      <h4 className="text-base font-bold text-foreground tracking-tight">
                         {inc.title}
                       </h4>
-                      <p className="text-[11px] text-red-500/60 mt-0.5 uppercase tracking-wider font-semibold">
+                      <p className="text-xs text-muted-foreground mt-0.5 font-mono">
                         Affected System: {inc.monitor?.name}
                       </p>
                     </div>
-                    <span className="self-start md:self-auto px-2.5 py-0.5 rounded border border-red-500/40 text-red-500 bg-red-500/10 text-[9px] uppercase tracking-widest font-bold font-mono animate-pulse">
+                    <span className="self-start sm:self-auto px-2.5 py-1 rounded-full border border-rose-500/30 text-rose-600 dark:text-rose-400 bg-rose-500/10 text-[10px] uppercase tracking-wider font-bold font-mono">
                       {inc.status}
                     </span>
                   </div>
 
                   {inc.description && (
-                    <p className="text-xs text-muted-foreground leading-relaxed mb-4 border-l border-primary/10 pl-3">
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-4 pl-3 border-l-2 border-border">
                       {inc.description}
                     </p>
                   )}
 
                   {/* Timeline updates */}
                   {inc.events && inc.events.length > 0 && (
-                    <div className="space-y-3 pt-2 border-t border-red-500/10">
-                      <p className="text-[10px] font-bold text-red-500/70 uppercase tracking-widest">
+                    <div className="space-y-3 pt-3 border-t border-rose-500/15">
+                      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-wider font-mono">
                         Timeline Updates
                       </p>
-                      <div className="relative pl-4 border-l border-red-500/20 space-y-3">
+                      <div className="relative pl-4 border-l-2 border-rose-500/20 space-y-3">
                         {inc.events.map((evt: any) => (
                           <div key={evt.id} className="relative text-xs">
-                            <span className="absolute -left-[20.5px] top-1.5 size-2 rounded-full bg-red-500/40 border border-red-500"></span>
+                            <span className="absolute -left-[21px] top-1.5 size-2 rounded-full bg-rose-500 border-2 border-background"></span>
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-[10px] text-red-500/80 uppercase">
+                              <span className="font-bold text-[10px] text-foreground uppercase font-mono">
                                 {evt.type.replace("_", " ")}
                               </span>
-                              <span className="text-[10px] text-muted-foreground opacity-60">
+                              <span className="text-[10px] text-muted-foreground font-mono">
                                 {new Date(evt.createdAt).toLocaleTimeString([], {
                                   hour: "2-digit",
                                   minute: "2-digit",
                                 })}
                               </span>
                             </div>
-                            <p className="text-muted-foreground text-[11px] mt-0.5 leading-relaxed">
+                            <p className="text-muted-foreground text-xs mt-0.5 leading-relaxed">
                               {evt.message}
                             </p>
                           </div>
@@ -428,100 +384,95 @@ export function PublicView({
                 </div>
               ))}
             </div>
+          </section>
+        )}
+
+        {/* Page Description */}
+        {page.description && (
+          <div className="text-center mb-8">
+            <p className="text-muted-foreground text-sm max-w-lg mx-auto">{page.description}</p>
           </div>
         )}
 
-        {/* Header - Title & Description */}
-        <div className="flex flex-col items-center text-center mb-12">
-          {page.description && (
-            <p className="text-primary/60 text-sm md:text-base max-w-lg mx-auto uppercase tracking-widest mb-6">
-              {page.description}
-            </p>
-          )}
-        </div>
-
         {/* Monitor List */}
-        <div id="monitors" className="scroll-mt-8 space-y-4">
-          <div className="flex items-center justify-between pb-4 border-b border-primary/20 mb-6">
-            <span className="text-xs font-bold text-primary/60 uppercase tracking-widest">
+        <section id="monitors" className="scroll-mt-8 space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-border/80 mb-4">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
               {tHeadings("system_modules")}
             </span>
-            <span className="text-xs font-bold text-primary/60 uppercase tracking-widest">
+            <span className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
               {tHeadings("real_time_status")}
             </span>
           </div>
 
-          {visibleMonitors.map((item: any) => (
-            <StatusPageMonitorRow
-              key={item.id}
-              item={item}
-              showUptime={page.showUptime}
-              showResponseTime={page.showResponseTime}
-              barType={page.barType || "absolute"}
-              cardType={page.cardType || "duration"}
-              overrides={page.overrides || []}
-            />
-          ))}
+          <div className="space-y-3">
+            {visibleMonitors.map((item: any) => (
+              <StatusPageMonitorRow
+                key={item.id}
+                item={item}
+                showUptime={page.showUptime}
+                showResponseTime={page.showResponseTime}
+                barType={page.barType || "absolute"}
+                cardType={page.cardType || "duration"}
+                overrides={page.overrides || []}
+              />
+            ))}
+          </div>
 
           {visibleMonitors.length === 0 && (
-            <div className="text-center py-16 border border-dashed border-primary/20 rounded-sm bg-primary/5">
-              <p className="text-primary/40 font-mono text-sm uppercase tracking-widest">
-                {tCommon("no_monitors")}
-              </p>
+            <div className="text-center py-16 border border-dashed border-border rounded-2xl bg-card">
+              <p className="text-muted-foreground font-mono text-sm">{tCommon("no_monitors")}</p>
             </div>
           )}
-        </div>
+        </section>
 
         {/* Incident History Timeline */}
-        <div id="events" className="scroll-mt-8 mt-20 space-y-6">
-          <div className="flex items-center gap-2 pb-2 border-b border-primary/20">
-            <Clock className="size-4 text-primary/60" />
-            <h3 className="text-xs font-bold text-primary/60 uppercase tracking-[0.2em] font-mono">
+        <section id="events" className="scroll-mt-8 mt-16 space-y-4">
+          <div className="flex items-center gap-2 pb-3 border-b border-border/80">
+            <Clock className="size-4 text-muted-foreground" />
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground">
               Incident History (Last 7 Days)
             </h3>
           </div>
 
           {resolvedIncidents.length === 0 ? (
-            <div className="p-8 border border-dashed border-primary/10 rounded-sm bg-primary/[0.01] text-center">
-              <p className="text-[11px] text-primary/50 uppercase tracking-widest font-mono">
+            <div className="p-8 border border-dashed border-border/80 rounded-2xl bg-muted/20 text-center">
+              <p className="text-xs text-muted-foreground font-mono">
                 No incidents reported in the last 7 days. All systems operational.
               </p>
             </div>
           ) : (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {resolvedIncidents.map((inc) => (
                 <div
                   key={inc.id}
-                  className="relative overflow-hidden rounded-sm border border-primary/10 bg-primary/[0.01] p-5 hover:border-primary/20 transition-all duration-300"
+                  className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 hover:border-border/80 transition-all shadow-xs"
                 >
-                  <div className="absolute top-0 left-0 w-[3px] h-full bg-primary/40"></div>
+                  <div className="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
 
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                     <div>
-                      <h4 className="text-sm font-bold text-foreground tracking-tight">
+                      <h4 className="text-sm font-semibold text-foreground tracking-tight">
                         {inc.title}
                       </h4>
-                      <p className="text-[10px] text-muted-foreground/60 mt-0.5 uppercase tracking-wider font-mono">
+                      <p className="text-[11px] text-muted-foreground mt-0.5 font-mono">
                         Affected System: {inc.monitor?.name} &middot; Resolved on{" "}
                         {new Date(inc.resolvedAt).toLocaleDateString()}
                       </p>
                     </div>
-                    <span className="self-start md:self-auto px-2 py-0.5 rounded border border-primary/20 text-primary bg-primary/5 text-[9px] uppercase tracking-widest font-semibold font-mono">
+                    <span className="self-start sm:self-auto px-2.5 py-0.5 rounded-full border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 text-[10px] uppercase tracking-wider font-semibold font-mono">
                       RESOLVED
                     </span>
                   </div>
 
                   {inc.events && inc.events.length > 0 && (
-                    <div className="pl-3 border-l border-primary/10 space-y-2.5 mt-3 pt-2 border-t border-primary/5">
+                    <div className="pl-3 border-l-2 border-border/60 space-y-2 mt-3 pt-2">
                       {inc.events.map((evt: any) => (
-                        <div
-                          key={evt.id}
-                          className="text-[11px] leading-relaxed text-muted-foreground"
-                        >
-                          <span className="font-bold text-[9px] text-primary/70 uppercase mr-2 tracking-wider">
+                        <div key={evt.id} className="text-xs leading-relaxed text-muted-foreground">
+                          <span className="font-semibold text-[10px] text-foreground uppercase mr-2 font-mono">
                             {evt.type.replace("_", " ")}
                           </span>
-                          <span className="text-[9px] opacity-55 mr-2 font-mono">
+                          <span className="text-[10px] opacity-60 mr-2 font-mono">
                             {new Date(evt.createdAt).toLocaleTimeString([], {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -536,19 +487,19 @@ export function PublicView({
               ))}
             </div>
           )}
-        </div>
+        </section>
 
         {/* Footer */}
-        <div className="mt-24 pt-8 border-t border-primary/10 flex flex-col items-center gap-4 text-center">
+        <footer className="mt-20 pt-8 border-t border-border/80 flex flex-col items-center gap-4 text-center">
           {page.footerLinks && Array.isArray(page.footerLinks) && page.footerLinks.length > 0 && (
-            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-primary/60 mb-2">
+            <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs text-muted-foreground mb-2">
               {page.footerLinks.map((link: any, idx: number) => (
                 <a
                   key={idx}
                   href={link.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="hover:text-primary transition-colors hover:underline decoration-dotted underline-offset-4"
+                  className="hover:text-foreground transition-colors hover:underline underline-offset-4"
                 >
                   {link.label}
                 </a>
@@ -558,44 +509,31 @@ export function PublicView({
 
           <LanguageSwitcher />
 
-          <div className="flex flex-col items-center gap-1">
-            <p className="text-[10px] text-primary/30 uppercase tracking-[0.2em]">
-              {tCommon("system_status")}
-            </p>
-            {(!page.user || page.user.tier === "INITIATE") &&
-              (() => {
-                const referralCode = page.user?.referralCode?.code;
-                const referralUrl = referralCode
-                  ? `/r/${referralCode}?utm_source=status_page&utm_medium=badge&utm_campaign=status_page_loop&utm_content=${encodeURIComponent(page.slug || "public")}`
-                  : `/?utm_source=status_page&utm_medium=badge&utm_campaign=status_page_loop&utm_content=${encodeURIComponent(page.slug || "public")}`;
-
-                return (
-                  <p className="text-xs text-primary/50">
-                    {tCommon("powered_by")}{" "}
-                    <a
-                      href={referralUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary font-bold hover:underline decoration-dotted underline-offset-4"
-                    >
-                      SteadyStack
-                    </a>
-                  </p>
-                );
-              })()}
+          <div className="flex flex-col items-center gap-2 mt-2">
+            {(!page.user || page.user.tier === "INITIATE") && (
+              <a
+                href="https://steadystack.dev"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-muted/60 hover:bg-muted border border-border text-xs font-mono text-muted-foreground hover:text-foreground transition-all duration-200"
+              >
+                <span>Powered by</span>
+                <span className="font-semibold text-foreground">SteadyStack</span>
+              </a>
+            )}
           </div>
-        </div>
+        </footer>
       </div>
 
       {/* Floating Admin Edit Button */}
       {isAdmin && (
         <button
           onClick={() => setIsEditSidebarOpen(true)}
-          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-3 rounded-full bg-primary/20 hover:bg-primary/30 backdrop-blur-md border border-primary/30 text-primary font-mono text-xs font-bold uppercase tracking-wider transition-all duration-300 shadow-[0_0_20px_rgba(34,197,94,0.3)] hover:scale-105 active:scale-95 animate-fade-in"
+          className="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-full bg-primary text-primary-foreground font-mono text-xs font-semibold uppercase tracking-wider transition-all duration-300 shadow-lg hover:scale-105 active:scale-95 cursor-pointer"
         >
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-foreground opacity-75"></span>
+            <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-foreground"></span>
           </span>
           <Sliders className="size-4" />
           <span>Edit Design</span>
@@ -607,7 +545,7 @@ export function PublicView({
         <>
           {/* Backdrop Blur Overlay */}
           <div
-            className={`fixed inset-0 bg-black/60 backdrop-blur-sm z-45 transition-opacity duration-300 ${
+            className={`fixed inset-0 bg-background/80 backdrop-blur-sm z-45 transition-opacity duration-300 ${
               isEditSidebarOpen
                 ? "opacity-100 pointer-events-auto"
                 : "opacity-0 pointer-events-none"
@@ -617,30 +555,28 @@ export function PublicView({
 
           {/* Sidebar Drawer */}
           <div
-            className={`fixed right-0 top-0 bottom-0 w-full max-w-lg bg-black/95 backdrop-blur-lg border-l border-primary/20 shadow-[0_0_50px_rgba(0,0,0,0.8)] z-50 transition-transform duration-500 ease-out transform ${
+            className={`fixed right-0 top-0 bottom-0 w-full max-w-2xl sm:max-w-3xl lg:max-w-4xl bg-card border-l border-border shadow-2xl z-50 transition-transform duration-300 ease-out transform ${
               isEditSidebarOpen ? "translate-x-0" : "translate-x-full"
             }`}
           >
             {/* Sidebar Header */}
-            <div className="flex items-center justify-between p-6 border-b border-primary/10 bg-black/40">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border bg-muted/30">
               <div className="space-y-1">
-                <h3 className="text-md font-bold font-mono tracking-tight text-primary uppercase">
+                <h3 className="text-base font-bold tracking-tight text-foreground">
                   Configure Status Page
                 </h3>
-                <p className="text-[10px] text-primary/50 uppercase tracking-widest font-mono">
-                  Real-time design & branding preview
-                </p>
+                <p className="text-xs text-muted-foreground">Real-time design & branding preview</p>
               </div>
               <button
                 onClick={() => setIsEditSidebarOpen(false)}
-                className="p-1.5 rounded-sm border border-primary/10 hover:border-primary/30 hover:bg-primary/5 text-primary/60 hover:text-primary transition-all"
+                className="p-2 rounded-xl border border-border hover:bg-muted text-muted-foreground hover:text-foreground transition-all cursor-pointer"
               >
                 <X className="size-4" />
               </button>
             </div>
 
             {/* Sidebar Body */}
-            <div className="p-6 overflow-y-auto h-[calc(100vh-80px)] custom-scrollbar">
+            <div className="p-6 sm:p-8 overflow-y-auto h-[calc(100vh-85px)] custom-scrollbar">
               <StatusPageSettings page={page} onLiveChange={handleLiveChange} />
             </div>
           </div>

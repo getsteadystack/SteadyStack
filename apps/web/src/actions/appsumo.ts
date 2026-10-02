@@ -26,7 +26,7 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
   if (!session?.user?.id) {
     return {
       success: false,
-      error: "You must be signed in to redeem an AppSumo license code.",
+      error: "You must be signed in to redeem a lifetime license code.",
     };
   }
 
@@ -36,7 +36,7 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
   if (!code || code.length < 5) {
     return {
       success: false,
-      error: "Please enter a valid AppSumo redemption code.",
+      error: "Please enter a valid lifetime redemption code.",
     };
   }
 
@@ -56,29 +56,34 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
             tier: license.tier,
             plan: license.tier === 3 ? "CONSTRUCT" : "NETRUNNER",
             tierVersion: `appsumo_tier_${license.tier}`,
-            message: `You have already activated this AppSumo Tier ${license.tier} license.`,
+            message: `You have already activated this Lifetime Tier ${license.tier} license.`,
           };
         }
         return {
           success: false,
-          error: "This AppSumo code has already been redeemed by another account.",
+          error: "This license code has already been redeemed by another account.",
         };
       }
 
       if (license.status === "REVOKED" || license.status === "REFUNDED") {
         return {
           success: false,
-          error: "This AppSumo code has been refunded or deactivated.",
+          error: "This license code has been refunded or deactivated.",
         };
       }
 
       tier = license.tier;
     } else {
       // 2. If code wasn't pre-loaded, detect tier from code naming convention or accept valid pattern
-      // Supported patterns: SUMO-T3-XXXX, SUMO-T2-XXXX, SUMO-T1-XXXX, APPSUMO-3-XXXX, etc.
+      // Supported patterns: STEADY-T3-XXXX, FOUNDER-T3-XXXX, LTD-T3-XXXX, SUMO-T3-XXXX, etc.
       if (
         code.includes("-T3-") ||
         code.includes("-TIER3-") ||
+        code.startsWith("STEADY3-") ||
+        code.startsWith("STEADY-3-") ||
+        code.startsWith("FOUNDER3-") ||
+        code.startsWith("FOUNDER-3-") ||
+        code.startsWith("LTD-3-") ||
         code.startsWith("SUMO3-") ||
         code.startsWith("APPSUMO-3-")
       ) {
@@ -86,6 +91,11 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
       } else if (
         code.includes("-T2-") ||
         code.includes("-TIER2-") ||
+        code.startsWith("STEADY2-") ||
+        code.startsWith("STEADY-2-") ||
+        code.startsWith("FOUNDER2-") ||
+        code.startsWith("FOUNDER-2-") ||
+        code.startsWith("LTD-2-") ||
         code.startsWith("SUMO2-") ||
         code.startsWith("APPSUMO-2-")
       ) {
@@ -173,8 +183,8 @@ export async function redeemAppSumoCode(codeRaw: string): Promise<RedeemResult> 
 
     const message =
       previousRedeemedCount > 0
-        ? `Code stacked successfully! Your account is upgraded to AppSumo Tier ${stackedTier} Lifetime (${previousRedeemedCount + 1} codes applied).`
-        : `AppSumo Tier ${stackedTier} Lifetime Deal redeemed successfully!`;
+        ? `License stacked successfully! Your account is upgraded to Founder Tier ${stackedTier} Lifetime (${previousRedeemedCount + 1} licenses applied).`
+        : `Founder Tier ${stackedTier} Lifetime License activated successfully!`;
 
     return {
       success: true,

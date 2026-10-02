@@ -1,455 +1,241 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Activity,
+  ArrowRight,
   ChevronDown,
   Globe,
-  ShieldCheck,
-  ArrowRight,
-  Clock,
-  Network,
-  Sun,
-  Moon,
-  Monitor,
-  Flame,
-  Zap,
   Layers,
-  BarChart3,
   Menu,
+  ShieldCheck,
+  Sparkles,
   X,
+  Zap,
+  Server,
+  FileText,
+  Lock,
+  Cpu,
 } from "lucide-react";
+import { useState, useEffect } from "react";
 import { authClient } from "@/lib/auth-client";
-import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
-
-function ThemeToggleButton() {
-  const [mounted, setMounted] = useState(false);
-  const themeContext = useTheme();
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return <div className="size-8 rounded-lg border border-border bg-background/50" />;
-  }
-
-  const theme = themeContext?.theme || "dark";
-  const setTheme = themeContext?.setTheme || (() => {});
-
-  const cycleTheme = () => {
-    const themes = ["dark", "light", "matrix", "cyberpunk", "blade"];
-    const currentIdx = themes.indexOf(theme || "dark");
-    const nextIdx = (currentIdx + 1) % themes.length;
-    setTheme(themes[nextIdx]);
-  };
-
-  return (
-    <button
-      onClick={cycleTheme}
-      className="flex items-center justify-center size-8 rounded-lg border border-border bg-background/50 hover:bg-accent text-muted-foreground hover:text-foreground transition-all cursor-pointer"
-      title={`Theme: ${theme}. Click to switch.`}
-      aria-label="Toggle theme"
-    >
-      {theme === "light" ? (
-        <Sun className="size-4" />
-      ) : theme === "dark" ? (
-        <Moon className="size-4" />
-      ) : (
-        <Monitor className="size-4 text-primary" />
-      )}
-    </button>
-  );
-}
 
 export default function LandingHeader() {
   const { data: session } = authClient.useSession();
-  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+  const pathname = usePathname();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const headerRef = useRef<HTMLElement>(null);
+  const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
 
   useEffect(() => {
-    const checkBanner = () => {
-      let offset = 0;
-      // 1. Check documentElement style.paddingTop set by embed script
-      const pt = document.documentElement.style.paddingTop;
-      if (pt) {
-        const match = pt.match(/(\d+)px/);
-        if (match && match[1]) {
-          offset = Number.parseInt(match[1], 10);
-        }
-      }
-
-      // 2. Direct DOM inspection for top-fixed banner
-      if (!offset) {
-        const bannerEl = document.querySelector<HTMLElement>(
-          'div[style*="position:fixed"][style*="top:0"], div[style*="position: fixed"][style*="top: 0"]'
-        );
-        if (bannerEl && bannerEl.offsetHeight > 0) {
-          offset = bannerEl.offsetHeight;
-        }
-      }
-
-      if (headerRef.current) {
-        if (offset > 0) {
-          headerRef.current.style.top = `${offset + 14}px`;
-          headerRef.current.style.transition = "top 0.2s ease-out";
-        } else {
-          headerRef.current.style.top = "";
-        }
-      }
-    };
-
-    checkBanner();
-
-    const observer = new MutationObserver(checkBanner);
-    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
-    observer.observe(document.body, { childList: true, subtree: false });
-
-    const interval = setInterval(checkBanner, 500);
-
-    return () => {
-      observer.disconnect();
-      clearInterval(interval);
-    };
-  }, []);
-
-  const productLinks = [
-    {
-      name: "Core Features",
-      description: "Multi-region quorum consensus & zero false-positive alerts",
-      href: "/#features",
-      icon: <Zap className="size-4 text-primary" />,
-    },
-    {
-      name: "Global Edge Mesh",
-      description: "Explore sovereign edge probe locations and latency",
-      href: "/locations",
-      icon: <Globe className="size-4 text-primary" />,
-    },
-    {
-      name: "Interactive Demo",
-      description: "Live telemetry test sandbox with simulated regional blips",
-      href: "/demo",
-      icon: <Activity className="size-4 text-primary" />,
-    },
-    {
-      name: "Use Cases",
-      description: "Tailored architectures for APIs, SaaS, and infrastructure",
-      href: "/use-cases",
-      icon: <Layers className="size-4 text-primary" />,
-    },
-    {
-      name: "30-Day Benchmark",
-      description: "Independent telemetry study on false positive elimination",
-      href: "/benchmarks/false-positives",
-      icon: <BarChart3 className="size-4 text-primary" />,
-    },
-  ];
-
-  const toolLinks = [
-    {
-      name: "Is It Down? Hub",
-      description: "Real-time status tracking for 400+ cloud services",
-      href: "/is-down",
-      icon: <Activity className="size-4 text-primary" />,
-    },
-    {
-      name: "Global Ping Latency",
-      description: "Instant multi-region HTTP & ICMP response times",
-      href: "/tools/global-latency",
-      icon: <Globe className="size-4 text-primary" />,
-    },
-    {
-      name: "DNS & SSL Sentinel",
-      description: "Cryptographic certificate validation and DNS audit",
-      href: "/tools/dns-sentinel",
-      icon: <ShieldCheck className="size-4 text-primary" />,
-    },
-    {
-      name: "IP Subnet Analyzer",
-      description: "Inspect network ranges, CIDR blocks, and reverse DNS",
-      href: "/tools/ip-subnet",
-      icon: <Network className="size-4 text-primary" />,
-    },
-    {
-      name: "Cron Heartbeat Watch",
-      description: "Dead-man switches for background jobs and pipelines",
-      href: "/tools/cron-sentinel",
-      icon: <Clock className="size-4 text-primary" />,
-    },
-    {
-      name: "Roast My Stack",
-      description: "AI-driven architecture and resilience teardown",
-      href: "/tools/roast-my-stack",
-      icon: <Flame className="size-4 text-primary" />,
-    },
-  ];
+    setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
+  }, [pathname]);
 
   return (
-    <header
-      ref={headerRef}
-      className="fixed top-5 left-0 right-0 z-50 flex justify-center px-4 w-full"
-    >
-      <div className="flex items-center justify-between px-5 sm:px-6 h-14 bg-background/80 backdrop-blur-xl border border-border shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-2xl w-full max-w-4xl transition-all duration-300">
+    <header className="sticky top-0 left-0 right-0 z-50 w-full bg-[#fbfbf9]/95 backdrop-blur-md border-b border-[#e8e6df]">
+      {/* Main Navbar */}
+      <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
         {/* Brand Logo */}
-        <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="p-1.5 bg-primary/10 border border-primary/20 rounded-lg group-hover:border-primary/40 group-hover:bg-primary/15 transition-all duration-300">
-            <Activity className="size-4 text-primary" />
+        <Link href="/" className="flex items-center gap-2.5 group shrink-0">
+          <div className="size-8 rounded-xl bg-[#ffd439] text-[#23211a] flex items-center justify-center font-bold font-serif text-lg shadow-xs group-hover:scale-105 transition-transform">
+            S
           </div>
-          <span className="font-bold text-foreground text-sm tracking-tight">SteadyStack</span>
+          <span className="font-serif font-semibold text-xl tracking-tight text-[#23211a]">
+            SteadyStack
+          </span>
         </Link>
 
         {/* Desktop Navigation Links */}
-        <nav className="hidden md:flex items-center gap-1 font-medium text-xs">
-          {/* Product Dropdown */}
-          <div
-            className="relative"
-            onMouseEnter={() => setActiveDropdown("product")}
-            onMouseLeave={() => setActiveDropdown(null)}
-          >
-            <button
-              className={cn(
-                "flex items-center gap-1 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer focus:outline-none",
-                activeDropdown === "product" && "text-foreground bg-accent/50",
-              )}
-            >
-              Product
-              <ChevronDown
-                className={cn(
-                  "size-3.5 transition-transform duration-200 text-muted-foreground/70",
-                  activeDropdown === "product" && "rotate-180 text-foreground",
-                )}
-              />
-            </button>
-
-            <AnimatePresence>
-              {activeDropdown === "product" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute top-full left-0 pt-2 w-80 z-[100]"
-                >
-                  <div className="bg-popover/95 backdrop-blur-xl border border-border p-2 rounded-xl shadow-2xl grid grid-cols-1 gap-1">
-                    {productLinks.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href as any}
-                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent transition-colors group/item"
-                        onClick={() => setActiveDropdown(null)}
-                      >
-                        <div className="p-1.5 rounded-md bg-muted/60 border border-border shrink-0 mt-0.5 group-hover/item:border-primary/30">
-                          {item.icon}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-foreground text-xs group-hover/item:text-primary transition-colors">
-                            {item.name}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground leading-snug">
-                            {item.description}
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Tools Dropdown */}
-          <div
-            className="relative"
-            onMouseEnter={() => setActiveDropdown("tools")}
-            onMouseLeave={() => setActiveDropdown(null)}
-          >
-            <button
-              className={cn(
-                "flex items-center gap-1 px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer focus:outline-none",
-                activeDropdown === "tools" && "text-foreground bg-accent/50",
-              )}
-            >
-              Tools
-              <ChevronDown
-                className={cn(
-                  "size-3.5 transition-transform duration-200 text-muted-foreground/70",
-                  activeDropdown === "tools" && "rotate-180 text-foreground",
-                )}
-              />
-            </button>
-
-            <AnimatePresence>
-              {activeDropdown === "tools" && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6, scale: 0.98 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.98 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute top-full left-0 pt-2 w-80 z-[100]"
-                >
-                  <div className="bg-popover/95 backdrop-blur-xl border border-border p-2 rounded-xl shadow-2xl grid grid-cols-1 gap-1">
-                    {toolLinks.map((item) => (
-                      <Link
-                        key={item.name}
-                        href={item.href as any}
-                        className="flex items-start gap-3 p-2.5 rounded-lg hover:bg-accent transition-colors group/item"
-                        onClick={() => setActiveDropdown(null)}
-                      >
-                        <div className="p-1.5 rounded-md bg-muted/60 border border-border shrink-0 mt-0.5 group-hover/item:border-primary/30">
-                          {item.icon}
-                        </div>
-                        <div className="flex flex-col">
-                          <span className="font-semibold text-foreground text-xs group-hover/item:text-primary transition-colors">
-                            {item.name}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground leading-snug">
-                            {item.description}
-                          </span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-
-          {/* Pricing Direct Link */}
+        <div className="hidden md:flex items-center gap-6 text-sm font-medium text-[#5c5c5c]">
+          {/* Lifetime Deal Highlight Pill */}
           <Link
-            href={"/pricing" as any}
-            className="px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+            href="/ltd"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#ffd439]/20 border border-[#ffd439]/40 text-[#23211a] font-semibold text-xs hover:bg-[#ffd439]/30 transition-all"
           >
+            <Sparkles className="size-3 text-[#23211a]" />
+            <span>Lifetime Deal</span>
+            <span className="text-[10px] font-mono bg-[#23211a] text-white px-1.5 py-0.2 rounded-full">
+              $49
+            </span>
+          </Link>
+
+          {/* Product Dropdown */}
+          <div className="relative group">
+            <button
+              type="button"
+              onClick={() => setActiveDropdown(activeDropdown === "product" ? null : "product")}
+              className="flex items-center gap-1 hover:text-[#23211a] transition-colors py-2"
+            >
+              <span>Product</span>
+              <ChevronDown className="size-3.5 opacity-60 group-hover:opacity-100 transition-opacity" />
+            </button>
+
+            <div className="absolute top-full left-0 w-72 rounded-2xl bg-white border border-[#e8e6df] shadow-xl p-3 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-all duration-150 z-50">
+              <div className="space-y-1">
+                <Link
+                  href="/#how-it-works"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-[#faf8f5] transition-colors"
+                >
+                  <div className="p-1.5 rounded-lg bg-[#ffd439]/20 text-[#23211a] mt-0.5">
+                    <Zap className="size-4" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-xs text-[#23211a]">Edge Quorum Engine</div>
+                    <div className="text-[11px] text-[#78756e]">Zero false alarm verification</div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/locations"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-[#faf8f5] transition-colors"
+                >
+                  <div className="p-1.5 rounded-lg bg-[#ffd439]/20 text-[#23211a] mt-0.5">
+                    <Globe className="size-4" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-xs text-[#23211a]">7 Global Edge Probes</div>
+                    <div className="text-[11px] text-[#78756e]">Global latency distribution</div>
+                  </div>
+                </Link>
+
+                <Link
+                  href="/#solution"
+                  className="flex items-start gap-3 p-2.5 rounded-xl hover:bg-[#faf8f5] transition-colors"
+                >
+                  <div className="p-1.5 rounded-lg bg-[#ffd439]/20 text-[#23211a] mt-0.5">
+                    <Server className="size-4" />
+                  </div>
+                  <div>
+                    <div className="font-semibold text-xs text-[#23211a]">
+                      White-Label Status Portals
+                    </div>
+                    <div className="text-[11px] text-[#78756e]">Custom CNAME client pages</div>
+                  </div>
+                </Link>
+              </div>
+            </div>
+          </div>
+
+          <Link href="/agencies" className="hover:text-[#23211a] transition-colors">
+            Solutions
+          </Link>
+          <Link href="/#sample-report" className="hover:text-[#23211a] transition-colors">
+            SLA Reports
+          </Link>
+          <Link href="/#pricing" className="hover:text-[#23211a] transition-colors">
             Pricing
           </Link>
-
-          {/* Docs Direct Link */}
-          <Link
-            href={"/docs" as any}
-            className="px-3 py-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-          >
+          <Link href="/docs" className="hover:text-[#23211a] transition-colors">
             Docs
           </Link>
-        </nav>
+        </div>
 
-        {/* Action Panel */}
-        <div className="flex items-center gap-2.5">
-          {/* Theme switcher */}
-          <ThemeToggleButton />
-
+        {/* Right Action Buttons */}
+        <div className="flex items-center gap-3">
           {session ? (
             <Link
               href="/dashboard"
-              className="flex items-center justify-center h-8.5 px-3.5 bg-primary text-primary-foreground font-semibold text-xs rounded-lg hover:bg-primary/90 transition-all duration-200"
+              className="inline-flex items-center gap-2 rounded-xl bg-[#23211a] text-white text-xs font-semibold px-4 py-2.5 hover:bg-[#373428] transition-all"
             >
-              Dashboard <ArrowRight className="ml-1.5 size-3.5" />
+              <span>Dashboard</span>
+              <ArrowRight className="size-3.5" />
             </Link>
           ) : (
             <>
               <Link
                 href="/login"
-                className="hidden sm:inline-flex px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:text-foreground transition-colors"
+                className="hidden sm:inline-flex text-xs font-semibold text-[#5c5c5c] hover:text-[#23211a] transition-colors px-3 py-2"
               >
                 Log in
               </Link>
               <Link
                 href="/signup"
-                className="flex items-center justify-center h-8.5 px-3.5 bg-primary text-primary-foreground font-semibold text-xs rounded-lg hover:bg-primary/90 transition-all duration-200"
+                className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#23211a] text-white text-xs font-semibold px-4.5 py-2.5 shadow-sm hover:bg-[#373428] hover:scale-[1.02] active:scale-[0.98] transition-all"
               >
-                Get Started
+                <span>Try SteadyStack For Free</span>
               </Link>
             </>
           )}
 
-          {/* Mobile Menu Toggle */}
+          {/* Mobile menu toggle */}
           <button
+            type="button"
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="flex md:hidden items-center justify-center size-8 rounded-lg border border-border bg-background/50 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-            aria-label="Toggle mobile menu"
+            className="md:hidden p-2 rounded-lg text-[#23211a] hover:bg-black/5"
+            aria-label="Toggle Menu"
           >
-            {isMobileMenuOpen ? <X className="size-4" /> : <Menu className="size-4" />}
+            {isMobileMenuOpen ? <X className="size-5" /> : <Menu className="size-5" />}
           </button>
         </div>
-      </div>
+      </nav>
 
       {/* Mobile Drawer */}
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -8 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.2 }}
-            className="md:hidden fixed top-20 left-4 right-4 bg-popover/95 backdrop-blur-xl border border-border rounded-2xl p-4 shadow-2xl z-50 max-h-[80vh] overflow-y-auto"
-          >
-            <div className="flex flex-col gap-4 text-xs">
-              <div className="font-mono text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-2">
-                Product
-              </div>
-              <div className="grid grid-cols-1 gap-1">
-                {productLinks.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href as any}
-                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-accent text-foreground transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.icon}
-                    <span>{item.name}</span>
-                  </Link>
-                ))}
-              </div>
-
-              <div className="font-mono text-[10px] uppercase font-bold text-muted-foreground tracking-wider px-2 pt-2 border-t border-border">
-                Free Tools
-              </div>
-              <div className="grid grid-cols-1 gap-1">
-                {toolLinks.map((item) => (
-                  <Link
-                    key={item.name}
-                    href={item.href as any}
-                    className="flex items-center gap-2.5 p-2 rounded-lg hover:bg-accent text-foreground transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.icon}
-                    <span>{item.name}</span>
-                  </Link>
-                ))}
-              </div>
-
-              <div className="pt-2 border-t border-border flex flex-col gap-1">
-                <Link
-                  href="/#pricing"
-                  className="p-2 rounded-lg hover:bg-accent text-foreground font-semibold"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Pricing
-                </Link>
-                <Link
-                  href={"/docs" as any}
-                  className="p-2 rounded-lg hover:bg-accent text-foreground font-semibold"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Documentation
-                </Link>
-                {!session && (
-                  <Link
-                    href="/login"
-                    className="p-2 rounded-lg hover:bg-accent text-foreground font-semibold"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    Log in
-                  </Link>
-                )}
-              </div>
+      {isMobileMenuOpen && (
+        <div className="md:hidden border-t border-[#e8e6df] bg-[#fbfbf9] px-4 py-6 space-y-4">
+          <div className="p-3 rounded-2xl bg-[#ffd439]/20 border border-[#ffd439]/40 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles className="size-4 text-[#23211a]" />
+              <span className="text-xs font-bold text-[#23211a]">Founder Lifetime Deal</span>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+            <Link
+              href="/ltd"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-xs font-bold bg-[#23211a] text-white px-3 py-1.5 rounded-lg"
+            >
+              From $49 →
+            </Link>
+          </div>
+
+          <div className="flex flex-col gap-3 font-medium text-sm text-[#23211a]">
+            <Link
+              href="/ltd"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="font-bold text-[#23211a]"
+            >
+              ⚡ Lifetime Deal Overview
+            </Link>
+            <Link href="/#how-it-works" onClick={() => setIsMobileMenuOpen(false)}>
+              Edge Quorum Engine
+            </Link>
+            <Link href="/agencies" onClick={() => setIsMobileMenuOpen(false)}>
+              Solutions for Agencies
+            </Link>
+            <Link href="/#sample-report" onClick={() => setIsMobileMenuOpen(false)}>
+              SLA Reports
+            </Link>
+            <Link href="/#pricing" onClick={() => setIsMobileMenuOpen(false)}>
+              Pricing
+            </Link>
+            <Link href="/docs" onClick={() => setIsMobileMenuOpen(false)}>
+              Documentation
+            </Link>
+            <Link
+              href="/redeem"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="text-xs font-mono text-[#5c5c5c]"
+            >
+              Redeem Lifetime License Code →
+            </Link>
+          </div>
+
+          <div className="pt-4 border-t border-[#e8e6df] flex flex-col gap-2">
+            <Link
+              href="/signup"
+              className="w-full text-center py-3 rounded-xl bg-[#23211a] text-white font-semibold text-xs shadow-sm"
+            >
+              Try SteadyStack For Free
+            </Link>
+            <Link
+              href="/login"
+              className="w-full text-center py-2.5 rounded-xl border border-[#e8e6df] text-[#23211a] font-semibold text-xs"
+            >
+              Log in
+            </Link>
+          </div>
+        </div>
+      )}
     </header>
   );
 }

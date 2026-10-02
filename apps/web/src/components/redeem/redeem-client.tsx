@@ -13,7 +13,7 @@ import {
   Loader2,
   Sparkles,
   Key,
-  AlertCircle,
+  HelpCircle,
 } from "lucide-react";
 import LandingHeader from "@/components/landing/header";
 import { redeemAppSumoCode, type RedeemResult } from "@/actions/appsumo";
@@ -54,7 +54,7 @@ export function RedeemClient({
     const cleanCode = code.trim().toUpperCase();
 
     if (!cleanCode) {
-      toast.error("Please enter your AppSumo code");
+      toast.error("Please enter your Lifetime Deal license code");
       return;
     }
 
@@ -70,7 +70,7 @@ export function RedeemClient({
       const res = await redeemAppSumoCode(cleanCode);
       if (res.success) {
         setRedeemResult(res);
-        toast.success(res.message || "AppSumo license redeemed successfully!");
+        toast.success(res.message || "Lifetime license activated successfully!");
       } else {
         toast.error(res.error || "Failed to redeem code");
       }
@@ -86,6 +86,11 @@ export function RedeemClient({
     if (
       c.includes("-T3-") ||
       c.includes("-TIER3-") ||
+      c.startsWith("STEADY3-") ||
+      c.startsWith("STEADY-3-") ||
+      c.startsWith("FOUNDER3-") ||
+      c.startsWith("FOUNDER-3-") ||
+      c.startsWith("LTD-3-") ||
       c.startsWith("SUMO3-") ||
       c.startsWith("APPSUMO-3-")
     ) {
@@ -94,6 +99,11 @@ export function RedeemClient({
     if (
       c.includes("-T2-") ||
       c.includes("-TIER2-") ||
+      c.startsWith("STEADY2-") ||
+      c.startsWith("STEADY-2-") ||
+      c.startsWith("FOUNDER2-") ||
+      c.startsWith("FOUNDER-2-") ||
+      c.startsWith("LTD-2-") ||
       c.startsWith("SUMO2-") ||
       c.startsWith("APPSUMO-2-")
     ) {
@@ -103,42 +113,40 @@ export function RedeemClient({
   })();
 
   return (
-    <div className="relative min-h-screen flex flex-col bg-[#0A0A0A] text-foreground font-sans selection:bg-emerald-500/20">
+    <div className="relative min-h-screen flex flex-col bg-[#fbfbf9] text-[#23211a] font-sans">
       <LandingHeader />
 
-      {/* Ambient Glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-emerald-500/10 blur-[140px] rounded-full pointer-events-none -z-10" />
-
-      <main className="flex-1 flex flex-col items-center justify-center p-4 md:p-8 relative z-20">
-        <div className="w-full max-w-[560px]">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 md:p-12 relative z-20">
+        <div className="w-full max-w-[620px]">
           {/* Header Badge */}
-          <div className="mb-6 text-center flex flex-col items-center">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 text-xs font-semibold uppercase tracking-wider mb-4 shadow-sm">
-              <Sparkles className="size-3.5" />
-              AppSumo Lifetime Deal Activation
+          <div className="mb-8 text-center flex flex-col items-center">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-xs font-mono font-bold uppercase tracking-wider mb-4 shadow-xs">
+              <Sparkles className="size-3.5 text-[#ffd439]" />
+              <span>Lifetime License Activation</span>
             </div>
 
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+            <h1 className="text-3xl sm:text-5xl font-serif font-medium tracking-tight text-[#23211a]">
               Redeem Your License
             </h1>
-            <p className="text-muted-foreground mt-2 text-sm max-w-md">
-              Activate your lifetime access to SteadyStack&apos;s edge-native synthetic monitoring
-              and status pages.
+            <p className="text-[#5c5c5c] mt-3 text-sm sm:text-base max-w-md leading-relaxed">
+              Enter your founder lifetime code to unlock edge-native multi-region uptime monitoring
+              and white-label status portals.
             </p>
           </div>
 
           {/* Active License Already Present */}
           {activeLicense?.isAppSumo && !redeemResult && (
-            <div className="mb-6 p-4 rounded-2xl border border-emerald-500/30 bg-emerald-950/20 backdrop-blur-md flex items-start gap-3">
-              <ShieldCheck className="size-5 text-emerald-400 shrink-0 mt-0.5" />
+            <div className="mb-6 p-5 rounded-2xl border border-[#e8e6df] bg-white shadow-xs flex items-start gap-3.5">
+              <ShieldCheck className="size-5 text-emerald-600 shrink-0 mt-0.5" />
               <div className="text-sm">
-                <p className="font-semibold text-emerald-300">
-                  Active AppSumo Tier {activeLicense.tier} License
+                <p className="font-semibold text-[#23211a]">
+                  Active Lifetime Tier {activeLicense.tier} License
                 </p>
-                <p className="text-emerald-400/80 text-xs mt-0.5">
-                  Your workspace is currently running on Lifetime Tier {activeLicense.tier} (
-                  {activeLicense.limits?.maxMonitors || 50} Monitors,{" "}
-                  {activeLicense.limits?.minIntervalSeconds || 60}s checks).
+                <p className="text-[#5c5c5c] text-xs mt-1 leading-relaxed">
+                  Your workspace is running on Lifetime Tier {activeLicense.tier} (
+                  {activeLicense.limits?.maxMonitors || 150} Monitors,{" "}
+                  {activeLicense.limits?.minIntervalSeconds || 60}s check intervals). Stacking
+                  additional codes will automatically elevate your limits.
                 </p>
               </div>
             </div>
@@ -146,28 +154,30 @@ export function RedeemClient({
 
           {/* Success State */}
           {redeemResult?.success ? (
-            <div className="relative rounded-3xl border border-emerald-500/40 bg-[#0E1512]/90 p-8 shadow-2xl backdrop-blur-xl text-center overflow-hidden">
-              <div className="size-16 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 flex items-center justify-center mx-auto mb-5 shadow-lg">
-                <CheckCircle2 className="size-9" />
+            <div className="rounded-3xl border border-[#23211a] bg-white p-8 sm:p-10 shadow-xl text-center">
+              <div className="size-16 rounded-2xl bg-[#ffd439]/20 border border-[#ffd439] text-[#23211a] flex items-center justify-center mx-auto mb-5 shadow-sm">
+                <CheckCircle2 className="size-9 text-emerald-600" />
               </div>
 
-              <h2 className="text-2xl font-bold text-white mb-2">Lifetime Access Activated!</h2>
-              <p className="text-emerald-300 text-sm mb-6 font-medium">{redeemResult.message}</p>
+              <h2 className="text-2xl sm:text-3xl font-serif font-semibold text-[#23211a] mb-2">
+                Lifetime Access Activated!
+              </h2>
+              <p className="text-[#5c5c5c] text-sm mb-8 leading-relaxed max-w-md mx-auto">
+                {redeemResult.message}
+              </p>
 
-              <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-black/40 border border-white/10 mb-6 text-left">
+              <div className="grid grid-cols-3 gap-3 p-4 rounded-2xl bg-[#faf8f5] border border-[#e8e6df] mb-8 text-left">
                 <div className="p-2">
-                  <span className="text-[11px] text-muted-foreground block uppercase font-mono">
-                    Plan
-                  </span>
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-[10px] text-[#868279] block uppercase font-mono">Plan</span>
+                  <span className="text-sm font-bold text-[#23211a]">
                     Tier {redeemResult.tier} Lifetime
                   </span>
                 </div>
-                <div className="p-2 border-l border-white/10">
-                  <span className="text-[11px] text-muted-foreground block uppercase font-mono">
+                <div className="p-2 border-l border-[#e8e6df]">
+                  <span className="text-[10px] text-[#868279] block uppercase font-mono">
                     Check Rate
                   </span>
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-sm font-bold text-[#23211a]">
                     {redeemResult.tier === 3
                       ? "10s Ultra"
                       : redeemResult.tier === 2
@@ -175,11 +185,11 @@ export function RedeemClient({
                         : "60s Fast"}
                   </span>
                 </div>
-                <div className="p-2 border-l border-white/10">
-                  <span className="text-[11px] text-muted-foreground block uppercase font-mono">
+                <div className="p-2 border-l border-[#e8e6df]">
+                  <span className="text-[10px] text-[#868279] block uppercase font-mono">
                     Consensus
                   </span>
-                  <span className="text-sm font-semibold text-white">
+                  <span className="text-sm font-bold text-[#23211a]">
                     {redeemResult.tier === 1 ? "2-of-3 Edge" : "4-of-7 Quorum"}
                   </span>
                 </div>
@@ -187,28 +197,25 @@ export function RedeemClient({
 
               <Link
                 href="/dashboard"
-                className="w-full py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20"
+                className="w-full py-4 px-6 rounded-xl bg-[#23211a] hover:bg-[#373428] text-white font-semibold flex items-center justify-center gap-2 transition-all shadow-md text-sm"
               >
-                Go to Dashboard
+                <span>Go to Dashboard</span>
                 <ArrowRight className="size-4" />
               </Link>
             </div>
           ) : (
             /* Redemption Form Card */
-            <div className="relative rounded-3xl border border-white/10 bg-[#0E0E0E]/90 p-6 md:p-8 shadow-2xl backdrop-blur-xl overflow-hidden">
-              {/* Card Top Highlight */}
-              <div className="absolute top-0 inset-x-0 h-px bg-linear-to-r from-transparent via-emerald-500/50 to-transparent" />
-
-              <form onSubmit={handleRedeem} className="space-y-5">
+            <div className="rounded-3xl border border-[#e8e6df] bg-white p-6 sm:p-10 shadow-md">
+              <form onSubmit={handleRedeem} className="space-y-6">
                 <div>
                   <label
                     htmlFor="code"
-                    className="block text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-2"
+                    className="block text-xs font-mono font-bold uppercase tracking-wider text-[#868279] mb-2"
                   >
-                    AppSumo Redemption Code
+                    Redemption License Key
                   </label>
                   <div className="relative">
-                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-muted-foreground">
+                    <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#868279]">
                       <Key className="size-4" />
                     </div>
                     <input
@@ -216,27 +223,28 @@ export function RedeemClient({
                       type="text"
                       value={code}
                       onChange={(e) => setCode(e.target.value.toUpperCase())}
-                      placeholder="e.g. SUMO-XXXX-YYYY-ZZZZ"
+                      placeholder="e.g. STEADY-T3-XXXX-YYYY"
                       required
                       autoComplete="off"
-                      className="w-full pl-10 pr-4 py-3 bg-black/60 border border-white/15 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl text-white font-mono text-sm tracking-wide transition-all outline-none"
+                      className="w-full pl-10 pr-4 py-3.5 bg-[#faf8f5] border border-[#e8e6df] focus:border-[#23211a] focus:bg-white rounded-xl text-[#23211a] font-mono text-sm tracking-wide transition-all outline-none"
                     />
                   </div>
-                  <p className="text-[11px] text-muted-foreground mt-2">
-                    Paste the unique license key provided in your AppSumo purchase email or account.
+                  <p className="text-[11px] text-[#868279] mt-2">
+                    Paste the unique license key provided in your purchase email or confirmation
+                    receipt.
                   </p>
                 </div>
 
                 {/* Account Status Indicator */}
-                <div className="p-3.5 rounded-xl border border-white/10 bg-white/5 flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
+                <div className="p-4 rounded-xl border border-[#e8e6df] bg-[#faf8f5] flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2.5">
                     <div
-                      className={`size-2 rounded-full ${isLoggedIn ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`}
+                      className={`size-2.5 rounded-full ${isLoggedIn ? "bg-emerald-500" : "bg-amber-500"}`}
                     />
-                    <span className="text-muted-foreground">
+                    <span className="text-[#5c5c5c]">
                       {isLoggedIn ? (
                         <>
-                          Signed in as <strong className="text-white">{user?.email}</strong>
+                          Signed in as <strong className="text-[#23211a]">{user?.email}</strong>
                         </>
                       ) : (
                         "Not signed in yet"
@@ -244,49 +252,51 @@ export function RedeemClient({
                     </span>
                   </div>
                   {!isLoggedIn && (
-                    <span className="text-amber-400 font-medium">Will prompt sign-in</span>
+                    <span className="text-amber-700 font-semibold text-[11px]">
+                      Will prompt sign-in
+                    </span>
                   )}
                 </div>
 
-                {/* What's Included Preview */}
-                <div className="p-4 rounded-xl border border-white/10 bg-black/40 space-y-2">
-                  <div className="text-xs font-semibold text-white flex items-center gap-2">
-                    <Zap className="size-3.5 text-emerald-400" />
-                    Estimated Plan: Tier {detectedTier} Lifetime
+                {/* What's Included Preview Box */}
+                <div className="p-5 rounded-2xl border border-[#e8e6df] bg-[#faf8f5] space-y-3">
+                  <div className="text-xs font-bold text-[#23211a] flex items-center gap-2 font-mono">
+                    <Zap className="size-3.5 text-[#ffd439]" />
+                    Estimated Level: Tier {detectedTier} Lifetime
                   </div>
-                  <ul className="text-xs text-muted-foreground space-y-1.5 pt-1">
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
+                  <ul className="text-xs text-[#5c5c5c] space-y-2 pt-1 font-medium">
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
                       <span>
                         {detectedTier === 3
-                          ? "1,500 Active Monitors"
+                          ? "1,500 Active Edge Monitors"
                           : detectedTier === 2
-                            ? "250 Active Monitors"
-                            : "150 Active Monitors"}
+                            ? "250 Active Edge Monitors"
+                            : "150 Active Edge Monitors"}
                       </span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
                       <span>
                         {detectedTier === 3
-                          ? "10s Ultra-Fast Checks"
+                          ? "10s Ultra-Fast Check Rate"
                           : detectedTier === 2
-                            ? "30s Rapid Checks"
-                            : "60s Heartbeat Checks"}
+                            ? "30s Rapid Check Rate"
+                            : "60s Heartbeat Check Rate"}
                       </span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
                       <span>
                         {detectedTier === 3
-                          ? "Unlimited Status Pages & Custom Domains"
+                          ? "100 Status Portals + Unlimited Custom Domains (CNAME)"
                           : detectedTier === 2
-                            ? "10 Status Pages + Custom Domains"
-                            : "3 Status Pages + Custom Domains"}
+                            ? "10 Status Portals + Custom Domains"
+                            : "3 Status Portals + Custom Domains"}
                       </span>
                     </li>
-                    <li className="flex items-center gap-2">
-                      <CheckCircle2 className="size-3.5 text-emerald-400 shrink-0" />
+                    <li className="flex items-center gap-2.5">
+                      <CheckCircle2 className="size-4 text-emerald-600 shrink-0" />
                       <span>
                         {detectedTier === 1
                           ? "3-Region 2-of-3 Quorum Consensus"
@@ -300,21 +310,21 @@ export function RedeemClient({
                 <button
                   type="submit"
                   disabled={loading || !code.trim()}
-                  className="w-full py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 disabled:cursor-not-allowed text-black font-semibold flex items-center justify-center gap-2 transition-all shadow-lg shadow-emerald-500/20 cursor-pointer text-sm"
+                  className="w-full py-4 px-6 rounded-xl bg-[#23211a] hover:bg-[#373428] disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer text-sm"
                 >
                   {loading ? (
                     <>
                       <Loader2 className="size-4 animate-spin" />
-                      Validating Code...
+                      <span>Validating License Code...</span>
                     </>
                   ) : isLoggedIn ? (
                     <>
-                      Redeem Lifetime Access
+                      <span>Activate Lifetime Access</span>
                       <ArrowRight className="size-4" />
                     </>
                   ) : (
                     <>
-                      Sign In & Redeem
+                      <span>Sign In & Activate</span>
                       <ArrowRight className="size-4" />
                     </>
                   )}
@@ -322,11 +332,11 @@ export function RedeemClient({
               </form>
 
               {/* Assistance Footer */}
-              <div className="mt-6 pt-5 border-t border-white/10 text-center text-xs text-muted-foreground">
-                Need help with your redemption? Contact{" "}
-                <a href="mailto:workinbox69@gmail.com" className="text-emerald-400 hover:underline">
-                  workinbox69@gmail.com
-                </a>
+              <div className="mt-8 pt-6 border-t border-[#e8e6df] text-center text-xs text-[#868279]">
+                Need a new code or want to view tiers?{" "}
+                <Link href="/ltd" className="text-[#23211a] font-semibold hover:underline">
+                  View Lifetime Deal Tiers →
+                </Link>
               </div>
             </div>
           )}

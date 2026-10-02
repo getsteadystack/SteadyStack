@@ -4,16 +4,16 @@ import { SleepModeClient } from "./sleep-mode-client";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Sleep Mode — SteadyStack",
+  title: "False-Positive Elimination — SteadyStack",
   description:
-    "False-positive prevention that lets solo devs sleep through the night. SteadyStack filters out 2-second blips so if we call you, it's real.",
+    "Uptime monitoring that eliminates 3 AM false alarms. SteadyStack confirms outages across multi-region quorum consensus before paging your team.",
   alternates: {
     canonical: "/features/sleep-mode",
   },
   openGraph: {
-    title: "Sleep Mode — SteadyStack",
+    title: "Zero False Positives — SteadyStack",
     description:
-      "Multi-vector verification, flapping detection, and dynamic thresholding. If SteadyStack calls you at 3 AM, it's a real outage.",
+      "Multi-region quorum verification and flapping protection. When SteadyStack pages you at 3 AM, it's a real outage.",
   },
 };
 

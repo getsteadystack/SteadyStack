@@ -94,7 +94,7 @@ export async function sendPagerDutyAlert(
         links: [
           {
             href: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard/monitors/${data.monitorId}`,
-            text: "View in SteadyStack",
+            text: "View Monitor",
           },
           ...(data.runbookUrl ? [{ href: data.runbookUrl, text: "Runbook" }] : []),
         ],

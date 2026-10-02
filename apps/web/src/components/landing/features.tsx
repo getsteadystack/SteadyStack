@@ -215,53 +215,31 @@ export default function Features() {
             </div>
           </Link>
 
-          {/* Card 4: Sleep Mode */}
+          {/* Card 4: Client Status Pages */}
           <Link
-            href={"/features/sleep-mode" as any}
+            href={"/showcase" as any}
             className="bg-card border border-border rounded-2xl p-6 flex flex-col justify-between group hover:border-primary/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-300 min-h-[440px] block relative overflow-hidden"
           >
             {/* Visual Area */}
-            <div className="h-[200px] w-full mb-6 relative flex flex-col items-center justify-center">
-              <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] to-transparent" />
-              <div className="relative flex flex-col items-center gap-3">
-                {/* Moon Icon */}
-                <div className="size-14 bg-primary/5 border border-primary/20 rounded-full flex items-center justify-center group-hover:border-primary/40 group-hover:bg-primary/10 transition-all duration-300">
-                  <Moon className="size-6 text-primary" />
+            <div className="h-[200px] w-full mb-6 relative flex flex-col items-center justify-center p-2">
+              <div className="w-full max-w-[200px] bg-card border border-border/80 rounded-xl p-3 shadow-md space-y-2.5 group-hover:border-primary/30 transition-all">
+                <div className="flex items-center justify-between pb-1.5 border-b border-border/50">
+                  <span className="text-[9px] font-mono text-muted-foreground truncate">
+                    status.client.com
+                  </span>
+                  <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
                 </div>
-                {/* Z's floating */}
-                <div className="flex gap-1.5">
-                  <span
-                    className="text-xs font-mono text-primary/40 animate-bounce"
-                    style={{ animationDelay: "0ms" }}
-                  >
-                    z
-                  </span>
-                  <span
-                    className="text-xs font-mono text-primary/50 animate-bounce"
-                    style={{ animationDelay: "200ms" }}
-                  >
-                    z
-                  </span>
-                  <span
-                    className="text-xs font-mono text-primary/60 animate-bounce"
-                    style={{ animationDelay: "400ms" }}
-                  >
-                    z
-                  </span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-semibold text-foreground">Operational</span>
+                  <span className="text-[9px] font-mono text-primary font-bold">99.99%</span>
                 </div>
-                {/* 5-Vector Pipeline Pills */}
-                <div className="flex items-center gap-1 bg-black/40 border border-border/70 px-2 py-1 rounded-md">
-                  {["V1", "V2", "V3", "V4", "V5"].map((v) => (
-                    <span
-                      key={v}
-                      className="text-[9px] font-mono px-1 py-0.5 rounded bg-primary/10 text-primary font-bold"
-                    >
-                      {v}
-                    </span>
+                <div className="flex gap-1">
+                  {Array.from({ length: 16 }).map((_, i) => (
+                    <div
+                      key={i}
+                      className="flex-1 h-3 rounded-xs bg-emerald-500/80 group-hover:bg-emerald-500 transition-colors"
+                    />
                   ))}
-                  <span className="text-[9px] font-mono text-muted-foreground ml-1 font-medium">
-                    Verified
-                  </span>
                 </div>
               </div>
             </div>
@@ -269,16 +247,16 @@ export default function Features() {
             <div>
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-base font-bold text-foreground tracking-tight flex items-center gap-2">
-                  <span>Sleep Mode</span>
+                  <span>Client Status Pages</span>
                   <span className="text-[9px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-primary/10 border border-primary/20 text-primary">
-                    5-Vector
+                    White-Label
                   </span>
                 </h3>
                 <ArrowUpRight className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
               </div>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                If we call you at 3 AM, it&apos;s real. 5-vector verification filters 2-second blips
-                and ISP hiccups so solo devs sleep through the noise.
+                Deploy branded status portals on custom domains. Keep clients informed and display
+                verifiable multi-region SLA history with zero vendor branding.
               </p>
             </div>
           </Link>

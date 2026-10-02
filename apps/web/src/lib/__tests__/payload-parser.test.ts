@@ -24,7 +24,9 @@ describe("validatePayload", () => {
   describe("Status Code", () => {
     it("should return success when statusCode is in status_codes array", () => {
       const expectations = JSON.stringify({ status_codes: [200, 201] });
-      expect(validatePayload("body", 200, expectations)).toEqual({ success: true });
+      expect(validatePayload("body", 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return false when statusCode is not in status_codes array", () => {
@@ -39,7 +41,9 @@ describe("validatePayload", () => {
   describe("Body Contains/Excludes", () => {
     it("should return success when body_contains matches", () => {
       const expectations = JSON.stringify({ body_contains: "hello" });
-      expect(validatePayload("hello world", 200, expectations)).toEqual({ success: true });
+      expect(validatePayload("hello world", 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return BODY_MISMATCH when body_contains does not match", () => {
@@ -52,7 +56,9 @@ describe("validatePayload", () => {
 
     it("should return success when body_excludes is not found", () => {
       const expectations = JSON.stringify({ body_excludes: "error" });
-      expect(validatePayload("hello world", 200, expectations)).toEqual({ success: true });
+      expect(validatePayload("hello world", 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return FORBIDDEN_STRING_FOUND when body_excludes is found", () => {
@@ -93,8 +99,12 @@ describe("validatePayload", () => {
     const jsonBody = JSON.stringify({ user: { id: 1, name: "Alice" } });
 
     it("should return success when json_path matches", () => {
-      const expectations = JSON.stringify({ json_path: { "user.id": "1", "user.name": "Alice" } });
-      expect(validatePayload(jsonBody, 200, expectations)).toEqual({ success: true });
+      const expectations = JSON.stringify({
+        json_path: { "user.id": "1", "user.name": "Alice" },
+      });
+      expect(validatePayload(jsonBody, 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return JSON_VALUE_MISMATCH when json_path does not match", () => {
@@ -128,7 +138,9 @@ describe("validatePayload", () => {
           { path: ".status", operator: "equals", value: "active" },
         ],
       });
-      expect(validatePayload(jsonBody, 200, expectations)).toEqual({ success: true });
+      expect(validatePayload(jsonBody, 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return JSON_ASSERT_FAIL on equality failure", () => {
@@ -149,7 +161,9 @@ describe("validatePayload", () => {
           { path: "status", operator: "not_equals", value: "inactive" },
         ],
       });
-      expect(validatePayload(jsonBody, 200, expectations)).toEqual({ success: true });
+      expect(validatePayload(jsonBody, 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return JSON_ASSERT_FAIL on inequality failure", () => {
@@ -166,7 +180,9 @@ describe("validatePayload", () => {
       const expectations = JSON.stringify({
         json_assertions: [{ path: "status", operator: "contains", value: "act" }],
       });
-      expect(validatePayload(jsonBody, 200, expectations)).toEqual({ success: true });
+      expect(validatePayload(jsonBody, 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return JSON_ASSERT_FAIL on contains failure", () => {
@@ -183,7 +199,9 @@ describe("validatePayload", () => {
       const expectations = JSON.stringify({
         json_assertions: [{ path: "status", operator: "not_contains", value: "inactive" }],
       });
-      expect(validatePayload(jsonBody, 200, expectations)).toEqual({ success: true });
+      expect(validatePayload(jsonBody, 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return JSON_ASSERT_FAIL on not_contains failure", () => {
@@ -200,7 +218,9 @@ describe("validatePayload", () => {
       const expectations = JSON.stringify({
         json_assertions: [{ path: "status", operator: "unknown_operator", value: "active" }],
       });
-      expect(validatePayload(jsonBody, 200, expectations)).toEqual({ success: true });
+      expect(validatePayload(jsonBody, 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should handle root path using $", () => {
@@ -208,7 +228,9 @@ describe("validatePayload", () => {
       const expectations = JSON.stringify({
         json_assertions: [{ path: "$", operator: "contains", value: "active" }],
       });
-      expect(validatePayload(arrayJsonBody, 200, expectations)).toEqual({ success: true });
+      expect(validatePayload(arrayJsonBody, 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return NOT_JSON when body is not JSON", () => {
@@ -225,7 +247,9 @@ describe("validatePayload", () => {
       const expectations = JSON.stringify({
         json_assertions: [{ operator: "==", value: "active" } as any],
       });
-      expect(validatePayload(jsonBody, 200, expectations)).toEqual({ success: true });
+      expect(validatePayload(jsonBody, 200, expectations)).toEqual({
+        success: true,
+      });
     });
   });
 });

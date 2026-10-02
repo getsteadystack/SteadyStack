@@ -1,6 +1,10 @@
 import { DurableObject } from "cloudflare:workers";
 import type { ProbeCheckResult, ProbeHealthState } from "@steadystack/types";
-import { isPrivateOrInternalUrlAsync, decryptSecret, DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
+import {
+  isPrivateOrInternalUrlAsync,
+  decryptSecret,
+  DEFAULT_CHECK_TIMEOUT_SECONDS,
+} from "@steadystack/core";
 import {
   getRegionByCode,
   type DOLocationHint,

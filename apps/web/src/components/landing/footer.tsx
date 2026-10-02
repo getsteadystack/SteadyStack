@@ -1,38 +1,41 @@
 import Link from "next/link";
-import { Activity, Twitter, Github, Globe } from "lucide-react";
-import { FooterLocaleSwitcher } from "./footer-locale-switcher";
 
 export default function LandingFooter() {
   return (
-    <footer className="py-16 md:py-20 border-t border-border bg-background relative overflow-hidden">
+    <footer className="py-16 md:py-20 border-t border-[#e8e6df] bg-[#fbfbf9] text-[#23211a] relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 md:px-12 flex flex-col gap-16">
         {/* Main Grid Content */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-12 md:gap-8">
           {/* Col 1 - Brand */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
-              <div className="p-1 bg-primary/5 border border-primary/10 rounded-lg">
-                <Activity className="size-4 text-primary" />
+              <div className="size-7 rounded-lg bg-[#ffd439] text-[#23211a] flex items-center justify-center font-serif font-bold text-sm">
+                S
               </div>
-              <span className="text-foreground font-bold tracking-tight text-base">
+              <span className="text-[#23211a] font-serif font-bold tracking-tight text-lg">
                 SteadyStack
               </span>
             </div>
-            <p className="text-muted-foreground text-xs font-medium max-w-xs leading-relaxed">
-              Autonomous global edge uptime, synthetic surveillance, and developer monitoring.
+            <p className="text-[#5c5c5c] text-xs font-medium max-w-xs leading-relaxed">
+              Autonomous multi-region edge uptime, quorum consensus, and automated client SLA
+              reports.
             </p>
             <div className="pt-1">
               <a
-                href="https://steadystack.dev/status-page/steadystack"
+                href="https://www.producthunt.com/products/steadystack?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-steadystack"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="SteadyStack on Product Hunt"
                 className="inline-block transition-opacity hover:opacity-85"
               >
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src="https://steadystack.dev/api/badge/steadystack.svg?style=flat&theme=dark&size=sm"
-                  alt="SteadyStack Status"
-                  className="h-5 w-auto"
+                  src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1229492&theme=light&t=1787428498964"
+                  width={200}
+                  height={43}
+                  alt="SteadyStack - Uptime monitoring that never pages you for nothing | Product Hunt"
+                  loading="lazy"
+                  className="block h-9 w-auto"
                 />
               </a>
             </div>
@@ -49,6 +52,15 @@ export default function LandingFooter() {
                 className="text-muted-foreground hover:text-foreground text-xs font-medium transition-colors w-fit"
               >
                 Features
+              </Link>
+              <Link
+                href={"/agencies" as any}
+                className="text-primary hover:text-primary/80 text-xs font-semibold transition-colors w-fit flex items-center gap-1.5"
+              >
+                For Agencies
+                <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono font-bold">
+                  New
+                </span>
               </Link>
               <Link
                 href={"/pricing" as any}
@@ -237,135 +249,6 @@ export default function LandingFooter() {
                 Security Policy
               </Link>
             </div>
-          </div>
-        </div>
-
-        {/* Featured Badges & Directories */}
-        <div className="flex flex-wrap justify-center items-center gap-6 pt-8 border-t border-border/50">
-          <a
-            href="https://www.producthunt.com/products/steadystack?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-steadystack"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="SteadyStack on Product Hunt"
-            className="transition-opacity hover:opacity-85"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1229492&theme=light&t=1787428498964"
-              width={250}
-              height={54}
-              alt="SteadyStack - Uptime monitoring that never pages you for nothing | Product Hunt"
-              loading="lazy"
-              className="block h-11 w-auto"
-            />
-          </a>
-          <a
-            href="https://confettisaas.com/saas/steadystack-dev?ref=badge"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View SteadyStack on ConfettiSaaS"
-            className="transition-opacity hover:opacity-85"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://confettisaas.com/badge-light.svg"
-              width={250}
-              height={54}
-              alt="SteadyStack on ConfettiSaaS"
-              loading="lazy"
-              className="block h-11 w-auto"
-            />
-          </a>
-          <a
-            href="https://fazier.com/launches/steadystack.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View SteadyStack on Fazier"
-            className="transition-opacity hover:opacity-85"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://fazier.com/api/v1//public/badges/launch_badges.svg?badge_type=launched&theme=light"
-              width={120}
-              height={44}
-              alt="Fazier badge"
-              loading="lazy"
-              className="block h-11 w-auto"
-            />
-          </a>
-          <a
-            href="https://aixcollection.com/ai/steadystack"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="SteadyStack on AI X Collection"
-            className="transition-opacity hover:opacity-85"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://aixcollection.com/assets/images/badge-dark.png"
-              alt="AI X Collection"
-              height={54}
-              loading="lazy"
-              className="block h-11 w-auto"
-            />
-          </a>
-          <a
-            href="https://startupfa.me/s/steadystack?utm_source=steadystack.dev"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="SteadyStack - Featured on Startup Fame"
-            className="transition-opacity hover:opacity-85"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="https://startupfa.me/badges/featured-badge-small.webp"
-              alt="SteadyStack - Featured on Startup Fame"
-              width={224}
-              height={36}
-              loading="lazy"
-              className="block h-9 w-auto"
-            />
-          </a>
-        </div>
-
-        {/* Footer Bottom */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-8 border-t border-border">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-muted-foreground text-xs font-medium">
-              © {new Date().getFullYear()} SteadyStack. All rights reserved.
-            </span>
-            <span className="text-border hidden sm:inline">•</span>
-            <a
-              href="https://steadystack.dev/status-page/steadystack"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center transition-opacity hover:opacity-85"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://steadystack.dev/api/badge/steadystack.svg?style=flat&theme=dark&size=sm"
-                alt="SteadyStack Status"
-                className="h-4 w-auto"
-              />
-            </a>
-          </div>
-          <div className="flex items-center gap-4 text-muted-foreground">
-            <div className="inline-flex items-center gap-1.5">
-              <Globe className="size-4 text-muted-foreground/70" />
-              <FooterLocaleSwitcher />
-            </div>
-            <Link
-              href="https://x.com/snackforcode"
-              className="hover:text-foreground transition-all"
-            >
-              <Twitter className="size-[17px]" />
-            </Link>
-            <Link
-              href="https://github.com/getsteadystack/SteadyStack"
-              className="hover:text-foreground transition-all"
-            >
-              <Github className="size-[17px]" />
-            </Link>
           </div>
         </div>
       </div>

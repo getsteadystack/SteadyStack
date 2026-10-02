@@ -35,59 +35,66 @@ export default function LegalPage({
   otherPage,
 }: LegalPageProps) {
   return (
-    <div className="flex flex-col">
-      <section className="py-28 md:py-36 bg-background relative overflow-hidden border-b border-border">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/[0.03] to-transparent pointer-events-none" />
-        <div className="max-w-5xl mx-auto px-6 md:px-12 flex flex-col items-center text-center gap-6 relative">
-          <div className="inline-flex items-center gap-2 px-3 py-1 border border-primary/20 bg-primary/5 text-primary text-[10px] font-bold font-mono uppercase tracking-widest">
-            <Scale className="size-3" />
-            {badge}
+    <div className="flex flex-col min-h-screen bg-[#fbfbf9] text-[#23211a] font-sans">
+      {/* Hero Section */}
+      <section className="pt-28 pb-20 md:pt-36 md:pb-24 relative overflow-hidden border-b border-[#e8e6df]">
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-12 flex flex-col items-center text-center gap-6 relative">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-xs font-mono font-semibold uppercase tracking-wider shadow-xs">
+            <Scale className="size-3.5 text-[#ffd439]" />
+            <span>{badge}</span>
           </div>
-          <h1 className="text-4xl sm:text-6xl font-extrabold tracking-tight text-foreground max-w-3xl leading-[1.1]">
+          <h1 className="text-4xl sm:text-6xl md:text-7xl font-serif font-medium tracking-tight text-[#23211a] max-w-4xl leading-[1.08] text-balance">
             {title}
           </h1>
-          <p className="text-muted-foreground text-sm leading-relaxed max-w-xl">{description}</p>
-          <p className="text-muted-foreground/50 text-[11px] font-mono">
+          <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed max-w-2xl font-sans text-balance">
+            {description}
+          </p>
+          <p className="text-[#868279] text-xs font-mono font-semibold">
             Last updated: {lastUpdated}
           </p>
         </div>
       </section>
 
-      <div className="max-w-5xl mx-auto w-full px-6 md:px-12 py-16 md:py-20">
-        <div className="flex gap-16 lg:gap-20">
-          <nav className="hidden lg:block w-56 shrink-0" aria-label="Table of contents">
-            <div className="sticky top-32 space-y-1">
-              <p className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-widest mb-4">
-                On this page
+      {/* Main Content with Sticky TOC */}
+      <div className="max-w-5xl mx-auto w-full px-4 sm:px-6 md:px-12 py-16 md:py-24">
+        <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
+          {/* Table of contents sidebar */}
+          <nav className="hidden lg:block w-64 shrink-0" aria-label="Table of contents">
+            <div className="sticky top-32 p-6 rounded-2xl bg-white border border-[#e8e6df] shadow-xs space-y-3">
+              <p className="text-[11px] font-mono font-semibold text-[#868279] uppercase tracking-wider">
+                Contents
               </p>
-              {sections.map((section) => (
-                <a
-                  key={section.title}
-                  href={`#${slugify(section.title)}`}
-                  className="block text-xs text-muted-foreground/60 hover:text-foreground transition-colors py-1.5 leading-snug"
-                >
-                  {section.title}
-                </a>
-              ))}
+              <div className="space-y-1.5">
+                {sections.map((section) => (
+                  <a
+                    key={section.title}
+                    href={`#${slugify(section.title)}`}
+                    className="block text-xs font-sans text-[#5c5c5c] hover:text-[#23211a] hover:font-medium transition-colors py-1 leading-snug"
+                  >
+                    {section.title}
+                  </a>
+                ))}
+              </div>
             </div>
           </nav>
 
-          <div className="flex-1 min-w-0 divide-y divide-border">
+          {/* Document Section Blocks */}
+          <div className="flex-1 min-w-0 space-y-6">
             {sections.map((section, i) => (
               <section
                 key={section.title}
                 id={slugify(section.title)}
-                className="py-10 first:pt-0 last:pb-0 scroll-mt-32"
+                className="p-6 sm:p-8 rounded-2xl bg-white border border-[#e8e6df] shadow-xs scroll-mt-32 transition-all hover:border-[#23211a]/20"
               >
                 <div className="flex items-start gap-4">
-                  <span className="hidden sm:inline-flex mt-0.5 size-7 shrink-0 items-center justify-center rounded-md border border-border bg-card text-[11px] font-bold text-muted-foreground/60 font-mono">
+                  <span className="inline-flex mt-0.5 size-8 shrink-0 items-center justify-center rounded-xl border border-[#e8e6df] bg-[#fbfbf9] text-xs font-mono font-bold text-[#23211a]">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <div>
-                    <h2 className="text-lg sm:text-xl font-bold tracking-tight text-foreground mb-3">
+                  <div className="space-y-2 flex-1">
+                    <h2 className="text-xl sm:text-2xl font-serif font-medium tracking-tight text-[#23211a]">
                       {section.title}
                     </h2>
-                    <p className="text-muted-foreground text-sm leading-relaxed max-w-prose">
+                    <p className="text-sm sm:text-base text-[#5c5c5c] leading-relaxed font-sans">
                       {section.content}
                     </p>
                   </div>
@@ -98,21 +105,31 @@ export default function LegalPage({
         </div>
       </div>
 
-      <section className="border-t border-border bg-background relative overflow-hidden">
-        <div className="max-w-5xl mx-auto px-6 md:px-12 py-16 md:py-20 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 border border-border bg-card text-muted-foreground text-[10px] font-bold font-mono uppercase tracking-widest mb-6">
-            <FileText className="size-3" />
-            {otherPage.label}
+      {/* Bottom CTA container */}
+      <section className="py-20 md:py-28 bg-[#fbfbf9] border-t border-[#e8e6df] flex justify-center px-4 sm:px-6 lg:px-8">
+        <div className="w-full max-w-5xl rounded-3xl border border-black/[0.1] bg-[#23211a] text-white p-8 sm:p-14 md:p-16 text-center relative overflow-hidden shadow-[0_24px_60px_rgba(0,0,0,0.14)]">
+          <div className="absolute -bottom-24 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-[#ffd439]/20 rounded-full blur-[100px] pointer-events-none" />
+
+          <div className="relative z-10 max-w-2xl mx-auto space-y-6">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/20 bg-white/10 text-white text-[11px] font-mono font-semibold uppercase tracking-wider backdrop-blur-md">
+              <FileText className="size-3.5 text-[#ffd439]" />
+              <span>{otherPage.label}</span>
+            </div>
+
+            <h2 className="text-3xl sm:text-4xl md:text-5xl font-serif font-medium tracking-tight text-white leading-tight">
+              {otherPage.description}
+            </h2>
+
+            <div className="pt-2">
+              <Link
+                href={otherPage.href as any}
+                className="inline-flex items-center justify-center gap-2 h-12 px-7 bg-[#ffd439] hover:bg-[#ffe066] text-[#23211a] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md hover:scale-[1.02] active:scale-[0.98]"
+              >
+                <span>Read {otherPage.label}</span>
+                <ArrowRight className="size-4" />
+              </Link>
+            </div>
           </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-foreground mb-4 leading-[1.15]">
-            {otherPage.description}
-          </h2>
-          <Link
-            href={otherPage.href as any}
-            className="inline-flex items-center gap-1.5 h-11 px-8 bg-primary text-primary-foreground font-bold text-sm rounded-lg border border-primary hover:bg-primary/90 transition-all duration-300"
-          >
-            Read {otherPage.label} <ArrowRight className="size-4" />
-          </Link>
         </div>
       </section>
     </div>

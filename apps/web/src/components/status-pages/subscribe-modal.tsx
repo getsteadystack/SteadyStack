@@ -70,53 +70,58 @@ export function SubscribeModal({
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-lg mx-4 bg-[#0a0a0f] border border-primary/30 rounded-lg shadow-[0_0_50px_rgba(34,197,94,0.1)] overflow-hidden">
+      <div className="relative w-full max-w-lg mx-4 bg-card border border-border rounded-3xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-primary/20">
-          <h2 className="text-lg font-bold text-primary font-mono tracking-tight">{t("title")}</h2>
+        <div className="flex items-center justify-between p-5 border-b border-border">
+          <div>
+            <h2 className="text-base font-bold text-foreground tracking-tight">{t("title")}</h2>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Subscribe to incident and maintenance alerts
+            </p>
+          </div>
           <button
             onClick={onClose}
-            className="p-1 rounded hover:bg-primary/10 text-primary/60 hover:text-primary transition-colors"
+            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
           >
-            <X className="size-5" />
+            <X className="size-4" />
           </button>
         </div>
 
         {/* Tabs */}
-        <div className="flex border-b border-primary/20">
+        <div className="flex border-b border-border bg-muted/30">
           <button
             onClick={() => setActiveTab("email")}
-            className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+            className={`flex-1 py-3 px-4 text-xs font-medium flex items-center justify-center gap-2 transition-colors ${
               activeTab === "email"
-                ? "text-primary border-b-2 border-primary bg-primary/5"
-                : "text-primary/50 hover:text-primary hover:bg-primary/5"
+                ? "text-foreground border-b-2 border-primary bg-background font-semibold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }`}
           >
-            <Mail className="size-4" />
+            <Mail className="size-3.5" />
             {t("email_tab")}
           </button>
           <button
             onClick={() => setActiveTab("feeds")}
-            className={`flex-1 py-3 px-4 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${
+            className={`flex-1 py-3 px-4 text-xs font-medium flex items-center justify-center gap-2 transition-colors ${
               activeTab === "feeds"
-                ? "text-primary border-b-2 border-primary bg-primary/5"
-                : "text-primary/50 hover:text-primary hover:bg-primary/5"
+                ? "text-foreground border-b-2 border-primary bg-background font-semibold"
+                : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
             }`}
           >
-            <Rss className="size-4" />
+            <Rss className="size-3.5" />
             {t("feed_tab")}
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-4">
+        <div className="p-5">
           {activeTab === "email" ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* Email Input */}
               <div>
                 <label
                   htmlFor="email"
-                  className="block text-xs font-bold text-primary/60 uppercase tracking-wider mb-2"
+                  className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5 font-medium"
                 >
                   {t("email_label")}
                 </label>
@@ -127,13 +132,13 @@ export function SubscribeModal({
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t("email_placeholder")}
                   required
-                  className="w-full px-4 py-3 bg-black/50 border border-primary/30 rounded-md text-primary placeholder:text-primary/30 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary/50 font-mono"
+                  className="w-full px-3.5 py-2.5 bg-background border border-border rounded-xl text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20 text-sm font-sans"
                 />
               </div>
 
               {/* Monitor Selection */}
               <div>
-                <label className="block text-xs font-bold text-primary/60 uppercase tracking-wider mb-2">
+                <label className="block text-xs font-mono uppercase tracking-wider text-muted-foreground mb-1.5 font-medium">
                   {t("monitors_label")}
                 </label>
                 <MonitorSelector
@@ -144,18 +149,18 @@ export function SubscribeModal({
               </div>
 
               {/* Info */}
-              <p className="text-xs text-primary/40">{t("info_text")}</p>
+              <p className="text-xs text-muted-foreground">{t("info_text")}</p>
 
               {/* Result Message */}
               {result && (
                 <div
-                  className={`p-3 rounded-md text-sm ${
+                  className={`p-3 rounded-xl text-xs font-medium ${
                     result.success
-                      ? "bg-primary/10 text-primary border border-primary/30"
-                      : "bg-red-500/10 text-red-400 border border-red-500/30"
+                      ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20"
+                      : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border border-rose-500/20"
                   }`}
                 >
-                  {result.success && <Check className="inline size-4 mr-2" />}
+                  {result.success && <Check className="inline size-3.5 mr-1.5" />}
                   {result.message}
                 </div>
               )}
@@ -164,16 +169,16 @@ export function SubscribeModal({
               <button
                 type="submit"
                 disabled={isLoading || !email}
-                className="w-full py-3 px-4 bg-primary/20 hover:bg-primary/30 disabled:bg-primary/10 disabled:cursor-not-allowed border border-primary/30 rounded-md text-primary font-bold uppercase tracking-wider text-sm transition-all flex items-center justify-center gap-2"
+                className="w-full py-2.5 px-4 bg-primary text-primary-foreground font-medium rounded-xl text-xs hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center justify-center gap-2 cursor-pointer shadow-xs"
               >
                 {isLoading ? (
                   <>
-                    <Loader2 className="size-4 animate-spin" />
+                    <Loader2 className="size-3.5 animate-spin" />
                     {t("subscribing")}
                   </>
                 ) : (
                   <>
-                    <Mail className="size-4" />
+                    <Mail className="size-3.5" />
                     {t("button")}
                   </>
                 )}
@@ -181,16 +186,16 @@ export function SubscribeModal({
             </form>
           ) : (
             <div className="space-y-4">
-              <p className="text-sm text-primary/60">{t("feed_info")}</p>
+              <p className="text-xs text-muted-foreground">{t("feed_info")}</p>
               <FeedLinks pageSlug={pageSlug} pageTitle={pageTitle} />
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-primary/10 bg-primary/5">
-          <p className="text-xs text-primary/30 text-center font-mono">
-            {tCommon("powered_by")} • GDPR Compliant
+        <div className="p-3.5 border-t border-border bg-muted/20">
+          <p className="text-[11px] text-muted-foreground text-center font-mono">
+            Direct Status Updates &middot; GDPR Compliant
           </p>
         </div>
       </div>

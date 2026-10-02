@@ -339,64 +339,72 @@ export function IntegrationsManager() {
   return (
     <div className="space-y-6">
       {/* Title Header */}
-      <div className="flex flex-col gap-2">
-        <h2 className="text-xl font-bold tracking-tight flex items-center gap-2">
-          <Blocks className="size-5 text-primary" />
+      <div className="flex flex-col gap-1.5 pb-2 border-b border-border">
+        <div className="flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-[#ffd439]" />
+          <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+            Ecosystem & Cloud Connectors
+          </span>
+        </div>
+        <h2 className="text-2xl font-serif font-medium tracking-tight text-foreground">
           Zero-Code Integrations
         </h2>
-        <p className="text-xs text-muted-foreground">
-          Import websites, repos, and cloud deployments automatically. SteadyStack connects directly
-          to your providers.
+        <p className="text-xs text-muted-foreground leading-relaxed max-w-2xl">
+          Import websites, repositories, and cloud deployments automatically. SteadyStack connects
+          directly to your providers with continuous synchronisation.
         </p>
       </div>
 
       {/* Grid of integrations */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Vercel Card */}
-        <Card className="relative overflow-hidden border-border bg-card/30 backdrop-blur-md group hover:border-primary/40 transition-all hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.02)]">
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-          <CardHeader className="space-y-3">
+        <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-md hover:border-foreground/20 transition-all flex flex-col justify-between">
+          <CardHeader className="space-y-3 pb-4">
             <div className="flex items-center justify-between">
-              <div className="size-10 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center">
-                <svg className="size-5 fill-white" viewBox="0 0 116 100">
+              <div className="size-10 rounded-xl bg-muted border border-border flex items-center justify-center">
+                <svg className="size-4 fill-foreground" viewBox="0 0 116 100">
                   <path d="M57.5 0L115 100H0L57.5 0Z" />
                 </svg>
               </div>
               {connectedIntegrations.some((ci) => ci.provider === "vercel") ? (
                 <Badge
                   variant="outline"
-                  className="text-emerald-500 border-emerald-500/20 bg-emerald-500/5 text-[10px]"
+                  className="text-emerald-700 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-mono font-medium rounded-full"
                 >
                   Active ({connectedIntegrations.filter((ci) => ci.provider === "vercel").length})
                 </Badge>
               ) : (
                 <Badge
                   variant="outline"
-                  className="text-white border-white/20 bg-white/5 text-[10px]"
+                  className="text-muted-foreground border-border bg-muted text-[10px] font-mono font-medium rounded-full"
                 >
                   1-Click setup
                 </Badge>
               )}
             </div>
-            <CardTitle className="text-sm font-bold">Vercel Integration</CardTitle>
-            <CardDescription className="text-[11px] leading-relaxed">
-              Auto-sync and import Vercel projects and production domains straight into your active
-              monitors list.
-            </CardDescription>
+            <div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                Vercel Integration
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
+                Auto-sync and import Vercel projects and production domains straight into your
+                active monitors list.
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="pt-2">
+          <CardContent className="pt-0">
             <Button
               onClick={() => handleConnectClick("vercel")}
-              className={`w-full text-xs font-semibold rounded-xl border flex items-center justify-center gap-2 ${
+              className={`w-full text-xs font-medium rounded-xl border flex items-center justify-center gap-2 h-9 transition-all ${
                 connectedIntegrations.some((ci) => ci.provider === "vercel")
-                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20"
-                  : "bg-accent hover:bg-accent/80 text-foreground border-border"
+                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-500/30"
+                  : "bg-foreground text-background hover:bg-foreground/90 border-transparent shadow-sm"
               }`}
             >
               {connectedIntegrations.some((ci) => ci.provider === "vercel") ? (
                 <>
-                  <Check className="size-3.5 text-emerald-500" />
-                  Connected
+                  <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                  Connected Scopes
                 </>
               ) : (
                 <>
@@ -409,54 +417,51 @@ export function IntegrationsManager() {
         </Card>
 
         {/* Netlify Card */}
-        <Card className="relative overflow-hidden border-border bg-card/30 backdrop-blur-md group hover:border-primary/40 transition-all hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.02)]">
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#00AD9F]/20 to-transparent"></div>
-          <CardHeader className="space-y-3">
+        <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-md hover:border-foreground/20 transition-all flex flex-col justify-between">
+          <CardHeader className="space-y-3 pb-4">
             <div className="flex items-center justify-between">
-              <div className="size-10 rounded-xl bg-[#00AD9F]/5 border border-[#00AD9F]/10 flex items-center justify-center">
-                <svg className="size-5 fill-[#00F5D4]" viewBox="0 0 512 512">
-                  <path
-                    d="M448 256c0-106-86-192-192-192S64 150 64 256s86 192 192 192 192-86 192-192z"
-                    opacity=".2"
-                  />
-                  <path d="M256 0C114.6 0 0 114.6 0 256s114.6 256 256 256 256-114.6 256-256S397.4 0 256 0zm-53 381.7l-90.7-90.7 22.6-22.6 68.1 68.1 143.7-143.7 22.6 22.6-166.3 166.3z" />
-                </svg>
+              <div className="size-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
+                <Cloud className="size-4 text-teal-600 dark:text-teal-400" />
               </div>
               {connectedIntegrations.some((ci) => ci.provider === "netlify") ? (
                 <Badge
                   variant="outline"
-                  className="text-emerald-500 border-emerald-500/20 bg-emerald-500/5 text-[10px]"
+                  className="text-emerald-700 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-mono font-medium rounded-full"
                 >
                   Active
                 </Badge>
               ) : (
                 <Badge
                   variant="outline"
-                  className="text-[#00F5D4] border-[#00AD9F]/20 bg-[#00AD9F]/5 text-[10px]"
+                  className="text-muted-foreground border-border bg-muted text-[10px] font-mono font-medium rounded-full"
                 >
                   1-Click setup
                 </Badge>
               )}
             </div>
-            <CardTitle className="text-sm font-bold">Netlify Integration</CardTitle>
-            <CardDescription className="text-[11px] leading-relaxed">
-              Auto-discover Netlify static deployment sites, custom proxy configs, and subdomains
-              automatically.
-            </CardDescription>
+            <div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                Netlify Integration
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
+                Auto-discover Netlify static deployment sites, custom proxy configs, and subdomains
+                automatically.
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="pt-2">
+          <CardContent className="pt-0">
             <Button
               onClick={() => handleConnectClick("netlify")}
-              className={`w-full text-xs font-semibold rounded-xl border flex items-center justify-center gap-2 ${
+              className={`w-full text-xs font-medium rounded-xl border flex items-center justify-center gap-2 h-9 transition-all ${
                 connectedIntegrations.some((ci) => ci.provider === "netlify")
-                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20"
-                  : "bg-accent hover:bg-accent/80 text-foreground border-border"
+                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-500/30"
+                  : "bg-foreground text-background hover:bg-foreground/90 border-transparent shadow-sm"
               }`}
             >
               {connectedIntegrations.some((ci) => ci.provider === "netlify") ? (
                 <>
-                  <Check className="size-3.5 text-emerald-500" />
-                  Connected
+                  <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                  Connected Account
                 </>
               ) : (
                 <>
@@ -469,48 +474,51 @@ export function IntegrationsManager() {
         </Card>
 
         {/* GitHub Card */}
-        <Card className="relative overflow-hidden border-border bg-card/30 backdrop-blur-md group hover:border-primary/40 transition-all hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.02)]">
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#4078c0]/20 to-transparent"></div>
-          <CardHeader className="space-y-3">
+        <Card className="relative overflow-hidden rounded-2xl border border-border bg-card shadow-sm hover:shadow-md hover:border-foreground/20 transition-all flex flex-col justify-between">
+          <CardHeader className="space-y-3 pb-4">
             <div className="flex items-center justify-between">
-              <div className="size-10 rounded-xl bg-[#4078c0]/5 border border-[#4078c0]/10 flex items-center justify-center">
-                <Github className="size-5 text-white" />
+              <div className="size-10 rounded-xl bg-muted border border-border flex items-center justify-center">
+                <Github className="size-4 text-foreground" />
               </div>
               {connectedIntegrations.some((ci) => ci.provider === "github") ? (
                 <Badge
                   variant="outline"
-                  className="text-emerald-500 border-emerald-500/20 bg-emerald-500/5 text-[10px]"
+                  className="text-emerald-700 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-mono font-medium rounded-full"
                 >
                   Active
                 </Badge>
               ) : (
                 <Badge
                   variant="outline"
-                  className="text-[#4078c0] border-[#4078c0]/20 bg-[#4078c0]/5 text-[10px]"
+                  className="text-muted-foreground border-border bg-muted text-[10px] font-mono font-medium rounded-full"
                 >
                   1-Click setup
                 </Badge>
               )}
             </div>
-            <CardTitle className="text-sm font-bold">GitHub Pages & Repos</CardTitle>
-            <CardDescription className="text-[11px] leading-relaxed">
-              Link codebases directly and deploy HTTP or raw PING check targets for documentation
-              and landing projects.
-            </CardDescription>
+            <div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                GitHub Pages & Repos
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
+                Link codebases directly and deploy HTTP or SSL health checks for docs and landing
+                projects.
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="pt-2">
+          <CardContent className="pt-0">
             <Button
               onClick={() => handleConnectClick("github")}
-              className={`w-full text-xs font-semibold rounded-xl border flex items-center justify-center gap-2 ${
+              className={`w-full text-xs font-medium rounded-xl border flex items-center justify-center gap-2 h-9 transition-all ${
                 connectedIntegrations.some((ci) => ci.provider === "github")
-                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border-emerald-500/20"
-                  : "bg-accent hover:bg-accent/80 text-foreground border-border"
+                  ? "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-800 dark:text-emerald-300 border-emerald-500/30"
+                  : "bg-foreground text-background hover:bg-foreground/90 border-transparent shadow-sm"
               }`}
             >
               {connectedIntegrations.some((ci) => ci.provider === "github") ? (
                 <>
-                  <Check className="size-3.5 text-emerald-500" />
-                  Connected
+                  <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+                  Connected Repos
                 </>
               ) : (
                 <>
@@ -524,106 +532,119 @@ export function IntegrationsManager() {
       </div>
 
       {/* Notification & Alerting Integrations */}
-      <div className="flex flex-col gap-2 pt-6">
-        <h3 className="text-base font-bold text-foreground">Alert & Notification Integrations</h3>
+      <div className="flex flex-col gap-1 pt-6">
+        <h3 className="text-lg font-serif font-medium text-foreground">
+          Alert & Notification Integrations
+        </h3>
         <p className="text-xs text-muted-foreground">
           Connect Discord, Slack, PagerDuty, and Opsgenie to receive instant downtime alerts.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {/* Discord Card */}
-        <Card className="relative overflow-hidden border-border bg-card/30 backdrop-blur-md group hover:border-primary/40 transition-all hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.02)]">
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#5865F2]/40 to-transparent"></div>
-          <CardHeader className="space-y-3">
+        <Card className="rounded-2xl border border-border bg-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <CardHeader className="space-y-3 pb-4">
             <div className="flex items-center justify-between">
               <div className="size-10 rounded-xl bg-[#5865F2]/10 border border-[#5865F2]/20 flex items-center justify-center">
-                <div className="size-4 rounded-full bg-[#5865F2]" />
+                <div className="size-3.5 rounded-full bg-[#5865F2]" />
               </div>
               <Badge
                 variant="outline"
-                className="text-[#5865F2] border-[#5865F2]/20 bg-[#5865F2]/5 text-[10px]"
+                className="text-[#5865F2] border-[#5865F2]/30 bg-[#5865F2]/10 text-[10px] font-mono rounded-full"
               >
                 Alert Channel
               </Badge>
             </div>
-            <CardTitle className="text-sm font-bold">Discord Webhooks & Bot</CardTitle>
-            <CardDescription className="text-[11px] leading-relaxed">
-              Route incident alerts, latency degradation warnings, and recovery pings straight to
-              your Discord channels.
-            </CardDescription>
+            <div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                Discord Webhooks
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
+                Route incident alerts, latency degradation warnings, and recovery pings straight to
+                your channels.
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="pt-2">
+          <CardContent className="pt-0">
             <Button
               onClick={() => router.push("/dashboard/alerts")}
-              className="w-full text-xs font-semibold rounded-xl border flex items-center justify-center gap-2 bg-accent hover:bg-accent/80 text-foreground border-border"
+              variant="outline"
+              className="w-full text-xs font-medium rounded-xl border border-border flex items-center justify-center gap-2 h-9 hover:bg-muted/80"
             >
               Configure in Alerts
-              <ArrowRight className="size-3.5" />
+              <ArrowRight className="size-3.5 text-muted-foreground" />
             </Button>
           </CardContent>
         </Card>
 
         {/* Slack Card */}
-        <Card className="relative overflow-hidden border-border bg-card/30 backdrop-blur-md group hover:border-primary/40 transition-all hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.02)]">
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#E01E5A]/40 to-transparent"></div>
-          <CardHeader className="space-y-3">
+        <Card className="rounded-2xl border border-border bg-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <CardHeader className="space-y-3 pb-4">
             <div className="flex items-center justify-between">
               <div className="size-10 rounded-xl bg-[#E01E5A]/10 border border-[#E01E5A]/20 flex items-center justify-center">
-                <div className="size-4 rounded-full bg-[#E01E5A]" />
+                <div className="size-3.5 rounded-full bg-[#E01E5A]" />
               </div>
               <Badge
                 variant="outline"
-                className="text-[#E01E5A] border-[#E01E5A]/20 bg-[#E01E5A]/5 text-[10px]"
+                className="text-[#E01E5A] border-[#E01E5A]/30 bg-[#E01E5A]/10 text-[10px] font-mono rounded-full"
               >
                 Alert Channel
               </Badge>
             </div>
-            <CardTitle className="text-sm font-bold">Slack Incoming Webhooks</CardTitle>
-            <CardDescription className="text-[11px] leading-relaxed">
-              Broadcast outages and performance SLA violations directly into team Slack channels
-              with rich embed blocks.
-            </CardDescription>
+            <div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                Slack Incoming Webhooks
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
+                Broadcast outages and performance SLA violations directly into team Slack channels.
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="pt-2">
+          <CardContent className="pt-0">
             <Button
               onClick={() => router.push("/dashboard/alerts")}
-              className="w-full text-xs font-semibold rounded-xl border flex items-center justify-center gap-2 bg-accent hover:bg-accent/80 text-foreground border-border"
+              variant="outline"
+              className="w-full text-xs font-medium rounded-xl border border-border flex items-center justify-center gap-2 h-9 hover:bg-muted/80"
             >
               Configure in Alerts
-              <ArrowRight className="size-3.5" />
+              <ArrowRight className="size-3.5 text-muted-foreground" />
             </Button>
           </CardContent>
         </Card>
 
         {/* PagerDuty & Opsgenie */}
-        <Card className="relative overflow-hidden border-border bg-card/30 backdrop-blur-md group hover:border-primary/40 transition-all hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.02)]">
-          <div className="absolute top-0 left-0 w-full h-[3px] bg-gradient-to-r from-transparent via-[#06AC38]/40 to-transparent"></div>
-          <CardHeader className="space-y-3">
+        <Card className="rounded-2xl border border-border bg-card shadow-sm hover:shadow-md transition-all flex flex-col justify-between">
+          <CardHeader className="space-y-3 pb-4">
             <div className="flex items-center justify-between">
-              <div className="size-10 rounded-xl bg-[#06AC38]/10 border border-[#06AC38]/20 flex items-center justify-center">
-                <div className="size-4 rounded-full bg-[#06AC38]" />
+              <div className="size-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                <div className="size-3.5 rounded-full bg-emerald-600" />
               </div>
               <Badge
                 variant="outline"
-                className="text-[#06AC38] border-[#06AC38]/20 bg-[#06AC38]/5 text-[10px]"
+                className="text-emerald-700 dark:text-emerald-400 border-emerald-500/30 bg-emerald-500/10 text-[10px] font-mono rounded-full"
               >
                 On-Call Paging
               </Badge>
             </div>
-            <CardTitle className="text-sm font-bold">PagerDuty & Opsgenie</CardTitle>
-            <CardDescription className="text-[11px] leading-relaxed">
-              Trigger high-priority on-call phone paging and escalation policies when multi-region
-              quorum consensus fails.
-            </CardDescription>
+            <div>
+              <CardTitle className="text-sm font-semibold text-foreground">
+                PagerDuty & Opsgenie
+              </CardTitle>
+              <CardDescription className="text-xs text-muted-foreground leading-relaxed mt-1">
+                Trigger high-priority on-call phone paging and escalation policies during quorum
+                downtime.
+              </CardDescription>
+            </div>
           </CardHeader>
-          <CardContent className="pt-2">
+          <CardContent className="pt-0">
             <Button
               onClick={() => router.push("/dashboard/alerts")}
-              className="w-full text-xs font-semibold rounded-xl border flex items-center justify-center gap-2 bg-accent hover:bg-accent/80 text-foreground border-border"
+              variant="outline"
+              className="w-full text-xs font-medium rounded-xl border border-border flex items-center justify-center gap-2 h-9 hover:bg-muted/80"
             >
               Configure in Alerts
-              <ArrowRight className="size-3.5" />
+              <ArrowRight className="size-3.5 text-muted-foreground" />
             </Button>
           </CardContent>
         </Card>
@@ -631,17 +652,19 @@ export function IntegrationsManager() {
 
       {/* Integration Setup Dialog */}
       <Dialog open={activeProvider !== null} onOpenChange={() => setActiveProvider(null)}>
-        <DialogContent className="sm:max-w-[500px] border-border bg-card/90 backdrop-blur-md text-foreground rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.3)]">
+        <DialogContent className="sm:max-w-[520px] border-border bg-card text-foreground rounded-2xl shadow-xl p-6">
           {activeProvider && (
             <>
-              <DialogHeader className="space-y-2">
-                <DialogTitle className="text-base font-bold flex items-center gap-2">
-                  {activeProvider === "vercel" && <Cloud className="size-5 text-white" />}
-                  {activeProvider === "netlify" && <LinkIcon className="size-5 text-[#00F5D4]" />}
-                  {activeProvider === "github" && <Github className="size-5 text-[#4078c0]" />}
+              <DialogHeader className="space-y-1.5 text-left">
+                <DialogTitle className="text-lg font-serif font-medium flex items-center gap-2 text-foreground">
+                  {activeProvider === "vercel" && <Cloud className="size-5 text-foreground" />}
+                  {activeProvider === "netlify" && (
+                    <LinkIcon className="size-5 text-teal-600 dark:text-teal-400" />
+                  )}
+                  {activeProvider === "github" && <Github className="size-5 text-foreground" />}
                   {providerMeta[activeProvider].title}
                 </DialogTitle>
-                <DialogDescription className="text-[11px]">
+                <DialogDescription className="text-xs text-muted-foreground">
                   {providerMeta[activeProvider].description}
                 </DialogDescription>
               </DialogHeader>
@@ -656,10 +679,10 @@ export function IntegrationsManager() {
                         {connectedIntegrations.some((ci) => ci.provider === "vercel") && (
                           /* Connected Scopes */
                           <div className="space-y-2">
-                            <label className="text-xs font-bold text-foreground">
+                            <label className="text-xs font-semibold text-foreground">
                               Connected Vercel Scopes
                             </label>
-                            <div className="divide-y divide-border border border-border rounded-xl bg-accent/20 max-h-[160px] overflow-y-auto">
+                            <div className="divide-y divide-border border border-border rounded-xl bg-muted/30 max-h-[160px] overflow-y-auto">
                               {connectedIntegrations
                                 .filter((ci) => ci.provider === "vercel")
                                 .map((ci) => (
@@ -668,13 +691,13 @@ export function IntegrationsManager() {
                                     className="flex justify-between items-center p-3 text-xs"
                                   >
                                     <div className="flex flex-col gap-0.5">
-                                      <span className="font-semibold text-foreground">
+                                      <span className="font-medium text-foreground">
                                         {ci.teamName}
                                       </span>
                                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                                         <Badge
                                           variant="outline"
-                                          className="text-[8px] px-1 scale-90 border-primary/20 text-primary bg-primary/5"
+                                          className="text-[9px] px-1.5 py-0 border-border text-muted-foreground bg-muted"
                                         >
                                           {ci.teamSlug}
                                         </Badge>
@@ -684,7 +707,7 @@ export function IntegrationsManager() {
                                       size="sm"
                                       variant="ghost"
                                       onClick={() => handleVercelDisconnect(ci.id)}
-                                      className="text-red-500 hover:text-red-400 hover:bg-red-500/10 text-[10px] h-7 px-2.5 rounded-lg border border-red-500/10"
+                                      className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs h-7 px-2.5 rounded-lg border border-destructive/20"
                                     >
                                       Disconnect
                                     </Button>
@@ -695,13 +718,13 @@ export function IntegrationsManager() {
                         )}
 
                         {/* Direct Token Input for Connecting */}
-                        <div className="space-y-3 p-4 rounded-xl border border-border bg-accent/10">
-                          <label className="text-xs font-bold text-foreground">
+                        <div className="space-y-3 p-4 rounded-xl border border-border bg-muted/20">
+                          <label className="text-xs font-semibold text-foreground">
                             {connectedIntegrations.some((ci) => ci.provider === "vercel")
                               ? "Connect Another Account / Token"
                               : "Vercel Personal Access Token"}
                           </label>
-                          <p className="text-[10px] text-muted-foreground leading-relaxed">
+                          <p className="text-xs text-muted-foreground leading-relaxed">
                             Create a token in your Vercel Account Settings and paste it below.
                             SteadyStack will persistently link your personal account and all
                             accessible teams to your database account.
@@ -712,12 +735,12 @@ export function IntegrationsManager() {
                               placeholder="Enter Vercel Access Token (sec_...)"
                               value={token === "db" ? "" : token}
                               onChange={(e) => setToken(e.target.value)}
-                              className="bg-accent/40 border-border text-foreground text-xs rounded-xl focus-visible:ring-primary/50"
+                              className="bg-card border-border text-foreground text-xs rounded-xl focus-visible:ring-foreground/20"
                             />
                             <Button
                               onClick={handleVercelConnectWithToken}
                               disabled={loading || !token || token === "db"}
-                              className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-semibold px-4 rounded-xl flex items-center gap-1.5 shrink-0"
+                              className="bg-foreground hover:bg-foreground/90 text-background text-xs font-medium px-4 rounded-xl flex items-center gap-1.5 shrink-0 shadow-sm"
                             >
                               {loading ? (
                                 <>
@@ -734,7 +757,7 @@ export function IntegrationsManager() {
                               href="https://vercel.com/account/tokens"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[10px] text-primary hover:underline flex items-center gap-1.5"
+                              className="text-xs text-muted-foreground hover:text-foreground underline flex items-center gap-1.5"
                             >
                               Where do I get my access token?
                               <ExternalLink className="size-3" />
@@ -750,10 +773,10 @@ export function IntegrationsManager() {
                         {connectedIntegrations.some((ci) => ci.provider === "netlify") && (
                           /* Connected Scopes */
                           <div className="space-y-2">
-                            <label className="text-xs font-bold text-foreground">
+                            <label className="text-xs font-semibold text-foreground">
                               Connected Netlify Account
                             </label>
-                            <div className="divide-y divide-border border border-border rounded-xl bg-accent/20 max-h-[160px] overflow-y-auto">
+                            <div className="divide-y divide-border border border-border rounded-xl bg-muted/30 max-h-[160px] overflow-y-auto">
                               {connectedIntegrations
                                 .filter((ci) => ci.provider === "netlify")
                                 .map((ci) => (
@@ -762,13 +785,13 @@ export function IntegrationsManager() {
                                     className="flex justify-between items-center p-3 text-xs"
                                   >
                                     <div className="flex flex-col gap-0.5">
-                                      <span className="font-semibold text-foreground">
+                                      <span className="font-medium text-foreground">
                                         {ci.teamName}
                                       </span>
                                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                                         <Badge
                                           variant="outline"
-                                          className="text-[8px] px-1 scale-90 border-primary/20 text-primary bg-primary/5"
+                                          className="text-[9px] px-1.5 py-0 border-border text-muted-foreground bg-muted"
                                         >
                                           {ci.teamSlug}
                                         </Badge>
@@ -778,7 +801,7 @@ export function IntegrationsManager() {
                                       size="sm"
                                       variant="ghost"
                                       onClick={() => handleVercelDisconnect(ci.id)}
-                                      className="text-red-500 hover:text-red-400 hover:bg-red-500/10 text-[10px] h-7 px-2.5 rounded-lg border border-red-500/10"
+                                      className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs h-7 px-2.5 rounded-lg border border-destructive/20"
                                     >
                                       Disconnect
                                     </Button>
@@ -789,16 +812,16 @@ export function IntegrationsManager() {
                         )}
 
                         {/* Direct Token Input for Connecting */}
-                        <div className="space-y-3 p-4 rounded-xl border border-border bg-accent/10">
-                          <label className="text-xs font-bold text-foreground">
+                        <div className="space-y-3 p-4 rounded-xl border border-border bg-muted/20">
+                          <label className="text-xs font-semibold text-foreground">
                             {connectedIntegrations.some((ci) => ci.provider === "netlify")
                               ? "Connect Another Account / Token"
                               : "Netlify Personal Access Token"}
                           </label>
-                          <p className="text-[10px] text-muted-foreground leading-relaxed">
+                          <p className="text-xs text-muted-foreground leading-relaxed">
                             Create a Personal Access Token in your Netlify User Settings and paste
                             it below. SteadyStack will persistently link your site index to your
-                            database account.
+                            account.
                           </p>
                           <div className="flex gap-2">
                             <Input
@@ -806,12 +829,12 @@ export function IntegrationsManager() {
                               placeholder="Enter Netlify Personal Access Token"
                               value={token === "db" ? "" : token}
                               onChange={(e) => setToken(e.target.value)}
-                              className="bg-accent/40 border-border text-foreground text-xs rounded-xl focus-visible:ring-primary/50"
+                              className="bg-card border-border text-foreground text-xs rounded-xl focus-visible:ring-foreground/20"
                             />
                             <Button
                               onClick={handleNetlifyConnectWithToken}
                               disabled={loading || !token || token === "db"}
-                              className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-semibold px-4 rounded-xl flex items-center gap-1.5 shrink-0"
+                              className="bg-foreground hover:bg-foreground/90 text-background text-xs font-medium px-4 rounded-xl flex items-center gap-1.5 shrink-0 shadow-sm"
                             >
                               {loading ? (
                                 <>
@@ -828,7 +851,7 @@ export function IntegrationsManager() {
                               href="https://app.netlify.com/user/settings/applications#personal-access-tokens"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[10px] text-[#00F5D4] hover:underline flex items-center gap-1.5"
+                              className="text-xs text-muted-foreground hover:text-foreground underline flex items-center gap-1.5"
                             >
                               Where do I get my access token?
                               <ExternalLink className="size-3" />
@@ -844,10 +867,10 @@ export function IntegrationsManager() {
                         {connectedIntegrations.some((ci) => ci.provider === "github") && (
                           /* Connected Scopes */
                           <div className="space-y-2">
-                            <label className="text-xs font-bold text-foreground">
+                            <label className="text-xs font-semibold text-foreground">
                               Connected GitHub Account
                             </label>
-                            <div className="divide-y divide-border border border-border rounded-xl bg-accent/20 max-h-[160px] overflow-y-auto">
+                            <div className="divide-y divide-border border border-border rounded-xl bg-muted/30 max-h-[160px] overflow-y-auto">
                               {connectedIntegrations
                                 .filter((ci) => ci.provider === "github")
                                 .map((ci) => (
@@ -856,13 +879,13 @@ export function IntegrationsManager() {
                                     className="flex justify-between items-center p-3 text-xs"
                                   >
                                     <div className="flex flex-col gap-0.5">
-                                      <span className="font-semibold text-foreground">
+                                      <span className="font-medium text-foreground">
                                         {ci.teamName}
                                       </span>
                                       <span className="text-[10px] text-muted-foreground flex items-center gap-1">
                                         <Badge
                                           variant="outline"
-                                          className="text-[8px] px-1 scale-90 border-[#4078c0]/20 text-[#4078c0] bg-[#4078c0]/5"
+                                          className="text-[9px] px-1.5 py-0 border-border text-muted-foreground bg-muted"
                                         >
                                           {ci.teamSlug}
                                         </Badge>
@@ -872,7 +895,7 @@ export function IntegrationsManager() {
                                       size="sm"
                                       variant="ghost"
                                       onClick={() => handleVercelDisconnect(ci.id)}
-                                      className="text-red-500 hover:text-red-400 hover:bg-red-500/10 text-[10px] h-7 px-2.5 rounded-lg border border-red-500/10"
+                                      className="text-destructive hover:text-destructive hover:bg-destructive/10 text-xs h-7 px-2.5 rounded-lg border border-destructive/20"
                                     >
                                       Disconnect
                                     </Button>
@@ -883,16 +906,16 @@ export function IntegrationsManager() {
                         )}
 
                         {/* Direct Token Input for Connecting */}
-                        <div className="space-y-3 p-4 rounded-xl border border-border bg-accent/10">
-                          <label className="text-xs font-bold text-foreground">
+                        <div className="space-y-3 p-4 rounded-xl border border-border bg-muted/20">
+                          <label className="text-xs font-semibold text-foreground">
                             {connectedIntegrations.some((ci) => ci.provider === "github")
                               ? "Connect Another Account / Token"
                               : "GitHub Personal Access Token"}
                           </label>
-                          <p className="text-[10px] text-muted-foreground leading-relaxed">
+                          <p className="text-xs text-muted-foreground leading-relaxed">
                             Create a Personal Access Token (PAT) with `repo` scope in your GitHub
                             Developer Settings and paste it below. SteadyStack will persistently
-                            link your repository targets to your database account.
+                            link your repository targets to your account.
                           </p>
                           <div className="flex gap-2">
                             <Input
@@ -900,12 +923,12 @@ export function IntegrationsManager() {
                               placeholder="Enter GitHub PAT (ghp_...)"
                               value={token === "db" ? "" : token}
                               onChange={(e) => setToken(e.target.value)}
-                              className="bg-accent/40 border-border text-foreground text-xs rounded-xl focus-visible:ring-primary/50"
+                              className="bg-card border-border text-foreground text-xs rounded-xl focus-visible:ring-foreground/20"
                             />
                             <Button
                               onClick={handleGitHubConnectWithToken}
                               disabled={loading || !token || token === "db"}
-                              className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-semibold px-4 rounded-xl flex items-center gap-1.5 shrink-0"
+                              className="bg-foreground hover:bg-foreground/90 text-background text-xs font-medium px-4 rounded-xl flex items-center gap-1.5 shrink-0 shadow-sm"
                             >
                               {loading ? (
                                 <>
@@ -922,7 +945,7 @@ export function IntegrationsManager() {
                               href="https://github.com/settings/tokens/new?scopes=repo"
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-[10px] text-[#4078c0] hover:underline flex items-center gap-1.5"
+                              className="text-xs text-muted-foreground hover:text-foreground underline flex items-center gap-1.5"
                             >
                               Where do I get my access token?
                               <ExternalLink className="size-3" />
@@ -936,7 +959,7 @@ export function IntegrationsManager() {
                       <Button
                         onClick={handleFetchResources}
                         disabled={loading}
-                        className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold py-2 rounded-xl flex items-center justify-center gap-2"
+                        className="w-full bg-foreground hover:bg-foreground/90 text-background text-xs font-medium py-2.5 rounded-xl flex items-center justify-center gap-2 shadow-sm"
                       >
                         {loading ? (
                           <>
@@ -952,33 +975,33 @@ export function IntegrationsManager() {
                 ) : (
                   /* Resource Selection Checklist Mode */
                   <div className="space-y-4">
-                    <div className="border border-border rounded-xl max-h-[220px] overflow-y-auto divide-y divide-border bg-accent/20">
+                    <div className="border border-border rounded-xl max-h-[220px] overflow-y-auto divide-y divide-border bg-muted/20">
                       {resources.map((res) => {
                         const isSelected = selectedIds.has(res.id);
                         return (
                           <div
                             key={res.id}
                             onClick={() => toggleSelect(res.id)}
-                            className="flex items-center justify-between p-3 hover:bg-accent/40 cursor-pointer transition-colors"
+                            className="flex items-center justify-between p-3 hover:bg-muted/40 cursor-pointer transition-colors"
                           >
                             <div className="flex flex-col gap-0.5">
-                              <span className="text-xs font-semibold text-foreground">
+                              <span className="text-xs font-medium text-foreground">
                                 {res.name}
                               </span>
-                              <span className="text-[10px] text-muted-foreground flex items-center gap-1">
+                              <span className="text-[11px] text-muted-foreground flex items-center gap-1">
                                 <LinkIcon className="size-3 shrink-0" />
                                 {res.url}
                               </span>
                             </div>
                             <div className="flex items-center gap-2">
-                              <Badge className="text-[9px] bg-accent/60 border-border text-foreground hover:bg-accent/60 scale-90">
+                              <Badge className="text-[10px] bg-muted border-border text-foreground hover:bg-muted">
                                 {res.type}
                               </Badge>
                               <div
-                                className={`size-5 rounded border flex items-center justify-center transition-colors ${
+                                className={`size-5 rounded-md border flex items-center justify-center transition-colors ${
                                   isSelected
-                                    ? "bg-primary border-primary text-primary-foreground"
-                                    : "border-border bg-accent"
+                                    ? "bg-foreground border-foreground text-background"
+                                    : "border-border bg-card"
                                 }`}
                               >
                                 {isSelected && <Check className="size-3.5" />}
@@ -989,25 +1012,23 @@ export function IntegrationsManager() {
                       })}
                     </div>
 
-                    <div className="flex items-center gap-2 justify-between text-[11px] text-muted-foreground bg-accent/10 p-3 border border-border rounded-xl">
-                      <span className="flex items-center gap-1">
-                        <AlertTriangle className="size-3.5 text-yellow-500" />
-                        Monitors will check in every 60 seconds (Initiate Tier limit).
-                      </span>
+                    <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/40 p-3 border border-border rounded-xl">
+                      <AlertTriangle className="size-4 text-amber-500 shrink-0" />
+                      <span>Monitors will check in every 60 seconds (Initiate Tier limit).</span>
                     </div>
 
                     <div className="flex gap-3">
                       <Button
                         onClick={() => setResources([])}
                         variant="outline"
-                        className="flex-1 text-xs py-2 border-border text-foreground"
+                        className="flex-1 text-xs py-2 rounded-xl border-border text-foreground"
                       >
                         Back
                       </Button>
                       <Button
                         onClick={handleImport}
                         disabled={importing || selectedIds.size === 0}
-                        className="flex-[2] bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold py-2"
+                        className="flex-[2] bg-foreground hover:bg-foreground/90 text-background text-xs font-medium py-2 rounded-xl shadow-sm"
                       >
                         {importing ? (
                           <>

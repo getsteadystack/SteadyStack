@@ -1348,9 +1348,7 @@ const v1Paths = {
       summary: "List alert rules",
       security: [{ apiKey: [] }],
       operationId: "v1ListAlertRules",
-      parameters: [
-        { name: "monitorId", in: "query", schema: { type: "string" } },
-      ],
+      parameters: [{ name: "monitorId", in: "query", schema: { type: "string" } }],
       responses: {
         "200": {
           description: "Rule list",
@@ -1660,7 +1658,7 @@ const v1Paths = {
   "/api/v1/regions": {
     get: {
       tags: ["System"],
-      summary: "List sovereign probe regions",
+      summary: "List global edge probe regions",
       security: [{ apiKey: [] }],
       operationId: "v1ListRegions",
       responses: {
@@ -1799,7 +1797,11 @@ const v1Schemas = {
       method: { type: "string" },
       headers: { type: "object", additionalProperties: true, nullable: true },
       body: { type: "string", nullable: true },
-      expectation: { type: "object", additionalProperties: true, nullable: true },
+      expectation: {
+        type: "object",
+        additionalProperties: true,
+        nullable: true,
+      },
       tags: { type: "array", items: { type: "string" } },
       checkRegions: {
         type: "array",
@@ -1843,7 +1845,11 @@ const v1Schemas = {
       method: { type: "string" },
       headers: { type: "object", additionalProperties: true, nullable: true },
       body: { type: "string", nullable: true },
-      expectation: { type: "object", additionalProperties: true, nullable: true },
+      expectation: {
+        type: "object",
+        additionalProperties: true,
+        nullable: true,
+      },
       tags: { type: "array", items: { type: "string" } },
       checkRegions: {
         type: "array",
@@ -1974,16 +1980,23 @@ const v1Schemas = {
  * Full document served at /docs/api/openapi.json: hand-maintained REST/CLI
  * surface + REST v1 fragment + generated tRPC section (merged at import time).
  */
-export function buildOpenApiSpec(trpcFragment?: {
-  paths: Record<string, unknown>;
-}) {
+export function buildOpenApiSpec(trpcFragment?: { paths: Record<string, unknown> }) {
   return {
     ...openApiSpec,
     tags: [
       ...openApiSpec.tags,
-      { name: "Monitors v1", description: "REST API v1 — monitor CRUD and instant probes" },
-      { name: "Alerting v1", description: "REST API v1 — notification channels and alert rules" },
-      { name: "Status Pages v1", description: "REST API v1 — hosted status pages" },
+      {
+        name: "Monitors v1",
+        description: "REST API v1 — monitor CRUD and instant probes",
+      },
+      {
+        name: "Alerting v1",
+        description: "REST API v1 — notification channels and alert rules",
+      },
+      {
+        name: "Status Pages v1",
+        description: "REST API v1 — hosted status pages",
+      },
       {
         name: "tRPC",
         description:

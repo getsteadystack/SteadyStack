@@ -89,10 +89,18 @@ export function DashboardHeader({ onMenuClick, userTier }: DashboardHeaderProps 
     (session?.user as any)?.role ||
     (session?.user?.name?.toLowerCase().includes("admin") ? "ADMIN" : "INITIATE");
 
-  const displayTier = String(resolvedTier).toUpperCase();
+  const rawTier = String(resolvedTier).toUpperCase();
+  const displayTier =
+    rawTier === "INITIATE"
+      ? "FREE"
+      : rawTier === "NETRUNNER"
+        ? "AGENCY"
+        : rawTier === "CONSTRUCT"
+          ? "AGENCY PRO"
+          : rawTier;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 min-h-[64px] items-center justify-between border-b border-border/80 bg-background/80 backdrop-blur-2xl px-4 md:px-8 overflow-hidden transition-all shadow-[0_4px_20px_rgba(0,0,0,0.03)] dark:shadow-[0_4px_25px_rgba(0,0,0,0.35)]">
+    <header className="sticky top-0 z-30 flex h-16 min-h-[64px] items-center justify-between border-b border-border bg-background/80 backdrop-blur-md px-4 md:px-8 overflow-hidden transition-all shadow-xs">
       <div className="flex items-center gap-3 md:gap-4 relative z-20 min-w-0 flex-1 md:flex-none">
         {/* Hamburger Menu - Mobile Only */}
         {onMenuClick && (
@@ -101,7 +109,7 @@ export function DashboardHeader({ onMenuClick, userTier }: DashboardHeaderProps 
               trigger("light");
               onMenuClick();
             }}
-            className="md:hidden flex items-center justify-center size-9 rounded-lg border border-border/80 bg-accent/30 hover:bg-accent hover:border-border transition-all shrink-0 active:scale-95 cursor-pointer"
+            className="md:hidden flex items-center justify-center size-9 rounded-xl border border-border bg-card hover:bg-muted transition-all shrink-0 active:scale-95 cursor-pointer shadow-xs"
             aria-label="Open navigation menu"
           >
             <Menu className="size-4 text-foreground" />
@@ -115,12 +123,12 @@ export function DashboardHeader({ onMenuClick, userTier }: DashboardHeaderProps 
 
         {/* Breadcrumbs Navigation */}
         <div className="hidden sm:flex items-center gap-3 min-w-0">
-          <nav className="flex items-center gap-1.5 text-xs font-mono select-none min-w-0">
+          <nav className="flex items-center gap-1.5 text-xs select-none min-w-0">
             {getBreadcrumbs().map((crumb, index) => (
               <div key={crumb.url} className="flex items-center gap-1.5 min-w-0">
                 {index > 0 && <ChevronRight className="size-3 text-muted-foreground/40 shrink-0" />}
                 {crumb.isLast ? (
-                  <span className="text-foreground font-bold tracking-tight text-xs md:text-sm truncate max-w-[120px] sm:max-w-[180px] md:max-w-[240px]">
+                  <span className="text-foreground font-serif font-semibold tracking-tight text-sm truncate max-w-[120px] sm:max-w-[180px] md:max-w-[240px]">
                     {crumb.label}
                   </span>
                 ) : (
@@ -148,15 +156,15 @@ export function DashboardHeader({ onMenuClick, userTier }: DashboardHeaderProps 
             });
             document.dispatchEvent(event);
           }}
-          className="relative flex items-center justify-center size-9 md:h-9 md:w-56 lg:w-64 md:justify-start gap-2 bg-accent/40 hover:bg-accent/70 text-muted-foreground hover:text-foreground rounded-lg border border-border/80 hover:border-primary/30 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all duration-200 cursor-pointer active:scale-95 shrink-0 px-0 md:px-3 group"
+          className="relative flex items-center justify-center size-9 md:h-9 md:w-56 lg:w-64 md:justify-start gap-2 bg-card hover:bg-muted text-muted-foreground hover:text-foreground rounded-xl border border-border hover:border-foreground/30 focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all duration-200 cursor-pointer active:scale-95 shrink-0 px-0 md:px-3 group shadow-xs"
           aria-label="Search"
           id="global-search-trigger"
         >
-          <Search className="size-3.5 text-muted-foreground group-hover:text-primary transition-colors shrink-0" />
+          <Search className="size-3.5 text-muted-foreground group-hover:text-foreground transition-colors shrink-0" />
           <span className="hidden md:inline flex-1 text-left text-xs font-medium font-sans">
             Search metrics, nodes...
           </span>
-          <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold bg-background border border-border text-muted-foreground rounded font-mono shadow-2xs">
+          <kbd className="hidden md:inline-flex items-center gap-0.5 px-1.5 py-0.5 text-[9px] font-bold bg-muted border border-border text-foreground rounded-md font-mono">
             <Command className="size-2.5" />
             <span>K</span>
           </kbd>
@@ -168,10 +176,10 @@ export function DashboardHeader({ onMenuClick, userTier }: DashboardHeaderProps 
             trigger("medium");
             toggleTerminalMode();
           }}
-          className={`flex items-center justify-center size-9 rounded-lg border hover:bg-accent hover:text-foreground transition-all duration-200 cursor-pointer active:scale-95 shrink-0 ${
+          className={`flex items-center justify-center size-9 rounded-xl border transition-all duration-200 cursor-pointer active:scale-95 shrink-0 shadow-xs ${
             isTerminalMode
-              ? "border-primary bg-primary/10 text-primary shadow-xs shadow-primary/25"
-              : "border-border/80 bg-accent/20 text-muted-foreground hover:border-border"
+              ? "border-primary bg-primary text-primary-foreground"
+              : "border-border bg-card text-muted-foreground hover:text-foreground hover:bg-muted"
           }`}
           title="Toggle Terminal-Only Mode"
           aria-label="Toggle Terminal-Only Mode"
@@ -194,7 +202,7 @@ export function DashboardHeader({ onMenuClick, userTier }: DashboardHeaderProps 
             >
               {/* Desktop User Info */}
               <div className="text-right hidden lg:block">
-                <p className="text-xs text-foreground font-bold leading-tight group-hover:text-primary transition-colors">
+                <p className="text-xs text-foreground font-semibold leading-tight group-hover:text-primary transition-colors">
                   {session?.user?.name || "Operator"}
                 </p>
                 <p className="text-[10px] text-muted-foreground font-mono mt-0.5">
@@ -203,7 +211,7 @@ export function DashboardHeader({ onMenuClick, userTier }: DashboardHeaderProps 
               </div>
 
               {/* Avatar with Status Dot */}
-              <div className="relative size-8.5 rounded-full border border-border bg-gradient-to-br from-primary/10 via-primary/5 to-transparent group-hover:border-primary/40 group-hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center justify-center shadow-xs overflow-hidden">
+              <div className="relative size-8.5 rounded-full border border-border bg-muted text-foreground group-hover:scale-105 active:scale-95 transition-all shrink-0 flex items-center justify-center shadow-xs overflow-hidden">
                 {session?.user?.image && !avatarError ? (
                   <Image
                     className="object-cover transition-opacity duration-300"
@@ -214,15 +222,13 @@ export function DashboardHeader({ onMenuClick, userTier }: DashboardHeaderProps 
                     onError={() => setAvatarError(true)}
                   />
                 ) : (
-                  <span className="text-[11px] font-bold text-primary font-mono tracking-wider">
-                    {initials}
-                  </span>
+                  <span className="text-[11px] font-bold font-mono tracking-wider">{initials}</span>
                 )}
               </div>
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-56 bg-popover/95 backdrop-blur-xl border border-border/80 text-foreground rounded-xl p-1.5 shadow-[0_12px_38px_rgba(0,0,0,0.12)] animate-in fade-in-50 zoom-in-95 duration-100"
+              className="w-56 bg-card border border-border text-foreground rounded-2xl p-1.5 shadow-[0_8px_30px_rgba(0,0,0,0.08)] animate-in fade-in-50 zoom-in-95 duration-100"
             >
               <DropdownMenuGroup>
                 <div className="px-2.5 py-2 border-b border-border/60 mb-1">

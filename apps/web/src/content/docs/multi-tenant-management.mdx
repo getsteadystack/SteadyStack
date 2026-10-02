@@ -1,0 +1,62 @@
+---
+title: "Multi-Tenant Fleet Management"
+description: "Techniques for managing hundreds of client websites, tag taxonomies, scoped API tokens, and alert channel isolation."
+section: "Agency & Client Management"
+order: 6
+badge: "Multi-Tenant"
+lastUpdated: "2026-10-02"
+---
+
+When scaling an agency or hosting provider beyond 50+ websites, flat lists of monitors become unmanageable. SteadyStack provides a **Multi-Tenant Fleet Architecture** designed to isolate, search, route, and report on hundreds of client domains effortlessly.
+
+---
+
+## 1. Tag Namespace Taxonomy
+
+We recommend adopting a standardized prefix tag convention across your monitoring fleet:
+
+```
+[scope]:[identifier]
+```
+
+### Common Tag Namespaces
+
+| Namespace | Example Values                                   | Purpose                                           |
+| :-------- | :----------------------------------------------- | :------------------------------------------------ |
+| `client:` | `client:acme`, `client:shopify-plus`             | Maps monitor to a specific billing account        |
+| `env:`    | `env:production`, `env:staging`, `env:preview`   | Differentiates live production from dev instances |
+| `tier:`   | `tier:mission-critical`, `tier:standard`         | Dictates alert urgency and check interval         |
+| `region:` | `region:us-east`, `region:eu-central`            | Identifies primary hosting cluster location       |
+| `cms:`    | `cms:wordpress`, `cms:woocommerce`, `cms:custom` | Helps track platform-wide outages                 |
+
+---
+
+## 2. Scoped Alert Routing
+
+You can direct alerts to different teams based on client tags:
+
+- **VIP Clients**: Route to PagerDuty with immediate phone call escalation.
+- **Internal / Staging Sites**: Route to a low-priority Slack `#dev-warnings` channel.
+- **Client Engineering Staff**: Route email notifications directly to the client's internal dev team without exposing other clients.
+
+---
+
+## 3. Bulk Operations & Search Filters
+
+In the **Monitors Dashboard**:
+
+- **Fuzzy Search**: Filter instantly by typing `client:acme` in the search bar.
+- **Bulk Interval Update**: Select 20 monitors at once and change check frequency from 3m to 1m.
+- **Bulk Mute / Maintenance**: Pause alerting across all monitors matching a specific tag during scheduled infrastructure maintenance.
+
+---
+
+## 4. Scoped API Keys for Clients
+
+If a client wants to query their uptime statistics via API or integrate with their internal dashboard, generate a **Scoped API Key**:
+
+1. Go to **Dashboard → Settings → API Keys**.
+2. Click **Create Scoped Key**.
+3. Select `Read-Only` permissions.
+4. Restrict access strictly to monitors with `client:acmecorp`.
+5. Share the key with the client with complete confidence that they cannot access data from other accounts.

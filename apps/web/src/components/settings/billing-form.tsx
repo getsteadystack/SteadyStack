@@ -2,38 +2,78 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/navigation";
 import {
   Check,
   CreditCard,
   ExternalLink,
-  Moon,
   Zap,
   ShieldCheck,
   Loader2,
   Tag,
   RefreshCw,
+  Sparkles,
+  ArrowRight,
+  Gift,
 } from "lucide-react";
 import { PLANS, type PlanTier, type UsageSummary } from "@/lib/billing";
 import { toast } from "@/components/ui/sonner";
 import { syncStripeSubscriptionAction } from "@/actions/user";
-import { redeemAppSumoCode } from "@/actions/appsumo";
-import Link from "next/link";
-import { Sparkles, Key } from "lucide-react";
 
 interface BillingFormProps {
   initialUsage?: UsageSummary;
 }
 
+const LTD_TIERS = [
+  {
+    id: "ltd-tier-1",
+    name: "Founder Tier 1",
+    price: 49,
+    monitors: "150 Active Monitors",
+    interval: "60-second checks",
+    statusPages: "3 Status Pages",
+    seats: "3 Team Seats",
+    whiteLabel: "Custom Domain Included",
+    description: "Ideal for freelancers and solo agencies managing starter client sites.",
+  },
+  {
+    id: "ltd-tier-2",
+    name: "Founder Tier 2",
+    price: 99,
+    monitors: "250 Active Monitors",
+    interval: "30-second checks",
+    statusPages: "10 Status Pages",
+    seats: "10 Team Seats",
+    whiteLabel: "Custom Domains + White-label",
+    description:
+      "Built for growing agencies requiring high check frequencies and multi-client portals.",
+  },
+  {
+    id: "ltd-tier-3",
+    name: "Founder Tier 3",
+    price: 199,
+    popular: true,
+    monitors: "1,500 Active Monitors",
+    interval: "10-second checks",
+    statusPages: "100 Status Pages",
+    seats: "50 Team Seats",
+    whiteLabel: "100% White-Label + Automated SLA Reports",
+    description: "The ultimate lifetime monitoring power stack for agencies and enterprise teams.",
+  },
+];
+
 export function BillingForm({ initialUsage }: BillingFormProps) {
   const searchParams = useSearchParams();
+  const dealParam = searchParams.get("deal");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
   const [loadingPortal, setLoadingPortal] = useState(false);
   const [syncingStripe, setSyncingStripe] = useState(false);
   const [promoCode, setPromoCode] = useState("");
   const [appliedPromo, setAppliedPromo] = useState<string | null>(null);
-  const [appsumoCode, setAppsumoCode] = useState("");
-  const [redeemingSumo, setRedeemingSumo] = useState(false);
+  const [selectedLtdTier, setSelectedLtdTier] = useState<string>(
+    dealParam && LTD_TIERS.some((t) => t.id === dealParam) ? dealParam : "ltd-tier-3",
+  );
 
   useEffect(() => {
     const success = searchParams.get("success");
@@ -49,13 +89,21 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
     }
   }, [searchParams]);
 
+  useEffect(() => {
+    if (dealParam && LTD_TIERS.some((t) => t.id === dealParam)) {
+      setSelectedLtdTier(dealParam);
+    }
+  }, [dealParam]);
+
   const usage = initialUsage || {
+    clientsUsed: 1,
+    clientsLimit: 2,
     monitorsUsed: 3,
     monitorsLimit: 50,
     alertChannelsUsed: 2,
     alertChannelsLimit: 3,
     statusPagesUsed: 1,
-    statusPagesLimit: 1,
+    statusPagesLimit: 2,
     monthlyChecksCount: 14280,
     plan: "INITIATE" as PlanTier,
     limits: PLANS.INITIATE.limits,
@@ -116,27 +164,29 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
     }
   };
 
-  const handleRedeemSumo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    const clean = appsumoCode.trim().toUpperCase();
-    if (!clean) {
-      toast.error("Please enter an AppSumo code");
-      return;
-    }
-
+  const handleLifetimeCheckout = async (tierId: string) => {
     try {
-      setRedeemingSumo(true);
-      const res = await redeemAppSumoCode(clean);
-      if (res.success) {
-        toast.success(res.message || "AppSumo lifetime access activated!");
-        window.location.reload();
-      } else {
-        toast.error(res.error || "Failed to redeem AppSumo code");
+      setLoadingPlan(tierId);
+      const res = await fetch("/api/stripe/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          deal: tierId,
+          promoCode: appliedPromo || promoCode.trim() || undefined,
+        }),
+      });
+
+      const data = (await res.json()) as { url?: string; error?: string };
+      if (!res.ok) throw new Error(data.error || "Failed to start lifetime checkout");
+
+      if (data.url) {
+        window.location.href = data.url;
       }
-    } catch (err: any) {
-      toast.error(err?.message || "Redemption failed");
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Checkout error";
+      toast.error(msg);
     } finally {
-      setRedeemingSumo(false);
+      setLoadingPlan(null);
     }
   };
 
@@ -161,50 +211,191 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
     }
   };
 
+  const selectedTierData = LTD_TIERS.find((t) => t.id === selectedLtdTier) || LTD_TIERS[2];
+
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-300">
       {/* 14-Day Pro Trial Active Banner */}
       {usage.isTrialActive && (
-        <div className="relative overflow-hidden rounded-xl border border-cyan-500/30 bg-cyan-950/20 p-5 backdrop-blur-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-cyan-500/10 text-cyan-400 border border-cyan-500/30">
-              <Zap className="h-5 w-5 animate-pulse" />
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#ffd439]/20 text-[#23211a] dark:text-[#ffd439] border border-[#ffd439]/40">
+              <Zap className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-cyan-200">
-                  14-Day Netrunner Pro Trial Active
+                <h3 className="text-sm font-semibold text-foreground">
+                  14-Day Agency Trial Active
                 </h3>
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-[#ffd439] text-[#23211a]">
                   {usage.trialDaysRemaining ?? 14} DAYS REMAINING
                 </span>
               </div>
-              <p className="text-xs text-slate-300 mt-0.5">
-                Enjoy full Netrunner Pro telemetry checks, quorum-verified alerts, and multi-region
-                monitoring.
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Enjoy full Agency white-label portals, custom domain status pages, automated monthly
+                PDF reports, and multi-region monitoring.
               </p>
             </div>
           </div>
         </div>
       )}
 
+      {/* FOUNDER LIFETIME DEAL SPOTLIGHT BANNER */}
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
+          <div className="space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted border border-border text-foreground text-xs font-mono font-semibold uppercase tracking-wider">
+              <Sparkles className="size-3.5 text-[#ffd439]" />
+              <span>Founder Lifetime Deal • Pay Once, Use Forever</span>
+            </div>
+            <h2 className="text-2xl font-bold tracking-tight text-foreground font-serif">
+              Lock in Lifetime Multi-Region Monitoring
+            </h2>
+            <p className="text-xs text-muted-foreground max-w-xl leading-relaxed">
+              Never pay monthly recurring fees. Get unlimited client workspaces, automated SLA
+              sign-off reports, and Cloudflare edge quorum consensus.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
+            <a
+              href="/redeem"
+              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-border bg-muted/50 hover:bg-muted text-xs font-semibold text-foreground transition-all shadow-xs cursor-pointer"
+            >
+              <Gift className="size-3.5 text-foreground" />
+              <span>Redeem Code</span>
+            </a>
+            <button
+              type="button"
+              onClick={() => handleLifetimeCheckout(selectedLtdTier)}
+              disabled={loadingPlan === selectedLtdTier}
+              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-foreground hover:bg-foreground/90 text-background text-xs font-bold transition-all shadow-sm hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+            >
+              {loadingPlan === selectedLtdTier ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <>
+                  <span>
+                    Buy {selectedTierData.name} (${selectedTierData.price})
+                  </span>
+                  <ArrowRight className="size-3.5" />
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* 3 LTD Tiers Selector */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 pt-6">
+          {LTD_TIERS.map((tier) => {
+            const isSelected = selectedLtdTier === tier.id;
+            return (
+              <div
+                key={tier.id}
+                onClick={() => setSelectedLtdTier(tier.id)}
+                className={`relative p-5 rounded-2xl border text-left transition-all flex flex-col justify-between gap-5 cursor-pointer ${
+                  isSelected
+                    ? "border-2 border-foreground bg-muted/30 shadow-md ring-1 ring-foreground/10"
+                    : "border-border bg-card/60 hover:border-foreground/30 hover:bg-muted/20"
+                }`}
+              >
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-sm font-bold text-foreground">{tier.name}</span>
+                    {tier.popular ? (
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#ffd439] text-[#23211a] shadow-2xs">
+                        Most Popular
+                      </span>
+                    ) : isSelected ? (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-foreground text-background">
+                        Selected
+                      </span>
+                    ) : null}
+                  </div>
+
+                  <div>
+                    <div className="flex items-baseline gap-1.5">
+                      <span className="text-3xl font-serif font-bold text-foreground">
+                        ${tier.price}
+                      </span>
+                      <span className="text-xs text-muted-foreground font-mono">/ lifetime</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground font-mono font-medium block mt-0.5">
+                      One-time payment • No monthly fees
+                    </span>
+                  </div>
+
+                  <p className="text-xs text-muted-foreground leading-relaxed">
+                    {tier.description}
+                  </p>
+                </div>
+
+                <div className="space-y-2 pt-3 border-t border-border/80 text-xs">
+                  <div className="flex items-center gap-2 text-foreground/90 font-medium">
+                    <Check className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>{tier.monitors}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-foreground/90 font-medium">
+                    <Check className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>{tier.interval}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-foreground/90 font-medium">
+                    <Check className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>{tier.statusPages}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-foreground/90 font-medium">
+                    <Check className="size-3.5 text-emerald-600 dark:text-emerald-400 shrink-0" />
+                    <span>{tier.whiteLabel}</span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setSelectedLtdTier(tier.id);
+                    handleLifetimeCheckout(tier.id);
+                  }}
+                  disabled={loadingPlan === tier.id}
+                  className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
+                    isSelected
+                      ? "bg-foreground text-background hover:bg-foreground/90 shadow-xs"
+                      : "bg-muted text-foreground hover:bg-muted/80 border border-border"
+                  }`}
+                >
+                  {loadingPlan === tier.id ? (
+                    <Loader2 className="size-3.5 animate-spin" />
+                  ) : isSelected ? (
+                    "Proceed with this tier"
+                  ) : (
+                    `Select Tier ${tier.name.slice(-1)}`
+                  )}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       {/* Current Plan Overview Banner */}
-      <div className="relative overflow-hidden rounded-xl border border-emerald-500/20 bg-emerald-950/10 p-6 backdrop-blur-sm">
+      <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1">
             <div className="flex items-center gap-3">
-              <span className="font-mono text-xs uppercase tracking-widest text-emerald-400 font-semibold">
+              <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">
                 Current Subscription
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-                <ShieldCheck className="size-3" />
+              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
+                <ShieldCheck className="size-3 text-emerald-600 dark:text-emerald-400" />
                 {currentPlan.name}
               </span>
             </div>
-            <h2 className="text-xl font-bold text-slate-100">{currentPlan.description}</h2>
-            <p className="text-xs text-slate-400 font-mono">
+            <h2 className="text-xl font-bold tracking-tight text-foreground">
+              {currentPlan.description}
+            </h2>
+            <p className="text-xs text-muted-foreground font-mono">
               Monthly telemetry checks performed this cycle:{" "}
-              <span className="text-slate-200 font-bold">
+              <span className="text-foreground font-bold">
                 {usage.monthlyChecksCount.toLocaleString()}
               </span>
             </p>
@@ -215,12 +406,12 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
               onClick={handleSyncStripe}
               disabled={syncingStripe}
               title="Sync subscription status from Stripe"
-              className="inline-flex items-center justify-center gap-2 px-3.5 py-2.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-slate-300 border border-slate-700 hover:border-slate-600 text-xs font-semibold transition-all shadow-sm cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl bg-card hover:bg-muted text-foreground border border-border text-xs font-medium transition-all shadow-sm cursor-pointer"
             >
               {syncingStripe ? (
                 <Loader2 className="size-3.5 animate-spin" />
               ) : (
-                <RefreshCw className="size-3.5 text-cyan-400" />
+                <RefreshCw className="size-3.5 text-muted-foreground" />
               )}
               Sync License
             </button>
@@ -228,15 +419,15 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
             <button
               onClick={handleManageSubscription}
               disabled={loadingPortal}
-              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 hover:border-slate-600 text-sm font-semibold transition-all shadow-sm shrink-0 cursor-pointer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-foreground hover:bg-foreground/90 text-background text-xs font-medium transition-all shadow-sm shrink-0 cursor-pointer"
             >
               {loadingPortal ? (
                 <Loader2 className="size-4 animate-spin" />
               ) : (
                 <>
-                  <CreditCard className="size-4 text-emerald-400" />
+                  <CreditCard className="size-4 text-[#ffd439]" />
                   Manage Invoices & Billing
-                  <ExternalLink className="size-3.5 text-slate-400" />
+                  <ExternalLink className="size-3 text-background/70" />
                 </>
               )}
             </button>
@@ -244,17 +435,39 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
         </div>
 
         {/* Usage Progress Meters */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-6 pt-6 border-t border-slate-800/80">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 mt-6 pt-6 border-t border-border">
           <div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-slate-400">Monitors Used</span>
-              <span className="text-slate-200 font-bold">
+              <span className="text-muted-foreground">Clients Managed</span>
+              <span className="text-foreground font-bold">
+                {usage.clientsUsed} /{" "}
+                {usage.clientsLimit >= 999999 ? "Unlimited" : usage.clientsLimit}
+              </span>
+            </div>
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
+              <div
+                className="bg-foreground h-2 rounded-full transition-all duration-500"
+                style={{
+                  width: `${
+                    usage.clientsLimit >= 999999
+                      ? 100
+                      : Math.min(100, (usage.clientsUsed / Math.max(1, usage.clientsLimit)) * 100)
+                  }%`,
+                }}
+              />
+            </div>
+          </div>
+
+          <div>
+            <div className="flex justify-between text-xs font-mono mb-1.5">
+              <span className="text-muted-foreground">Monitors Used</span>
+              <span className="text-foreground font-bold">
                 {usage.monitorsUsed} / {usage.monitorsLimit}
               </span>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
               <div
-                className="bg-emerald-500 h-2 rounded-full transition-all duration-500"
+                className="bg-emerald-600 dark:bg-emerald-500 h-2 rounded-full transition-all duration-500"
                 style={{
                   width: `${Math.min(100, (usage.monitorsUsed / usage.monitorsLimit) * 100)}%`,
                 }}
@@ -264,34 +477,14 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
 
           <div>
             <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-slate-400">Alert Channels</span>
-              <span className="text-slate-200 font-bold">
-                {usage.alertChannelsUsed} / {usage.alertChannelsLimit}
-              </span>
-            </div>
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
-              <div
-                className="bg-cyan-500 h-2 rounded-full transition-all duration-500"
-                style={{
-                  width: `${Math.min(
-                    100,
-                    (usage.alertChannelsUsed / usage.alertChannelsLimit) * 100,
-                  )}%`,
-                }}
-              />
-            </div>
-          </div>
-
-          <div>
-            <div className="flex justify-between text-xs font-mono mb-1.5">
-              <span className="text-slate-400">Status Pages</span>
-              <span className="text-slate-200 font-bold">
+              <span className="text-muted-foreground">Status Pages</span>
+              <span className="text-foreground font-bold">
                 {usage.statusPagesUsed} / {usage.statusPagesLimit}
               </span>
             </div>
-            <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
               <div
-                className="bg-sky-500 h-2 rounded-full transition-all duration-500"
+                className="bg-amber-500 h-2 rounded-full transition-all duration-500"
                 style={{
                   width: `${Math.min(
                     100,
@@ -305,10 +498,10 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
       </div>
 
       {/* Coupon / Promo Code Card */}
-      <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <Tag className="size-4 text-cyan-400" />
-          <span className="text-xs font-semibold text-slate-200">
+      <div className="rounded-2xl border border-border bg-card p-4 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="flex items-center gap-2.5">
+          <Tag className="size-4 text-muted-foreground" />
+          <span className="text-xs font-medium text-foreground">
             {appliedPromo
               ? `Promo code "${appliedPromo}" applied!`
               : "Have a Coupon or Promo Code?"}
@@ -317,10 +510,10 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <input
             type="text"
-            placeholder="e.g. INDIE50"
+            placeholder="e.g. AGENCY20"
             value={promoCode}
             onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
-            className="bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder:text-slate-500 focus:outline-none focus:border-cyan-500/50 uppercase font-mono w-full sm:w-36"
+            className="bg-muted/40 border border-border rounded-xl px-3 py-1.5 text-xs text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-foreground/20 uppercase font-mono w-full sm:w-36"
           />
           <button
             type="button"
@@ -329,7 +522,7 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
               setAppliedPromo(promoCode.trim());
               toast.success(`Promo code "${promoCode.trim()}" applied for checkout!`);
             }}
-            className="px-3 py-1.5 rounded-lg bg-cyan-500/10 border border-cyan-500/30 text-cyan-400 text-xs font-semibold hover:bg-cyan-500/20 transition-all shrink-0 cursor-pointer"
+            className="px-3.5 py-1.5 rounded-xl bg-foreground hover:bg-foreground/90 text-background text-xs font-medium transition-all shadow-sm shrink-0 cursor-pointer"
           >
             Apply Code
           </button>
@@ -339,38 +532,39 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
       {/* Pricing Header & Cycle Toggle */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
         <div>
-          <h3 className="text-lg font-bold text-slate-100 flex items-center gap-2">
-            <Zap className="size-5 text-emerald-400" />
-            Upgrade Plan & Quotas
+          <h3 className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
+            Monthly & Annual Agency Plans
           </h3>
-          <p className="text-xs text-slate-400">
-            Select simple, developer-friendly options designed to scale with your infrastructure.
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Select recurring subscription plans designed for scaling agencies and consultancies.
           </p>
         </div>
 
         {/* Monthly / Annual Toggle */}
-        <div className="inline-flex items-center bg-slate-900/90 p-1 rounded-lg border border-slate-800 self-start sm:self-auto">
+        <div className="inline-flex items-center bg-muted/60 p-1 rounded-xl border border-border self-start sm:self-auto">
           <button
+            type="button"
             onClick={() => setBillingCycle("monthly")}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all cursor-pointer ${
               billingCycle === "monthly"
-                ? "bg-emerald-500 text-slate-950 shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-card text-foreground shadow-sm font-semibold"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Monthly Billing
           </button>
           <button
+            type="button"
             onClick={() => setBillingCycle("annual")}
-            className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 cursor-pointer ${
               billingCycle === "annual"
-                ? "bg-emerald-500 text-slate-950 shadow-sm"
-                : "text-slate-400 hover:text-slate-200"
+                ? "bg-card text-foreground shadow-sm font-semibold"
+                : "text-muted-foreground hover:text-foreground"
             }`}
           >
             Annual Billing
-            <span className="px-1.5 py-0.5 rounded text-[10px] uppercase font-mono font-bold bg-slate-950 text-emerald-400">
-              Save 17% OFF
+            <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-[#ffd439] text-[#23211a]">
+              Save 25%
             </span>
           </button>
         </div>
@@ -381,65 +575,62 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
         {(Object.keys(PLANS) as PlanTier[]).map((tierKey) => {
           const plan = PLANS[tierKey];
           const isCurrent = usage.plan === tierKey;
-          const isSleepPlan = plan.id === "NETRUNNER";
+          const isProPlan = plan.id === "NETRUNNER";
           const price = billingCycle === "annual" ? plan.annualPriceMonthly : plan.monthlyPrice;
 
           return (
             <div
               key={tierKey}
-              className={`relative flex flex-col justify-between rounded-xl border p-6 transition-all duration-300 ${
-                isSleepPlan
-                  ? "border-emerald-500/50 bg-slate-900/80 shadow-lg shadow-emerald-500/5 ring-1 ring-emerald-500/30"
+              className={`relative flex flex-col justify-between rounded-2xl border p-6 transition-all duration-200 ${
+                isProPlan
+                  ? "border-2 border-foreground bg-card shadow-lg ring-1 ring-foreground/10"
                   : isCurrent
-                    ? "border-slate-700 bg-slate-900/50"
-                    : "border-slate-800 bg-slate-900/30 hover:border-slate-700"
+                    ? "border-border bg-card/70 shadow-sm"
+                    : "border-border bg-card shadow-sm hover:border-foreground/30 hover:shadow-md"
               }`}
             >
-              {isSleepPlan && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-emerald-500 text-slate-950 flex items-center gap-1.5 shadow-md">
-                  <Moon className="size-3" />
-                  The Sleep Plan
+              {isProPlan && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#ffd439] text-[#23211a] flex items-center gap-1.5 shadow-sm whitespace-nowrap z-10">
+                  Most Popular for Agencies
                 </div>
               )}
 
               <div className="space-y-4">
                 <div className="space-y-1">
-                  <h4 className="text-base font-bold text-slate-100">{plan.name}</h4>
-                  <p className="text-xs text-slate-400 min-h-[32px]">{plan.description}</p>
+                  <h4 className="text-base font-bold text-foreground">{plan.name}</h4>
+                  <p className="text-xs text-muted-foreground min-h-[32px]">{plan.description}</p>
                 </div>
 
-                <div className="flex flex-col gap-1 py-2 border-y border-slate-800/60">
+                <div className="flex flex-col gap-1 py-3 border-y border-border">
                   <div className="flex items-baseline gap-1.5">
                     {billingCycle === "annual" && plan.monthlyPrice > 0 && (
-                      <span className="text-sm line-through text-slate-500 font-mono">
+                      <span className="text-sm line-through text-muted-foreground font-mono">
                         ${plan.monthlyPrice}
                       </span>
                     )}
-                    <span className="text-3xl font-extrabold text-slate-100 font-mono">
-                      ${price}
-                    </span>
-                    <span className="text-xs text-slate-400 font-mono">
+                    <span className="text-3xl font-extrabold text-foreground">${price}</span>
+                    <span className="text-xs text-muted-foreground font-mono">
                       / mo {billingCycle === "annual" && price > 0 ? "(billed annually)" : ""}
                     </span>
                   </div>
                   {plan.monthlyPrice === 0 && (
-                    <span className="text-[10px] text-slate-400 font-mono font-bold uppercase tracking-wider">
+                    <span className="text-[10px] text-muted-foreground font-mono font-semibold uppercase tracking-wider">
                       Free Forever
                     </span>
                   )}
                   {billingCycle === "annual" && plan.monthlyPrice > 0 && (
-                    <span className="text-[10px] text-emerald-400/90 font-mono font-bold uppercase tracking-wider">
+                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-semibold uppercase tracking-wider">
                       {tierKey === "NETRUNNER"
-                        ? "Billed $180 annually — Save $48/yr"
-                        : "Billed $780 annually — Save $168/yr"}
+                        ? "Billed $348 annually — Save $120/yr"
+                        : "Billed $948 annually — Save $240/yr"}
                     </span>
                   )}
                 </div>
 
-                <ul className="space-y-2.5 text-xs text-slate-300">
+                <ul className="space-y-2.5 text-xs text-foreground/90">
                   {plan.features.map((feat, idx) => (
                     <li key={idx} className="flex items-start gap-2">
-                      <Check className="size-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <Check className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
                       <span>{feat}</span>
                     </li>
                   ))}
@@ -448,14 +639,15 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
 
               <div className="pt-6">
                 <button
+                  type="button"
                   onClick={() => handleCheckout(tierKey)}
                   disabled={isCurrent || loadingPlan === tierKey}
-                  className={`w-full py-2.5 px-4 rounded-lg font-semibold text-xs transition-all flex items-center justify-center gap-2 ${
+                  className={`w-full py-2.5 px-4 rounded-xl font-medium text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     isCurrent
-                      ? "bg-slate-800 text-slate-400 cursor-not-allowed border border-slate-700"
-                      : isSleepPlan
-                        ? "bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-md hover:shadow-emerald-500/20"
-                        : "bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700"
+                      ? "bg-muted text-muted-foreground cursor-not-allowed border border-border"
+                      : isProPlan
+                        ? "bg-foreground hover:bg-foreground/90 text-background shadow-sm"
+                        : "bg-muted hover:bg-muted/80 text-foreground border border-border"
                   }`}
                 >
                   {loadingPlan === tierKey ? (
@@ -472,54 +664,9 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
         })}
       </div>
 
-      {/* AppSumo Lifetime License Redemption Box (Commented out) */}
-      {/*
-      <div className="relative overflow-hidden rounded-xl border border-emerald-500/30 bg-[#0E1512]/60 p-5 backdrop-blur-md">
-        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">
-              <Sparkles className="size-3" />
-              AppSumo Partner Lifetime Deal
-            </div>
-            <h4 className="text-sm font-bold text-white">Have an AppSumo License Code?</h4>
-            <p className="text-xs text-slate-300">
-              Redeem your lifetime license to instantly upgrade your workspace without recurring
-              subscription fees.
-            </p>
-          </div>
-
-          <form onSubmit={handleRedeemSumo} className="flex items-center gap-2 w-full md:w-auto">
-            <div className="relative flex-1 md:w-64">
-              <Key className="size-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-              <input
-                type="text"
-                value={appsumoCode}
-                onChange={(e) => setAppsumoCode(e.target.value.toUpperCase())}
-                placeholder="SUMO-XXXX-YYYY-ZZZZ"
-                className="w-full pl-9 pr-3 py-2 bg-black/60 border border-white/15 focus:border-emerald-500 rounded-lg text-xs font-mono text-white outline-none"
-              />
-            </div>
-            <button
-              type="submit"
-              disabled={redeemingSumo || !appsumoCode.trim()}
-              className="px-4 py-2 rounded-lg bg-emerald-500 hover:bg-emerald-400 disabled:opacity-50 text-black font-semibold text-xs transition-all shadow-md shrink-0 flex items-center gap-1.5 cursor-pointer"
-            >
-              {redeemingSumo ? <Loader2 className="size-3.5 animate-spin" /> : "Redeem"}
-            </button>
-            <Link
-              href={"/redeem" as any}
-              className="px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 text-xs font-medium transition-all shrink-0"
-            >
-              Full Portal
-            </Link>
-          </form>
-        </div>
-      </div>
-      */}
-
       {/* Stripe Tax & VAT/GST Compliance Footer Badge */}
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-slate-400 font-mono text-[11px] pt-4 border-t border-slate-800/60">
-        <ShieldCheck className="size-4 text-emerald-400 shrink-0" />
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-muted-foreground font-mono text-[11px] pt-4 border-t border-border">
+        <ShieldCheck className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0" />
         <span>Automated VAT/GST & Stripe Tax compliance enabled for all international regions</span>
       </div>
     </div>

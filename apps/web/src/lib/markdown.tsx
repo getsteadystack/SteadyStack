@@ -72,7 +72,7 @@ export function renderInline(text: string): React.ReactNode {
       (part.startsWith("__") && part.endsWith("__") && part.length >= 4)
     ) {
       return (
-        <strong key={i} className="font-semibold text-foreground">
+        <strong key={i} className="font-semibold text-[#23211a]">
           {renderInline(part.slice(2, -2))}
         </strong>
       );
@@ -81,7 +81,7 @@ export function renderInline(text: string): React.ReactNode {
     // Strikethrough (~~)
     if (part.startsWith("~~") && part.endsWith("~~") && part.length >= 4) {
       return (
-        <del key={i} className="line-through text-muted-foreground/70">
+        <del key={i} className="line-through text-[#868279]">
           {renderInline(part.slice(2, -2))}
         </del>
       );
@@ -92,7 +92,7 @@ export function renderInline(text: string): React.ReactNode {
       return (
         <code
           key={i}
-          className="px-1.5 py-0.5 rounded-md bg-muted/80 text-emerald-400 font-mono text-[12px] border border-border/60"
+          className="px-1.5 py-0.5 rounded-md bg-[#f0ede6] text-[#23211a] font-mono text-[12px] border border-[#e8e6df]"
         >
           {part.slice(1, -1)}
         </code>
@@ -111,7 +111,7 @@ export function renderInline(text: string): React.ReactNode {
           <Link
             key={i}
             href={linkUrl as any}
-            className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 decoration-primary/30 hover:decoration-primary transition-colors"
+            className="text-[#23211a] font-medium underline underline-offset-4 decoration-[#ffd439] decoration-2 hover:decoration-[#23211a] transition-colors"
           >
             {renderInline(linkText)}
           </Link>
@@ -124,7 +124,7 @@ export function renderInline(text: string): React.ReactNode {
           href={linkUrl}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-primary hover:text-primary/80 font-medium underline underline-offset-4 decoration-primary/30 hover:decoration-primary transition-colors"
+          className="text-[#23211a] font-medium underline underline-offset-4 decoration-[#ffd439] decoration-2 hover:decoration-[#23211a] transition-colors"
         >
           {renderInline(linkText)}
         </a>
@@ -137,7 +137,7 @@ export function renderInline(text: string): React.ReactNode {
       (part.startsWith("_") && part.endsWith("_") && part.length >= 2)
     ) {
       return (
-        <em key={i} className="italic text-foreground/90">
+        <em key={i} className="italic text-[#23211a]/90 font-serif">
           {renderInline(part.slice(1, -1))}
         </em>
       );
@@ -171,20 +171,20 @@ export function MarkdownRenderer({ content }: { content: string }) {
     if (listType && listItems.length > 0) {
       if (listType === "task") {
         elements.push(
-          <ul key={`task-${key}`} className="my-4 space-y-2 list-none p-0">
+          <ul key={`task-${key}`} className="my-4 space-y-2 list-none p-0 font-sans">
             {listItems.map((item, idx) => (
               <li
                 key={idx}
-                className="flex items-start gap-2.5 text-sm text-muted-foreground leading-relaxed"
+                className="flex items-start gap-2.5 text-sm sm:text-base text-[#383630] leading-relaxed"
               >
-                <span className="mt-0.5 shrink-0 text-primary">
+                <span className="mt-1 shrink-0 text-[#23211a]">
                   {item.checked ? (
-                    <CheckSquare className="size-4 text-emerald-400" />
+                    <CheckSquare className="size-4 text-emerald-600" />
                   ) : (
-                    <Square className="size-4 text-muted-foreground/60" />
+                    <Square className="size-4 text-[#868279]" />
                   )}
                 </span>
-                <span className={item.checked ? "line-through text-muted-foreground/60" : ""}>
+                <span className={item.checked ? "line-through text-[#868279]" : ""}>
                   {renderInline(item.text)}
                 </span>
               </li>
@@ -195,7 +195,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
         elements.push(
           <ol
             key={`ol-${key}`}
-            className="my-4 space-y-2 list-decimal list-outside pl-5 text-sm text-muted-foreground leading-relaxed"
+            className="my-4 space-y-2 list-decimal list-outside pl-5 text-sm sm:text-base text-[#383630] font-sans leading-relaxed marker:font-mono marker:font-semibold marker:text-[#23211a]"
           >
             {listItems.map((item, idx) => (
               <li key={idx} className="pl-1">
@@ -208,7 +208,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
         elements.push(
           <ul
             key={`ul-${key}`}
-            className="my-4 space-y-2 list-disc list-outside pl-5 text-sm text-muted-foreground leading-relaxed marker:text-primary/70"
+            className="my-4 space-y-2 list-disc list-outside pl-5 text-sm sm:text-base text-[#383630] font-sans leading-relaxed marker:text-[#23211a]"
           >
             {listItems.map((item, idx) => (
               <li key={idx} className="pl-1">
@@ -228,11 +228,11 @@ export function MarkdownRenderer({ content }: { content: string }) {
       elements.push(
         <div
           key={`table-${key}`}
-          className="my-6 w-full overflow-x-auto rounded-xl border border-border/80 bg-zinc-950/40 shadow-sm"
+          className="my-6 w-full overflow-x-auto rounded-2xl border border-[#e8e6df] bg-white shadow-xs"
         >
           <table className="w-full text-left text-xs border-collapse">
             <thead>
-              <tr className="border-b border-border bg-zinc-900/60 font-semibold text-foreground">
+              <tr className="border-b border-[#e8e6df] bg-[#f0ede6]/60 font-semibold text-[#23211a]">
                 {tableHeaders.map((header, idx) => {
                   const align = tableAlignments[idx] || "left";
                   const alignClass =
@@ -244,7 +244,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
                   return (
                     <th
                       key={idx}
-                      className={`px-4 py-3 text-zinc-200 font-semibold uppercase tracking-wider text-[11px] ${alignClass}`}
+                      className={`px-4 py-3 text-[#23211a] font-mono font-semibold uppercase tracking-wider text-[11px] ${alignClass}`}
                     >
                       {renderInline(header)}
                     </th>
@@ -252,9 +252,9 @@ export function MarkdownRenderer({ content }: { content: string }) {
                 })}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border/40">
+            <tbody className="divide-y divide-[#e8e6df]">
               {tableRows.map((row, rIdx) => (
-                <tr key={rIdx} className="hover:bg-muted/10 transition-colors">
+                <tr key={rIdx} className="hover:bg-[#fbfbf9] transition-colors">
                   {row.map((cell, cIdx) => {
                     const align = tableAlignments[cIdx] || "left";
                     const alignClass =
@@ -264,7 +264,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
                           ? "text-right"
                           : "text-left";
                     return (
-                      <td key={cIdx} className={`px-4 py-3 text-muted-foreground ${alignClass}`}>
+                      <td key={cIdx} className={`px-4 py-3 text-[#383630] font-sans ${alignClass}`}>
                         {renderInline(cell)}
                       </td>
                     );
@@ -288,37 +288,37 @@ export function MarkdownRenderer({ content }: { content: string }) {
 
       if (calloutType) {
         let badgeIcon = <Info className="size-4" />;
-        let badgeColor = "text-sky-400 border-sky-500/30 bg-sky-500/10";
+        let badgeColor = "text-sky-900 border-sky-200 bg-sky-50";
         let title = "Note";
 
         if (calloutType === "TIP") {
           badgeIcon = <Lightbulb className="size-4" />;
-          badgeColor = "text-emerald-400 border-emerald-500/30 bg-emerald-500/10";
+          badgeColor = "text-emerald-900 border-emerald-200 bg-emerald-50";
           title = "Tip";
         } else if (calloutType === "IMPORTANT") {
           badgeIcon = <CheckCircle2 className="size-4" />;
-          badgeColor = "text-amber-400 border-amber-500/30 bg-amber-500/10";
+          badgeColor = "text-amber-900 border-amber-200 bg-amber-50";
           title = "Important";
         } else if (calloutType === "WARNING") {
           badgeIcon = <AlertTriangle className="size-4" />;
-          badgeColor = "text-amber-400 border-amber-500/30 bg-amber-500/10";
+          badgeColor = "text-amber-900 border-amber-200 bg-amber-50";
           title = "Warning";
         } else if (calloutType === "CAUTION") {
           badgeIcon = <ShieldAlert className="size-4" />;
-          badgeColor = "text-rose-400 border-rose-500/30 bg-rose-500/10";
+          badgeColor = "text-rose-900 border-rose-200 bg-rose-50";
           title = "Caution";
         }
 
         elements.push(
           <div
             key={`callout-${key}`}
-            className={`my-6 rounded-xl border p-4 sm:p-5 ${badgeColor} backdrop-blur-sm shadow-sm`}
+            className={`my-6 rounded-2xl border p-4 sm:p-5 ${badgeColor} shadow-xs`}
           >
-            <div className="flex items-center gap-2 font-semibold text-xs uppercase tracking-wider mb-2">
+            <div className="flex items-center gap-2 font-mono font-semibold text-xs uppercase tracking-wider mb-2">
               {badgeIcon}
               <span>{title}</span>
             </div>
-            <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
+            <div className="text-xs sm:text-sm text-[#383630] leading-relaxed font-sans">
               {renderInline(quoteContent)}
             </div>
           </div>,
@@ -327,7 +327,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
         elements.push(
           <blockquote
             key={`quote-${key}`}
-            className="my-5 border-l-2 border-primary/50 pl-4 py-1 italic text-muted-foreground/90 text-sm leading-relaxed"
+            className="my-5 border-l-2 border-[#23211a] pl-4 py-1 italic text-[#5c5c5c] font-serif text-base sm:text-lg leading-relaxed bg-[#f0ede6]/30 rounded-r-lg"
           >
             {renderInline(quoteContent)}
           </blockquote>,
@@ -426,7 +426,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
     // 4. Horizontal Rules
     if (/^(\*\*\*|---|___)$/.test(line.trim())) {
       flushList(i);
-      elements.push(<hr key={`hr-${i}`} className="border-t border-border/80 my-8" />);
+      elements.push(<hr key={`hr-${i}`} className="border-t border-[#e8e6df] my-8" />);
       continue;
     }
 
@@ -439,12 +439,12 @@ export function MarkdownRenderer({ content }: { content: string }) {
         <h1
           key={`h1-${i}`}
           id={slug}
-          className="text-2xl sm:text-3xl font-extrabold tracking-tight text-foreground mt-10 mb-4 group flex items-center gap-2"
+          className="text-2xl sm:text-3xl font-serif font-medium tracking-tight text-[#23211a] mt-10 mb-4 group flex items-center gap-2"
         >
           <span>{renderInline(headingText)}</span>
           <a
             href={`#${slug}`}
-            className="opacity-0 group-hover:opacity-100 text-muted-foreground/50 hover:text-primary transition-opacity"
+            className="opacity-0 group-hover:opacity-100 text-[#868279] hover:text-[#23211a] transition-opacity"
             aria-label={`Link to ${headingText}`}
           >
             <Hash className="size-4" />
@@ -462,12 +462,12 @@ export function MarkdownRenderer({ content }: { content: string }) {
         <h2
           key={`h2-${i}`}
           id={slug}
-          className="text-xl sm:text-2xl font-bold tracking-tight text-foreground mt-10 mb-3 pt-4 border-t border-border/40 group flex items-center gap-2"
+          className="text-xl sm:text-2xl font-serif font-medium tracking-tight text-[#23211a] mt-10 mb-3 pt-4 border-t border-[#e8e6df] group flex items-center gap-2"
         >
           <span>{renderInline(headingText)}</span>
           <a
             href={`#${slug}`}
-            className="opacity-0 group-hover:opacity-100 text-muted-foreground/50 hover:text-primary transition-opacity"
+            className="opacity-0 group-hover:opacity-100 text-[#868279] hover:text-[#23211a] transition-opacity"
             aria-label={`Link to ${headingText}`}
           >
             <Hash className="size-4" />
@@ -485,12 +485,12 @@ export function MarkdownRenderer({ content }: { content: string }) {
         <h3
           key={`h3-${i}`}
           id={slug}
-          className="text-base sm:text-lg font-semibold tracking-tight text-foreground mt-6 mb-2 group flex items-center gap-2"
+          className="text-base sm:text-lg font-serif font-medium tracking-tight text-[#23211a] mt-6 mb-2 group flex items-center gap-2"
         >
           <span>{renderInline(headingText)}</span>
           <a
             href={`#${slug}`}
-            className="opacity-0 group-hover:opacity-100 text-muted-foreground/50 hover:text-primary transition-opacity"
+            className="opacity-0 group-hover:opacity-100 text-[#868279] hover:text-[#23211a] transition-opacity"
             aria-label={`Link to ${headingText}`}
           >
             <Hash className="size-3.5" />
@@ -508,12 +508,12 @@ export function MarkdownRenderer({ content }: { content: string }) {
         <h4
           key={`h4-${i}`}
           id={slug}
-          className="text-sm sm:text-base font-semibold tracking-tight text-foreground mt-4 mb-2 group flex items-center gap-2"
+          className="text-sm sm:text-base font-serif font-medium tracking-tight text-[#23211a] mt-4 mb-2 group flex items-center gap-2"
         >
           <span>{renderInline(headingText)}</span>
           <a
             href={`#${slug}`}
-            className="opacity-0 group-hover:opacity-100 text-muted-foreground/50 hover:text-primary transition-opacity"
+            className="opacity-0 group-hover:opacity-100 text-[#868279] hover:text-[#23211a] transition-opacity"
             aria-label={`Link to ${headingText}`}
           >
             <Hash className="size-3" />
@@ -566,7 +566,10 @@ export function MarkdownRenderer({ content }: { content: string }) {
 
     // Regular paragraphs
     elements.push(
-      <p key={`p-${i}`} className="text-muted-foreground text-sm sm:text-base leading-relaxed my-3">
+      <p
+        key={`p-${i}`}
+        className="text-[#383630] text-sm sm:text-base leading-relaxed my-3 font-sans"
+      >
         {renderInline(line)}
       </p>,
     );
@@ -576,11 +579,7 @@ export function MarkdownRenderer({ content }: { content: string }) {
   flushTable(lines.length);
   flushBlockquote(lines.length);
 
-  return (
-    <div className="prose prose-sm sm:prose-base prose-invert max-w-none text-foreground">
-      {elements}
-    </div>
-  );
+  return <div className="max-w-none text-[#23211a]">{elements}</div>;
 }
 
 export default MarkdownRenderer;

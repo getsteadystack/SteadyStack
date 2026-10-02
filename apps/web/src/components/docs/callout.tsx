@@ -14,39 +14,39 @@ export function Callout({ type = "note", title, children }: CalloutProps) {
     switch (type) {
       case "tip":
         return {
-          container: "bg-emerald-500/5 border-emerald-500/20 text-emerald-300",
-          icon: <CheckCircle2 className="size-4 text-emerald-400 shrink-0 mt-0.5" />,
+          container: "bg-emerald-50 border-emerald-200 text-emerald-950",
+          icon: <CheckCircle2 className="size-4 text-emerald-600 shrink-0 mt-0.5" />,
           defaultTitle: "Tip",
-          titleColor: "text-emerald-400",
+          titleColor: "text-emerald-900",
         };
       case "warning":
         return {
-          container: "bg-amber-500/5 border-amber-500/20 text-amber-300",
-          icon: <AlertTriangle className="size-4 text-amber-400 shrink-0 mt-0.5" />,
+          container: "bg-amber-50 border-amber-200 text-amber-950",
+          icon: <AlertTriangle className="size-4 text-amber-600 shrink-0 mt-0.5" />,
           defaultTitle: "Warning",
-          titleColor: "text-amber-400",
+          titleColor: "text-amber-900",
         };
       case "danger":
         return {
-          container: "bg-rose-500/5 border-rose-500/20 text-rose-300",
-          icon: <ShieldAlert className="size-4 text-rose-400 shrink-0 mt-0.5" />,
+          container: "bg-rose-50 border-rose-200 text-rose-950",
+          icon: <ShieldAlert className="size-4 text-rose-600 shrink-0 mt-0.5" />,
           defaultTitle: "Danger",
-          titleColor: "text-rose-400",
+          titleColor: "text-rose-900",
         };
       case "info":
         return {
-          container: "bg-cyan-500/5 border-cyan-500/20 text-cyan-300",
-          icon: <Lightbulb className="size-4 text-cyan-400 shrink-0 mt-0.5" />,
+          container: "bg-sky-50 border-sky-200 text-sky-950",
+          icon: <Lightbulb className="size-4 text-sky-600 shrink-0 mt-0.5" />,
           defaultTitle: "Info",
-          titleColor: "text-cyan-400",
+          titleColor: "text-sky-900",
         };
       case "note":
       default:
         return {
-          container: "bg-primary/5 border-primary/20 text-primary-foreground/90",
-          icon: <Info className="size-4 text-primary shrink-0 mt-0.5" />,
+          container: "bg-[#f0ede6] border-[#e8e6df] text-[#23211a]",
+          icon: <Info className="size-4 text-[#23211a] shrink-0 mt-0.5" />,
           defaultTitle: "Note",
-          titleColor: "text-primary",
+          titleColor: "text-[#23211a]",
         };
     }
   };
@@ -55,14 +55,18 @@ export function Callout({ type = "note", title, children }: CalloutProps) {
 
   return (
     <div
-      className={`my-6 rounded-xl border p-4.5 flex gap-3 text-xs leading-relaxed ${styles.container}`}
+      className={`my-6 rounded-2xl border p-4.5 sm:p-5 flex gap-3 text-xs leading-relaxed shadow-xs ${styles.container}`}
     >
       {styles.icon}
       <div className="flex flex-col gap-1 w-full">
-        <span className={`font-bold tracking-tight text-xs ${styles.titleColor}`}>
+        <span
+          className={`font-mono font-bold tracking-wider text-xs uppercase ${styles.titleColor}`}
+        >
           {title || styles.defaultTitle}
         </span>
-        <div className="text-muted-foreground text-xs leading-relaxed space-y-2">{children}</div>
+        <div className="text-[#383630] text-xs sm:text-sm leading-relaxed space-y-2 font-sans">
+          {children}
+        </div>
       </div>
     </div>
   );

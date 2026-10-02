@@ -244,17 +244,19 @@ export function TeamForm() {
   return (
     <div className="flex flex-col gap-6">
       {/* Workspace Header & Seats Overview */}
-      <div className="p-6 rounded-xl border border-border bg-card shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div className="p-6 rounded-2xl border border-border bg-card shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex flex-col gap-1.5 font-mono">
           <div className="flex items-center gap-2">
-            <span className="text-lg font-bold text-foreground">{data.organization.name}</span>
-            <span className="text-[10px] font-bold px-2 py-0.5 rounded border uppercase tracking-wider bg-primary/10 text-primary border-primary/20">
+            <span className="text-xl font-serif font-medium text-foreground tracking-tight">
+              {data.organization.name}
+            </span>
+            <span className="text-[10px] font-bold px-2.5 py-0.5 rounded-full border uppercase tracking-wider bg-accent/60 text-foreground border-border">
               {data.organization.plan}
             </span>
           </div>
           <span className="text-xs text-muted-foreground">
             Slug: <code className="text-foreground">{data.organization.slug}</code> • Your Role:{" "}
-            <span className="text-primary font-bold uppercase">{data.currentUserRole}</span>
+            <span className="text-foreground font-bold uppercase">{data.currentUserRole}</span>
           </span>
         </div>
 
@@ -277,7 +279,7 @@ export function TeamForm() {
                   ? "bg-amber-500"
                   : seatPercentage >= 100
                     ? "bg-red-500"
-                    : "bg-primary",
+                    : "bg-foreground",
               )}
               style={{
                 width: `${Math.min(100, Math.max(8, seatPercentage))}%`,
@@ -294,9 +296,9 @@ export function TeamForm() {
 
       {/* Upgrade Banner for Single-Seat Accounts */}
       {!data.seats.isMultiSeatAllowed && (
-        <div className="p-5 rounded-xl border-2 border-primary/30 bg-primary/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="p-5 rounded-2xl border border-border bg-accent/40 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3">
-            <div className="size-8 rounded-lg bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0 mt-0.5">
+            <div className="size-8 rounded-xl bg-card border border-border flex items-center justify-center text-foreground shrink-0 mt-0.5">
               <Sparkles className="size-4" />
             </div>
             <div className="flex flex-col font-mono">
@@ -305,25 +307,25 @@ export function TeamForm() {
               </span>
               <span className="text-[11px] text-muted-foreground leading-relaxed mt-0.5">
                 Invite teammates, assign granular permissions, and manage on-call alerts
-                collaboratively on The Construct plan ($79/mo).
+                collaboratively.
               </span>
             </div>
           </div>
           <Link
             href="/dashboard/settings?tab=billing"
-            className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-primary-foreground font-mono font-bold text-xs hover:bg-primary/90 transition-colors"
+            className="shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-foreground text-background font-mono font-bold text-xs hover:bg-foreground/90 transition-colors"
           >
-            <span>Upgrade to Construct</span>
+            <span>Upgrade Workspace</span>
             <ArrowRight className="size-3.5" />
           </Link>
         </div>
       )}
 
       {/* Members Directory */}
-      <div className="rounded-xl border border-border bg-card overflow-hidden shadow-xs">
+      <div className="rounded-2xl border border-border bg-card overflow-hidden shadow-xs">
         <div className="p-4 sm:p-5 border-b border-border flex items-center justify-between">
           <div className="flex items-center gap-2 font-mono">
-            <Users className="size-4 text-primary" />
+            <Users className="size-4 text-foreground" />
             <h3 className="text-xs font-bold uppercase tracking-wider text-foreground">
               Team Members ({data.members.length})
             </h3>
@@ -332,7 +334,7 @@ export function TeamForm() {
             <Button
               onClick={() => setIsInviteOpen(true)}
               disabled={isPending || data.seats.used >= data.seats.max}
-              className="font-mono text-xs bg-primary text-primary-foreground gap-1.5 h-8"
+              className="font-mono text-xs bg-foreground text-background hover:bg-foreground/90 gap-1.5 h-8 rounded-xl"
             >
               <UserPlus className="size-3.5" />
               <span>Invite Teammate</span>
@@ -478,22 +480,22 @@ export function TeamForm() {
       )}
 
       {/* Role Matrix Info Card */}
-      <div className="p-5 rounded-xl border border-border bg-card/50 font-mono space-y-3">
+      <div className="p-6 rounded-2xl border border-border bg-card/60 font-mono space-y-3 shadow-xs">
         <div className="flex items-center gap-2 text-xs font-bold text-foreground uppercase tracking-wider">
-          <Shield className="size-4 text-primary" />
+          <Shield className="size-4 text-muted-foreground" />
           <span>Role Permissions Reference</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 pt-1">
           {Object.entries(ROLE_DESCRIPTIONS).map(([roleKey, meta]) => (
             <div
               key={roleKey}
-              className="p-3 rounded-lg border border-border/80 bg-accent/20 space-y-1"
+              className="p-3.5 rounded-xl border border-border bg-accent/20 space-y-1"
             >
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold uppercase text-foreground">{meta.label}</span>
                 <span
                   className={cn(
-                    "text-[9px] font-bold px-1.5 py-0.2 rounded border",
+                    "text-[9px] font-bold px-2 py-0.5 rounded-md border",
                     meta.badgeClass,
                   )}
                 >
@@ -508,14 +510,14 @@ export function TeamForm() {
 
       {/* Invite Member Modal */}
       <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-        <DialogContent className="sm:max-w-md bg-card border-border">
+        <DialogContent className="sm:max-w-md bg-card border-border rounded-2xl shadow-xl">
           <form onSubmit={handleInvite}>
             <DialogHeader>
-              <DialogTitle className="flex items-center gap-2 font-mono text-base">
-                <UserPlus className="size-4 text-primary" />
+              <DialogTitle className="flex items-center gap-2 font-serif font-medium text-lg">
+                <UserPlus className="size-4 text-foreground" />
                 Invite Team Member
               </DialogTitle>
-              <DialogDescription className="text-xs text-muted-foreground">
+              <DialogDescription className="text-xs text-muted-foreground font-mono">
                 Send an email invite to join {data.organization.name}. An accept link will also be
                 generated.
               </DialogDescription>
@@ -523,7 +525,7 @@ export function TeamForm() {
 
             <div className="py-4 space-y-4 font-mono text-xs">
               <div className="space-y-1.5">
-                <Label htmlFor="invite-email" className="text-xs font-bold">
+                <Label htmlFor="invite-email" className="text-xs font-semibold">
                   Teammate Email Address
                 </Label>
                 <Input
@@ -532,21 +534,21 @@ export function TeamForm() {
                   placeholder="teammate@company.com"
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
-                  className="font-mono text-xs h-9"
+                  className="font-mono text-xs h-9 rounded-xl"
                   required
                   autoFocus
                 />
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="invite-role" className="text-xs font-bold">
+                <Label htmlFor="invite-role" className="text-xs font-semibold">
                   Assigned Workspace Role
                 </Label>
                 <select
                   id="invite-role"
                   value={inviteRole}
                   onChange={(e) => setInviteRole(e.target.value as Role)}
-                  className="w-full h-9 px-3 text-xs font-mono rounded-lg bg-background border border-border text-foreground outline-none focus:ring-1 focus:ring-primary cursor-pointer"
+                  className="w-full h-9 px-3 text-xs font-mono rounded-xl bg-background border border-border text-foreground outline-none focus:ring-1 focus:ring-primary cursor-pointer"
                 >
                   <option value="admin">Admin — Full monitoring & member management</option>
                   <option value="member">
@@ -563,14 +565,14 @@ export function TeamForm() {
                 type="button"
                 variant="outline"
                 onClick={() => setIsInviteOpen(false)}
-                className="text-xs font-mono"
+                className="text-xs font-mono rounded-xl"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={isPending || !inviteEmail.trim()}
-                className="text-xs font-mono bg-primary text-primary-foreground gap-1.5"
+                className="text-xs font-mono bg-foreground text-background hover:bg-foreground/90 gap-1.5 rounded-xl cursor-pointer"
               >
                 {isPending && <Loader2 className="size-3.5 animate-spin" />}
                 <span>Send Invitation</span>

@@ -665,7 +665,8 @@ export async function checkHttpUniversal(
       return {
         status: "DOWN",
         latency: 0,
-        errorReason: "MTLS_UNSUPPORTED_RUNTIME: Client certificates are only supported on Node.js-based checkers",
+        errorReason:
+          "MTLS_UNSUPPORTED_RUNTIME: Client certificates are only supported on Node.js-based checkers",
         bodyText: "",
       };
     }
@@ -1239,7 +1240,10 @@ async function openUniversalSocket(
     if (typeof connect === "function") {
       const socket = connect({ hostname: host, port });
       const timeoutPromise = new Promise<never>((_, reject) =>
-        setTimeout(() => reject(new Error(`Socket connection timed out after ${timeoutMs}ms`)), timeoutMs),
+        setTimeout(
+          () => reject(new Error(`Socket connection timed out after ${timeoutMs}ms`)),
+          timeoutMs,
+        ),
       );
       await Promise.race([socket.opened, timeoutPromise]);
 
@@ -1250,9 +1254,7 @@ async function openUniversalSocket(
       return {
         async write(data) {
           if (doneReading) return;
-          await writer.write(
-            typeof data === "string" ? new TextEncoder().encode(data) : data,
-          );
+          await writer.write(typeof data === "string" ? new TextEncoder().encode(data) : data);
         },
         async read() {
           if (doneReading) return null;
@@ -1391,7 +1393,11 @@ export interface ProtocolCheckResult {
  */
 export async function checkGrpcHealth(
   urlStr: string,
-  config: { serviceName?: string; timeoutSeconds?: number; useTls?: boolean } = {},
+  config: {
+    serviceName?: string;
+    timeoutSeconds?: number;
+    useTls?: boolean;
+  } = {},
 ): Promise<ProtocolCheckResult> {
   const start = Date.now();
   const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
@@ -1410,8 +1416,8 @@ export async function checkGrpcHealth(
       // HTTP/2 client connection preface
       socket.write(
         new Uint8Array([
-          0x50, 0x52, 0x49, 0x20, 0x2a, 0x20, 0x48, 0x54, 0x54, 0x50, 0x2f, 0x32, 0x2e, 0x30,
-          0x0d, 0x0a, 0x0d, 0x0a, 0x53, 0x4d, 0x0d, 0x0a, 0x0d, 0x0a,
+          0x50, 0x52, 0x49, 0x20, 0x2a, 0x20, 0x48, 0x54, 0x54, 0x50, 0x2f, 0x32, 0x2e, 0x30, 0x0d,
+          0x0a, 0x0d, 0x0a, 0x53, 0x4d, 0x0d, 0x0a, 0x0d, 0x0a,
         ]),
       );
 
@@ -1683,7 +1689,11 @@ export async function checkSmtp(
  */
 export async function checkFtp(
   urlStr: string,
-  config: { username?: string; password?: string; timeoutSeconds?: number } = {},
+  config: {
+    username?: string;
+    password?: string;
+    timeoutSeconds?: number;
+  } = {},
 ): Promise<ProtocolCheckResult> {
   const start = Date.now();
   const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
@@ -1762,23 +1772,24 @@ export async function checkFtp(
  */
 export async function checkMailRetrieval(
   urlStr: string,
-  config: { username?: string; password?: string; timeoutSeconds?: number } = {},
+  config: {
+    username?: string;
+    password?: string;
+    timeoutSeconds?: number;
+  } = {},
 ): Promise<ProtocolCheckResult> {
   const start = Date.now();
   const timeoutMs = (config.timeoutSeconds || DEFAULT_CHECK_TIMEOUT_SECONDS) * 1000;
   const lower = urlStr.toLowerCase();
   const isImap = lower.startsWith("imap") || lower.startsWith("imaps");
   const isTls = lower.startsWith("imaps") || lower.startsWith("pop3s");
-  const { host, port } = parseHostPort(
-    urlStr,
-    isImap ? (isTls ? 993 : 143) : isTls ? 995 : 110,
-  );
+  const { host, port } = parseHostPort(urlStr, isImap ? (isTls ? 993 : 143) : isTls ? 995 : 110);
 
-  const commands = isImap
-    ? ["A001 CAPABILITY"]
-    : ["CAPA"]; // POP3 capability discovery; some servers respond -ERR (still alive)
+  const commands = isImap ? ["A001 CAPABILITY"] : ["CAPA"]; // POP3 capability discovery; some servers respond -ERR (still alive)
   if (config.username) {
-    commands.push(isImap ? `A002 LOGIN ${config.username} ${config.password || ""}` : `USER ${config.username}`);
+    commands.push(
+      isImap ? `A002 LOGIN ${config.username} ${config.password || ""}` : `USER ${config.username}`,
+    );
     if (!isImap && config.password) commands.push(`PASS ${config.password}`);
   }
 
@@ -1873,7 +1884,12 @@ export async function checkIcmpPing(
   const host = parseHostPort(urlStr, 0).host;
 
   if (!host) {
-    return { status: "DOWN", latency: 0, errorReason: "ICMP_NO_HOST", banner: "" };
+    return {
+      status: "DOWN",
+      latency: 0,
+      errorReason: "ICMP_NO_HOST",
+      banner: "",
+    };
   }
 
   // Node runtime: real ICMP echo via the system ping binary
@@ -1882,23 +1898,29 @@ export async function checkIcmpPing(
     const cp = await import("child_process");
     if (cp && typeof cp.execFile === "function") {
       const timeoutSec = Math.max(1, Math.ceil(timeoutMs / 1000));
-      const result = await new Promise<{ code: number; stdout: string; stderr: string }>(
-        (resolve) => {
-          try {
-            cp.execFile(
-              "ping",
-              ["-n", "-c", "1", "-W", String(timeoutSec), host],
-              { timeout: timeoutMs },
-              (err: any, stdout: string, stderr: string) => {
-                // ping exits non-zero on 100% packet loss; stdout still tells us what happened
-                resolve({ code: err ? (err.code ?? 1) : 0, stdout: stdout || "", stderr: stderr || "" });
-              },
-            );
-          } catch (spawnErr) {
-            resolve({ code: -1, stdout: "", stderr: String(spawnErr) });
-          }
-        },
-      );
+      const result = await new Promise<{
+        code: number;
+        stdout: string;
+        stderr: string;
+      }>((resolve) => {
+        try {
+          cp.execFile(
+            "ping",
+            ["-n", "-c", "1", "-W", String(timeoutSec), host],
+            { timeout: timeoutMs },
+            (err: any, stdout: string, stderr: string) => {
+              // ping exits non-zero on 100% packet loss; stdout still tells us what happened
+              resolve({
+                code: err ? (err.code ?? 1) : 0,
+                stdout: stdout || "",
+                stderr: stderr || "",
+              });
+            },
+          );
+        } catch (spawnErr) {
+          resolve({ code: -1, stdout: "", stderr: String(spawnErr) });
+        }
+      });
 
       const latency = Date.now() - start;
       const output = `${result.stdout}\n${result.stderr}`;

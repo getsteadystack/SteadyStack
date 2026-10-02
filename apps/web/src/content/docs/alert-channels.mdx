@@ -120,8 +120,8 @@ Config shape:
 
 ## Telegram
 
-*Can be created today; dispatch wiring into the check pipeline is on the
-roadmap (see the note at the top).*
+_Can be created today; dispatch wiring into the check pipeline is on the
+roadmap (see the note at the top)._
 
 1. In Telegram: start a chat with **@BotFather** → `/newbot` → copy the bot
    token.
@@ -137,15 +137,15 @@ Config shape:
 
 ## SMS
 
-*Can be created today; dispatch wiring into the check pipeline is on the
-roadmap.* Available in the onboarding wizard and channel form for plan-gated
+_Can be created today; dispatch wiring into the check pipeline is on the
+roadmap._ Available in the onboarding wizard and channel form for plan-gated
 accounts.
 
 ## Webhook
 
-*Can be created today; dispatch wiring into the check pipeline is on the
+_Can be created today; dispatch wiring into the check pipeline is on the
 roadmap. For signed machine-to-machine notifications that work today, use a
-Discord/Slack-compatible endpoint or the [public API](/docs/api-reference).*
+Discord/Slack-compatible endpoint or the [public API](/docs/api-reference)._
 
 The intended contract: each delivery includes an
 `X-SteadyStack-Signature` header (HMAC-SHA256 of the raw body, keyed by your
@@ -178,9 +178,9 @@ curl -X POST "https://app.steadystack.dev/api/v1/alert-rules" \
 ```
 
 <Check>
-**Routing advice:** use Slack/Discord for single-region degradation notices and
-reserve PagerDuty/SMS for quorum-confirmed global outages. This maps alert
-urgency to how many independent regions agreed the service is down.
+  **Routing advice:** use Slack/Discord for single-region degradation notices
+  and reserve PagerDuty/SMS for quorum-confirmed global outages. This maps alert
+  urgency to how many independent regions agreed the service is down.
 </Check>
 
 ## Troubleshooting

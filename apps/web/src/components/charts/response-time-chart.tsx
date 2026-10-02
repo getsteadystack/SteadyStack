@@ -82,11 +82,11 @@ export function ResponseTimeChart({ data, isLoading, className }: ResponseTimeCh
     return (
       <Card
         className={cn(
-          "flex min-h-[350px] items-center justify-center border-border/50 bg-background/50",
+          "flex min-h-[350px] items-center justify-center border-border bg-card rounded-2xl shadow-xs",
           className,
         )}
       >
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </Card>
     );
   }
@@ -95,64 +95,56 @@ export function ResponseTimeChart({ data, isLoading, className }: ResponseTimeCh
     return (
       <Card
         className={cn(
-          "flex min-h-[350px] items-center justify-center border-border/50 bg-background/50",
+          "flex min-h-[350px] items-center justify-center border-border bg-card rounded-2xl shadow-xs",
           className,
         )}
       >
-        <p className="text-muted-foreground">No traffic data available for this period.</p>
+        <p className="text-xs text-muted-foreground font-mono">
+          No traffic data available for this period.
+        </p>
       </Card>
     );
   }
 
   return (
-    <Card
-      className={cn("overflow-hidden border-zinc-800 bg-zinc-950/50 backdrop-blur-sm", className)}
-    >
+    <Card className={cn("overflow-hidden border-border bg-card rounded-2xl shadow-xs", className)}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-lg font-medium text-zinc-100">
+        <CardTitle className="flex items-center gap-2 text-sm font-bold font-mono uppercase tracking-wider text-foreground">
           Response Time
-          <span className="text-xs font-normal text-zinc-500">(24h)</span>
+          <span className="text-xs font-normal text-muted-foreground font-mono lowercase">
+            (24h)
+          </span>
         </CardTitle>
       </CardHeader>
       <CardContent className="pl-0">
-        <div className="h-[300px] w-full">
+        <div className="h-[280px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="latencyGradient" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={chartColor} stopOpacity={0.5} />
-                  <stop offset="95%" stopColor={chartColor} stopOpacity={0.1} />
+                  <stop offset="5%" stopColor={chartColor} stopOpacity={0.25} />
+                  <stop offset="95%" stopColor={chartColor} stopOpacity={0.0} />
                 </linearGradient>
-                <filter id="neon-glow" height="200%">
-                  <feGaussianBlur in="SourceAlpha" stdDeviation="4" result="blur" />
-                  <feOffset in="blur" dx="0" dy="0" result="offsetBlur" />
-                  <feFlood floodColor={chartColor} floodOpacity="0.6" result="glowColor" />
-                  <feComposite in="glowColor" in2="offsetBlur" operator="in" result="glow" />
-                  <feMerge>
-                    <feMergeNode in="glow" />
-                    <feMergeNode in="SourceGraphic" />
-                  </feMerge>
-                </filter>
               </defs>
               <CartesianGrid
                 vertical={false}
                 strokeDasharray="3 3"
-                stroke="#3f3f46"
-                opacity={0.4}
+                stroke="#e8e6df"
+                opacity={0.8}
               />
               <XAxis
                 dataKey="timestamp"
                 tickFormatter={formatTime}
-                stroke="#a1a1aa"
-                fontSize={12}
+                stroke="#8c8b85"
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
                 minTickGap={50}
                 dy={10}
               />
               <YAxis
-                stroke="#a1a1aa"
-                fontSize={12}
+                stroke="#8c8b85"
+                fontSize={11}
                 tickLine={false}
                 axisLine={false}
                 tickFormatter={(value) => `${value}ms`}
@@ -162,20 +154,20 @@ export function ResponseTimeChart({ data, isLoading, className }: ResponseTimeCh
                 content={({ active, payload, label }) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="rounded-lg border bg-zinc-900 p-3 shadow-xl backdrop-blur-sm ring-1 ring-zinc-800">
-                        <p className="mb-2 text-sm font-medium text-zinc-400">
+                      <div className="rounded-xl border border-border bg-card p-3 shadow-md font-mono text-xs">
+                        <p className="mb-2 font-semibold text-foreground">
                           {formatTooltipTime(label)}
                         </p>
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-2">
                             <div
-                              className="h-2 w-2 rounded-full"
+                              className="size-2 rounded-full"
                               style={{ backgroundColor: chartColor }}
                             />
-                            <span className="text-sm font-bold text-zinc-100">
+                            <span className="text-xs font-bold text-foreground">
                               {Number(payload[0].value).toFixed(0)} ms
                             </span>
-                            <span className="text-xs text-zinc-500">(avg)</span>
+                            <span className="text-[10px] text-muted-foreground">(avg)</span>
                           </div>
                         </div>
                       </div>
@@ -183,13 +175,13 @@ export function ResponseTimeChart({ data, isLoading, className }: ResponseTimeCh
                   }
                   return null;
                 }}
-                cursor={{ stroke: chartColor, opacity: 0.2 }}
+                cursor={{ stroke: chartColor, opacity: 0.3 }}
               />
               <Area
                 type="monotone"
                 dataKey="avgLatency"
                 stroke={chartColor}
-                strokeWidth={3}
+                strokeWidth={2}
                 fillOpacity={1}
                 fill="url(#latencyGradient)"
                 isAnimationActive={true}

@@ -505,7 +505,13 @@ describe("Quorum Engine — Zero False Positive Consensus Verification", () => {
     const results = createMockResults([
       { region: "wnam", status: "UP", latency: 35 },
       { region: "enam", status: "UP", latency: 40 },
-      { region: "weur", status: "DOWN", statusCode: 502, errorReason: "Bad Gateway", latency: 120 },
+      {
+        region: "weur",
+        status: "DOWN",
+        statusCode: 502,
+        errorReason: "Bad Gateway",
+        latency: 120,
+      },
       { region: "eeur", status: "UP", latency: 45 },
       {
         region: "apac",

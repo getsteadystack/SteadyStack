@@ -4,6 +4,7 @@ import LandingHeader from "@/components/landing/header";
 import LandingFooter from "@/components/landing/footer";
 import { ToolSchema } from "@/components/seo/tool-schema";
 import { ToolContentSection } from "@/components/tools/tool-content-section";
+import { Globe, Sparkles, Activity } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -24,27 +25,29 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * Renders the Global Latency Checker page with interactive pinging and networking performance guides.
- */
 export default function GlobalLatencyPage() {
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-[#fbfbf9] text-[#23211a] flex flex-col font-sans">
       <ToolSchema
         name="Global Website Latency Test"
         description="Instantly ping your website from 10 global locations. Check server latency, uptime, and regional performance for free."
         url="https://steadystack.dev/tools/global-latency"
       />
       <LandingHeader />
-      <main className="container mx-auto pt-32 pb-16 px-4 md:px-6 flex-1">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="text-center space-y-4 mb-10">
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight bg-linear-to-r from-primary to-emerald-400 bg-clip-text text-transparent pb-2">
+
+      <main className="container mx-auto pt-32 pb-20 px-4 sm:px-6 md:px-8 flex-1">
+        <div className="max-w-4xl mx-auto space-y-8">
+          <div className="text-center space-y-4 mb-10 max-w-2xl mx-auto">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-[#e8e6df] bg-white text-[#23211a] text-xs font-mono font-semibold uppercase tracking-wider shadow-xs">
+              <Globe className="size-3.5 text-[#ffd439]" />
+              <span>Free Network Telemetry</span>
+            </div>
+            <h1 className="text-4xl sm:text-6xl font-serif font-medium tracking-tight text-[#23211a] leading-[1.08] text-balance">
               Global Latency Checker
             </h1>
-            <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
-              Test your website's performance from 10+ cities worldwide in real-time. Identify
-              bottlenecks and ensure global availability.
+            <p className="text-[#5c5c5c] text-base sm:text-lg leading-relaxed font-sans text-balance">
+              Test your endpoint&apos;s round-trip time and TTFB from 10+ global edge locations in
+              real-time. Detect regional bottlenecks and CDN cache misses instantly.
             </p>
           </div>
 
@@ -98,34 +101,30 @@ export default function GlobalLatencyPage() {
                 title: "Sub-Optimal BGP Peering and Route Hijacking",
                 description:
                   "Tier 1 ISP congestion or misrouted BGP paths can suddenly route European traffic through North American transit points, quadrupling round-trip time.",
-                badge: "ISP Peering",
+                badge: "Peering Issue",
               },
             ]}
             faqs={[
               {
-                question: "What is an ideal global TTFB target?",
+                question: "What is an acceptable global latency for a modern web application?",
                 answer:
-                  "For global SaaS and e-commerce websites, an edge TTFB under 100ms for cached assets and under 300ms for dynamic API endpoints is considered world-class.",
+                  "For cached static content, latency should be sub-50ms globally via an edge CDN. For dynamic API endpoints, sub-150ms in your primary market and sub-350ms transcontinentally is considered high performance.",
               },
               {
-                question: "How can I reduce latency for international users?",
+                question: "How does TTFB (Time to First Byte) differ from total latency?",
                 answer:
-                  "Use a global CDN with edge caching (Cloudflare, Fastly), implement read-replica databases close to target markets, and enable TLS 1.3 with 0-RTT session resumption.",
+                  "TTFB measures the duration from when the client sends the HTTP request to when the first byte of response arrives. Total latency includes the complete content payload download.",
               },
               {
-                question: "Why do latency measurements vary between consecutive tests?",
+                question: "How can I automate global latency monitoring 24/7?",
                 answer:
-                  "Variables such as cold-start serverless container initialization, BGP route flapping, CDN cache warming, and transient ISP congestion cause minor variations between pings.",
-              },
-              {
-                question: "How does SteadyStack track global latency over time?",
-                answer:
-                  "SteadyStack captures response times every minute from over 50 global vantage points, plotting regional latency grids and alerting you if response times spike above your SLA thresholds.",
+                  "SteadyStack monitors your endpoints continuously every 60 seconds from 7 sovereign regions, alerting you when regional latency spikes beyond dynamic SLA thresholds.",
               },
             ]}
           />
         </div>
       </main>
+
       <LandingFooter />
     </div>
   );

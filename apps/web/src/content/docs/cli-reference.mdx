@@ -38,7 +38,7 @@ Global options:
 - `--locale` wins over the `STEADYSTACK_LOCALE` environment variable, which
   wins over your system locale; anything unrecognized falls back to English.
 - Every command that talks to the API requires authentication (see `auth
-  login`).
+login`).
 - Commands that check health exit `0` on success and `1` on failure — designed
   for CI gates.
 
@@ -79,8 +79,8 @@ Clear stored credentials.
 Table of all monitors: status (colored), name, type, URL (truncated), interval,
 last check.
 
-| Flag | Effect |
-| :--- | :----- |
+| Flag     | Effect                      |
+| :------- | :-------------------------- |
 | `--json` | Machine-readable JSON array |
 
 ### `pulse monitors get <id>`
@@ -88,8 +88,8 @@ last check.
 Details for one monitor plus its recent check events (timestamp, status,
 latency, error reason).
 
-| Flag | Effect |
-| :--- | :----- |
+| Flag     | Effect                      |
+| :------- | :-------------------------- |
 | `--json` | Full monitor object as JSON |
 
 ### `pulse monitors create`
@@ -101,13 +101,13 @@ Creates the monitor immediately.
 
 Create or update monitors from a
 [`steadystack.yaml`](/docs/monitoring-as-code) file or a whole directory of
-YAML files. **Idempotent**: monitors are matched by *name* — existing names
+YAML files. **Idempotent**: monitors are matched by _name_ — existing names
 are updated, new names are created.
 
-| Flag | Effect |
-| :--- | :----- |
+| Flag                | Effect                                                                          |
+| :------------------ | :------------------------------------------------------------------------------ |
 | `-f, --file <path>` | YAML file or directory (default: `steadystack.yaml` / `steadystack.yml` in cwd) |
-| `--dry-run` | Print the planned CREATE/UPDATE actions without calling the API |
+| `--dry-run`         | Print the planned CREATE/UPDATE actions without calling the API                 |
 
 ```bash
 $ pulse monitors apply -f monitors/ --dry-run
@@ -153,10 +153,10 @@ Runs an instant check on an HTTP monitor and prints status, latency, HTTP
 code, and any error reason. Exits `1` if the result is DOWN — usable as a
 quick smoke test.
 
-| Flag | Effect |
-| :--- | :----- |
+| Flag          | Effect                                     |
+| :------------ | :----------------------------------------- |
 | `--url <url>` | Override the target URL for this one check |
-| `--json` | Raw result object |
+| `--json`      | Raw result object                          |
 
 Only HTTP monitors support instant trigger; the API answers `422` otherwise.
 
@@ -172,10 +172,10 @@ pulse logs tail <id> [-n <lines>] [--interval <ms>]
 Each line: timestamp, colored status dot, latency (right-aligned), region, and
 error reason when present. Ctrl+C stops cleanly.
 
-| Flag | Default | Effect |
-| :--- | :------ | :----- |
-| `-n, --lines <n>` | `20` | Past events to show first |
-| `--interval <ms>` | `5000` | Poll interval (minimum 2000 ms) |
+| Flag              | Default | Effect                          |
+| :---------------- | :------ | :------------------------------ |
+| `-n, --lines <n>` | `20`    | Past events to show first       |
+| `--interval <ms>` | `5000`  | Poll interval (minimum 2000 ms) |
 
 ---
 
@@ -188,11 +188,11 @@ pulse wait <id> [--timeout <seconds>] [--interval <seconds>] [--json]
 Blocks until the monitor is `UP`, then exits `0`. On timeout (default 300 s,
 max 600 s) it exits `1` with a link to the monitor — failing the CI job.
 
-| Flag | Default | Effect |
-| :--- | :------ | :----- |
-| `--timeout <seconds>` | `300` | Max wait (hard cap 600) |
-| `--interval <seconds>` | `15` | Poll interval (minimum 5) |
-| `--json` | — | Print a result object on completion (success or timeout) |
+| Flag                   | Default | Effect                                                   |
+| :--------------------- | :------ | :------------------------------------------------------- |
+| `--timeout <seconds>`  | `300`   | Max wait (hard cap 600)                                  |
+| `--interval <seconds>` | `15`    | Poll interval (minimum 5)                                |
+| `--json`               | —       | Print a result object on completion (success or timeout) |
 
 GitHub Actions example:
 
@@ -222,11 +222,11 @@ expectations carry over, `maxretries` maps to `alertThreshold` (minimum 30 s
 interval enforced), and every imported monitor is tagged `imported`,
 `uptime-kuma` plus anything from `-t`.
 
-| Flag | Effect |
-| :--- | :----- |
-| `--dry-run` | Parse and print the summary table without creating anything |
-| `--overwrite` | Update existing monitors with the same name instead of skipping |
-| `-t, --tags <tags>` | Extra comma-separated tags for all imported monitors |
+| Flag                | Effect                                                          |
+| :------------------ | :-------------------------------------------------------------- |
+| `--dry-run`         | Parse and print the summary table without creating anything     |
+| `--overwrite`       | Update existing monitors with the same name instead of skipping |
+| `-t, --tags <tags>` | Extra comma-separated tags for all imported monitors            |
 
 ```bash
 pulse import kuma kuma-backup.json --dry-run   # preview
@@ -237,16 +237,16 @@ pulse import kuma kuma-backup.json -t prod,eu  # apply
 
 ## Environment variables
 
-| Variable | Purpose |
-| :------- | :------ |
-| `STEADYSTACK_LOCALE` | Output language, overridden by `--locale` |
-| `LC_ALL` / `LC_MESSAGES` / `LANG` | Fallback locale detection |
+| Variable                          | Purpose                                   |
+| :-------------------------------- | :---------------------------------------- |
+| `STEADYSTACK_LOCALE`              | Output language, overridden by `--locale` |
+| `LC_ALL` / `LC_MESSAGES` / `LANG` | Fallback locale detection                 |
 
 ---
 
 ## Exit codes
 
-| Code | Meaning |
-| :--- | :------ |
-| `0` | Success — including `wait` resolving UP and `trigger` reporting UP |
-| `1` | Failure — check DOWN, wait timeout, auth error, unknown command |
+| Code | Meaning                                                            |
+| :--- | :----------------------------------------------------------------- |
+| `0`  | Success — including `wait` resolving UP and `trigger` reporting UP |
+| `1`  | Failure — check DOWN, wait timeout, auth error, unknown command    |

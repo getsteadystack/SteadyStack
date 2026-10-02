@@ -57,9 +57,9 @@ export function RegionalUptime({ events }: RegionalUptimeProps) {
     (regionalStats.length === 1 && regionalStats[0].code === "default")
   ) {
     return (
-      <div className="border border-cyan-500/20 bg-black/20 backdrop-blur-sm p-6 text-center">
-        <Activity className="w-8 h-8 text-cyan-500/40 mx-auto mb-2" />
-        <p className="text-sm text-gray-400">
+      <div className="border border-border bg-card rounded-2xl p-6 text-center shadow-xs">
+        <Activity className="size-6 text-muted-foreground mx-auto mb-2" />
+        <p className="text-xs text-muted-foreground font-mono">
           No regional monitoring configured. Enable multi-region monitoring to see uptime by
           location.
         </p>
@@ -69,7 +69,7 @@ export function RegionalUptime({ events }: RegionalUptimeProps) {
 
   return (
     <div className="space-y-4">
-      <h3 className="text-sm font-bold text-cyan-400 uppercase tracking-wider font-mono">
+      <h3 className="text-xs font-bold text-foreground uppercase tracking-wider font-mono">
         Regional Performance
       </h3>
 
@@ -79,43 +79,45 @@ export function RegionalUptime({ events }: RegionalUptimeProps) {
           .map((stat) => (
             <div
               key={stat.code}
-              className="border border-cyan-500/20 bg-black/20 backdrop-blur-sm p-4 hover:border-cyan-500/40 transition-colors"
+              className="border border-border bg-card rounded-2xl p-5 hover:border-border/80 transition-all shadow-xs"
             >
-              <div className="flex items-center gap-2 mb-3">
+              <div className="flex items-center gap-2.5 mb-3">
                 <span className="text-2xl">{stat.flag}</span>
-                <div className="flex-1">
-                  <h4 className="text-xs font-bold text-gray-300 uppercase tracking-wide">
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-xs font-bold text-foreground uppercase tracking-wide truncate">
                     {stat.name}
                   </h4>
-                  <p className="text-[10px] text-gray-500 font-mono">{stat.totalChecks} checks</p>
+                  <p className="text-[10px] text-muted-foreground font-mono">
+                    {stat.totalChecks} checks
+                  </p>
                 </div>
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-2.5">
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <span className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-semibold">
                       Uptime
                     </span>
                     <span
-                      className={`text-sm font-bold font-mono ${
+                      className={`text-xs font-bold font-mono ${
                         parseFloat(stat.uptime) >= 99
-                          ? "text-green-400"
+                          ? "text-emerald-600"
                           : parseFloat(stat.uptime) >= 95
-                            ? "text-yellow-400"
-                            : "text-red-400"
+                            ? "text-amber-600"
+                            : "text-red-600"
                       }`}
                     >
                       {stat.uptime}%
                     </span>
                   </div>
-                  <div className="h-1 bg-gray-800 rounded-full overflow-hidden">
+                  <div className="h-1.5 bg-muted rounded-full overflow-hidden">
                     <div
-                      className={`h-full transition-all ${
+                      className={`h-full transition-all rounded-full ${
                         parseFloat(stat.uptime) >= 99
-                          ? "bg-green-500"
+                          ? "bg-emerald-500"
                           : parseFloat(stat.uptime) >= 95
-                            ? "bg-yellow-500"
+                            ? "bg-amber-500"
                             : "bg-red-500"
                       }`}
                       style={{ width: `${stat.uptime}%` }}
@@ -123,11 +125,11 @@ export function RegionalUptime({ events }: RegionalUptimeProps) {
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] text-gray-400 uppercase tracking-wider font-mono">
+                <div className="flex items-center justify-between pt-1 border-t border-border/40">
+                  <span className="text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-semibold">
                     Avg Latency
                   </span>
-                  <span className="text-sm font-bold text-cyan-400 font-mono">
+                  <span className="text-xs font-bold text-foreground font-mono">
                     {stat.avgLatency}ms
                   </span>
                 </div>

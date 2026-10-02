@@ -42,7 +42,9 @@ mock.module("@steadystack/auth", () => ({
 import { importUptimeRobotMonitors, type NormalizedImportMonitor } from "./uptimerobot";
 
 test("benchmark importUptimeRobotMonitors", async () => {
-  const monitorsToImport: NormalizedImportMonitor[] = Array.from({ length: 100 }).map((_, i) => ({
+  const monitorsToImport: NormalizedImportMonitor[] = Array.from({
+    length: 100,
+  }).map((_, i) => ({
     name: `Monitor ${i}`,
     url: `https://example.com/${i}`,
     type: "HTTP",

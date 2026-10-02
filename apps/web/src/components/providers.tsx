@@ -23,10 +23,11 @@ export default function Providers({ children }: { children: React.ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider
         attribute="class"
-        defaultTheme="system"
-        enableSystem
+        defaultTheme="light"
+        storageKey="steadystack_theme_v3"
+        enableSystem={false}
         disableTransitionOnChange
-        themes={["light", "dark", "matrix", "cyberpunk", "blade"]}
+        themes={["light", "dark"]}
       >
         {children}
         {mounted && <Toaster />}

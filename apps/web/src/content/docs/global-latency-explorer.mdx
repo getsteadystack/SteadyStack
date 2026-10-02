@@ -1,0 +1,37 @@
+---
+title: "Global Latency & TCP Diagnostics"
+description: "How to use the Global Latency Explorer to benchmark multi-region edge TTFB, DNS resolution, and TCP handshake times across 50+ locations."
+section: "Free Tools & Diagnostics"
+order: 14
+badge: "Tools"
+lastUpdated: "2026-10-02"
+---
+
+The **Global Latency Explorer** (`/tools/global-latency`) is a free diagnostic tool that sends concurrent synthetic requests to any URL or IP address from over 50 global edge points of presence across North America, Europe, Asia, Latin America, Africa, and Oceania.
+
+---
+
+## What It Measures
+
+Every global test decomposes the HTTP connection lifecycle into four discrete latency phases:
+
+1. **DNS Lookup Time ($t_{\text{dns}}$)**: Time taken to resolve the domain via the local region's recursive resolver.
+2. **TCP Handshake Time ($t_{\text{tcp}}$)**: Time required to complete the 3-way SYN-ACK sequence over the public internet.
+3. **TLS / SSL Handshake ($t_{\text{tls}}$)**: Duration of cryptographic certificate negotiation and key exchange.
+4. **Time to First Byte ($t_{\text{ttfb}}$)**: Elapsed time until the origin web server begins streaming response headers.
+
+---
+
+## Common Diagnostic Patterns
+
+### 1. High Global Variance
+
+If latency is 15ms in North America but exceeds 450ms in Western Europe and Asia, your application lacks an active Content Delivery Network (CDN) or edge caching layer.
+
+### 2. High TLS Handshake Overhead
+
+If TLS negotiation takes over 150ms consistently, verify that TLS 1.3 is enabled and that your server supports OCSP stapling and session ticket resumption.
+
+### 3. DNS Latency Spikes
+
+If DNS lookup times fluctuate across regions, check whether your authoritative nameservers use Anycast routing.

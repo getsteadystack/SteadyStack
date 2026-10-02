@@ -101,15 +101,17 @@ export function CreateIncidentModal({ monitors, templates }: CreateIncidentModal
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <AlertTriangle className="mr-2 h-4 w-4" />
+        <Button className="bg-foreground hover:bg-foreground/90 text-background font-medium text-xs rounded-xl shadow-xs h-9 px-4 cursor-pointer">
+          <AlertTriangle className="mr-2 h-3.5 w-3.5 text-[#ffd439]" />
           Report Incident
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[500px] bg-card border-border rounded-2xl shadow-xl">
         <DialogHeader>
-          <DialogTitle>Report New Incident</DialogTitle>
-          <DialogDescription>
+          <DialogTitle className="font-serif text-xl font-medium text-foreground">
+            Report New Incident
+          </DialogTitle>
+          <DialogDescription className="text-xs text-muted-foreground">
             Create a manual incident report for a monitor. Alert notifications will be sent.
           </DialogDescription>
         </DialogHeader>
@@ -121,16 +123,16 @@ export function CreateIncidentModal({ monitors, templates }: CreateIncidentModal
               name="monitorId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Monitor</FormLabel>
+                  <FormLabel className="text-xs font-medium text-foreground">Monitor</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
-                      <SelectTrigger>
+                      <SelectTrigger className="rounded-xl border-border bg-background text-xs">
                         <SelectValue placeholder="Select affected monitor" />
                       </SelectTrigger>
                     </FormControl>
-                    <SelectContent>
+                    <SelectContent className="rounded-xl">
                       {monitors.map((m) => (
-                        <SelectItem key={m.id} value={m.id}>
+                        <SelectItem key={m.id} value={m.id} className="text-xs">
                           {m.name}
                         </SelectItem>
                       ))}
@@ -147,24 +149,24 @@ export function CreateIncidentModal({ monitors, templates }: CreateIncidentModal
                 name="templateId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="text-primary font-medium">
+                    <FormLabel className="text-xs font-medium text-foreground">
                       Load Template (Optional)
                     </FormLabel>
                     <Select onValueChange={handleTemplateChange}>
                       <FormControl>
-                        <SelectTrigger className="border-dashed">
+                        <SelectTrigger className="border-dashed rounded-xl border-border bg-background text-xs">
                           <SelectValue placeholder="Select a template..." />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className="rounded-xl">
                         {templates.map((t) => (
-                          <SelectItem key={t.id} value={t.id}>
+                          <SelectItem key={t.id} value={t.id} className="text-xs">
                             {t.name}
                           </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    <FormDescription>
+                    <FormDescription className="text-[11px] text-muted-foreground">
                       Selecting a template will auto-fill the fields below.
                     </FormDescription>
                   </FormItem>
@@ -177,9 +179,13 @@ export function CreateIncidentModal({ monitors, templates }: CreateIncidentModal
               name="title"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Title</FormLabel>
+                  <FormLabel className="text-xs font-medium text-foreground">Title</FormLabel>
                   <FormControl>
-                    <Input placeholder="e.g. API Connectivity Issues" {...field} />
+                    <Input
+                      placeholder="e.g. API Connectivity Issues"
+                      className="rounded-xl border-border bg-background text-xs"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -192,21 +198,27 @@ export function CreateIncidentModal({ monitors, templates }: CreateIncidentModal
                 name="severity"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Severity</FormLabel>
+                    <FormLabel className="text-xs font-medium text-foreground">Severity</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="rounded-xl border-border bg-background text-xs">
                           <SelectValue placeholder="Severity" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="HIGH">High</SelectItem>
-                        <SelectItem value="MEDIUM">Medium</SelectItem>
-                        <SelectItem value="LOW">Low</SelectItem>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="HIGH" className="text-xs">
+                          High
+                        </SelectItem>
+                        <SelectItem value="MEDIUM" className="text-xs">
+                          Medium
+                        </SelectItem>
+                        <SelectItem value="LOW" className="text-xs">
+                          Low
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -218,22 +230,30 @@ export function CreateIncidentModal({ monitors, templates }: CreateIncidentModal
                 name="status"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Status</FormLabel>
+                    <FormLabel className="text-xs font-medium text-foreground">Status</FormLabel>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
                       value={field.value}
                     >
                       <FormControl>
-                        <SelectTrigger>
+                        <SelectTrigger className="rounded-xl border-border bg-background text-xs">
                           <SelectValue placeholder="Status" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
-                        <SelectItem value="INVESTIGATING">Investigating</SelectItem>
-                        <SelectItem value="IDENTIFIED">Identified</SelectItem>
-                        <SelectItem value="MONITORING">Monitoring</SelectItem>
-                        <SelectItem value="RESOLVED">Resolved</SelectItem>
+                      <SelectContent className="rounded-xl">
+                        <SelectItem value="INVESTIGATING" className="text-xs">
+                          Investigating
+                        </SelectItem>
+                        <SelectItem value="IDENTIFIED" className="text-xs">
+                          Identified
+                        </SelectItem>
+                        <SelectItem value="MONITORING" className="text-xs">
+                          Monitoring
+                        </SelectItem>
+                        <SelectItem value="RESOLVED" className="text-xs">
+                          Resolved
+                        </SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -247,11 +267,11 @@ export function CreateIncidentModal({ monitors, templates }: CreateIncidentModal
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description</FormLabel>
+                  <FormLabel className="text-xs font-medium text-foreground">Description</FormLabel>
                   <FormControl>
                     <Textarea
                       placeholder="Markdown description..."
-                      className="min-h-[100px]"
+                      className="min-h-[100px] rounded-xl border-border bg-background text-xs resize-none"
                       {...field}
                     />
                   </FormControl>
@@ -260,9 +280,13 @@ export function CreateIncidentModal({ monitors, templates }: CreateIncidentModal
               )}
             />
 
-            <DialogFooter>
-              <Button type="submit" disabled={isPending}>
-                {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            <DialogFooter className="pt-2">
+              <Button
+                type="submit"
+                disabled={isPending}
+                className="bg-foreground text-background hover:bg-foreground/90 font-medium text-xs rounded-xl shadow-xs px-5"
+              >
+                {isPending && <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin" />}
                 Create Report
               </Button>
             </DialogFooter>

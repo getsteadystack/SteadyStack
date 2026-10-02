@@ -185,7 +185,7 @@ export function ReportsClient({
   const handleGeneratePdf = async () => {
     if (!canExportPdf) {
       toast.error("SLA PDF Export is an Agency & Pro feature", {
-        description: "Please upgrade to Netrunner or Construct to download branded PDF reports.",
+        description: "Please upgrade to Agency or Agency Pro to download branded PDF reports.",
       });
       return;
     }
@@ -225,72 +225,73 @@ export function ReportsClient({
   return (
     <div className="flex flex-col gap-8 animate-in fade-in duration-500 pb-16">
       {/* Header */}
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/60 pb-6">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold font-mono tracking-wider text-foreground uppercase">
+      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-b border-border/80 pb-6">
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center gap-3">
+            <h1 className="text-3xl font-serif font-medium tracking-tight text-foreground">
               SLA Reports & Deliverables
             </h1>
-            <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-primary/10 text-primary border border-primary/20 rounded">
-              P1 DELIVERABLE
+            <span className="px-2.5 py-0.5 text-[11px] font-mono uppercase tracking-wider bg-[#ffd439]/15 text-foreground border border-[#ffd439]/40 rounded-full font-medium">
+              Deliverables
             </span>
           </div>
-          <p className="text-xs text-muted-foreground font-mono">
+          <p className="text-sm text-muted-foreground font-sans">
             Generate executive compliance deliverables and verify uptime against contractual client
             SLAs.
           </p>
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           {/* Branded PDF Dialog Trigger */}
           <Dialog open={isPdfModalOpen} onOpenChange={setIsPdfModalOpen}>
             <DialogTrigger asChild>
               <Button
                 variant="default"
                 size="sm"
-                className="bg-primary text-primary-foreground font-mono text-xs tracking-wider gap-2 shadow-sm cursor-pointer"
+                className="bg-foreground text-background hover:bg-foreground/90 font-medium text-xs gap-2 rounded-xl shadow-xs cursor-pointer h-9 px-4"
               >
-                <FileText className="size-4" />
+                <FileText className="size-4 text-[#ffd439]" />
                 Branded PDF Deliverable
               </Button>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[560px] bg-background border-border">
+            <DialogContent className="sm:max-w-[560px] bg-card border-border rounded-2xl shadow-xl">
               <DialogHeader>
-                <DialogTitle className="flex items-center gap-2 font-mono text-base">
-                  <Building2 className="size-5 text-primary" />
+                <DialogTitle className="flex items-center gap-2 font-serif text-xl font-medium text-foreground">
+                  <Building2 className="size-5 text-foreground" />
                   Agency Branded SLA Deliverable
                 </DialogTitle>
-                <DialogDescription className="text-xs">
+                <DialogDescription className="text-xs text-muted-foreground">
                   Customize executive metadata and billing notes before generating the client PDF.
                 </DialogDescription>
               </DialogHeader>
 
               {!canExportPdf ? (
-                <div className="p-4 rounded border border-amber-500/30 bg-amber-500/10 space-y-3">
-                  <div className="flex items-center gap-2 text-amber-400 font-bold text-xs font-mono">
+                <div className="p-4 rounded-xl border border-amber-500/30 bg-amber-500/10 space-y-3">
+                  <div className="flex items-center gap-2 text-amber-700 dark:text-amber-400 font-semibold text-xs font-mono">
                     <Lock className="size-4" />
                     AGENCY DELIVERABLE LOCKED (PRO FEATURE)
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">
-                    Branded PDF SLA report exports are reserved for <strong>
-                      The Netrunner
-                    </strong>{" "}
-                    ($19/mo) and <strong>The Construct</strong> ($79/mo) plans. Upgrade your
-                    workspace to generate high-resolution client billing PDFs.
+                    Branded PDF SLA report exports are reserved for <strong>Agency</strong> and{" "}
+                    <strong>Lifetime Stack</strong> plans. Upgrade your workspace to generate
+                    high-resolution client billing PDFs.
                   </p>
                   <Link
                     href="/dashboard/settings?tab=billing"
-                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-bold font-mono bg-foreground text-background hover:bg-primary hover:text-white transition-colors"
+                    className="inline-flex items-center justify-center gap-1.5 px-3 py-2 text-xs font-medium rounded-xl bg-foreground text-background hover:bg-foreground/90 transition-colors"
                   >
-                    &gt; UPGRADE TO UNLOCK PDF EXPORTS
+                    Upgrade to Unlock PDF Exports →
                   </Link>
                 </div>
               ) : (
                 <div className="grid gap-4 py-2 text-xs">
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1.5">
-                      <Label htmlFor="agencyName" className="font-mono text-[11px]">
+                      <Label
+                        htmlFor="agencyName"
+                        className="font-mono text-[11px] uppercase text-muted-foreground"
+                      >
                         Agency / Brand Header
                       </Label>
                       <Input
@@ -298,12 +299,15 @@ export function ReportsClient({
                         placeholder="e.g. Apex Cloud Solutions"
                         value={agencyName}
                         onChange={(e) => setAgencyName(e.target.value)}
-                        className="h-8 text-xs font-mono"
+                        className="h-9 text-xs rounded-xl border-border bg-background"
                       />
                     </div>
 
                     <div className="space-y-1.5">
-                      <Label htmlFor="clientName" className="font-mono text-[11px]">
+                      <Label
+                        htmlFor="clientName"
+                        className="font-mono text-[11px] uppercase text-muted-foreground"
+                      >
                         Client / Project Name
                       </Label>
                       <Input
@@ -311,13 +315,16 @@ export function ReportsClient({
                         placeholder="e.g. Acme Corp Portal"
                         value={clientName}
                         onChange={(e) => setClientName(e.target.value)}
-                        className="h-8 text-xs font-mono"
+                        className="h-9 text-xs rounded-xl border-border bg-background"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1.5">
-                    <Label htmlFor="executiveNotes" className="font-mono text-[11px]">
+                    <Label
+                      htmlFor="executiveNotes"
+                      className="font-mono text-[11px] uppercase text-muted-foreground"
+                    >
                       Executive Billing Commentary & Notes
                     </Label>
                     <Textarea
@@ -330,17 +337,23 @@ export function ReportsClient({
                       }
                       value={executiveNotes}
                       onChange={(e) => setExecutiveNotes(e.target.value)}
-                      className="text-xs font-mono resize-none"
+                      className="text-xs rounded-xl border-border bg-background resize-none"
                     />
                     <span className="text-[10px] text-muted-foreground">
                       Leave empty to use automatic SLA compliance narrative in the generated PDF.
                     </span>
                   </div>
 
-                  <div className="p-3 bg-muted/40 border border-border rounded text-[11px] font-mono space-y-1 text-muted-foreground">
+                  <div className="p-3 bg-muted/50 border border-border rounded-xl text-[11px] font-mono space-y-1 text-muted-foreground">
                     <div className="flex justify-between text-foreground font-semibold">
                       <span>Target SLA: {targetSla}%</span>
-                      <span className={report?.isSlaMet ? "text-emerald-500" : "text-rose-500"}>
+                      <span
+                        className={
+                          report?.isSlaMet
+                            ? "text-emerald-600 dark:text-emerald-400"
+                            : "text-rose-600 dark:text-rose-400"
+                        }
+                      >
                         Actual: {report?.aggregate.uptimePct.toFixed(3)}% (
                         {report?.isSlaMet ? "PASS" : "FAIL"})
                       </span>
@@ -358,7 +371,7 @@ export function ReportsClient({
                   variant="outline"
                   size="sm"
                   onClick={() => setIsPdfModalOpen(false)}
-                  className="font-mono text-xs"
+                  className="rounded-xl text-xs"
                 >
                   Cancel
                 </Button>
@@ -367,7 +380,7 @@ export function ReportsClient({
                     onClick={handleGeneratePdf}
                     disabled={isDownloadingPdf || isLoading}
                     size="sm"
-                    className="font-mono text-xs gap-1.5"
+                    className="rounded-xl text-xs gap-1.5 bg-foreground text-background hover:bg-foreground/90"
                   >
                     {isDownloadingPdf ? (
                       <Loader2 className="size-3.5 animate-spin" />
@@ -385,9 +398,9 @@ export function ReportsClient({
             variant="outline"
             size="sm"
             onClick={handleDownloadCsv}
-            className="font-mono text-xs gap-1.5"
+            className="rounded-xl text-xs gap-1.5 h-9 bg-card border-border hover:bg-muted/60"
           >
-            <FileSpreadsheet className="size-3.5 text-emerald-500" />
+            <FileSpreadsheet className="size-3.5 text-emerald-600 dark:text-emerald-400" />
             CSV
           </Button>
 
@@ -395,9 +408,9 @@ export function ReportsClient({
             variant="outline"
             size="sm"
             onClick={handleDownloadJson}
-            className="font-mono text-xs gap-1.5"
+            className="rounded-xl text-xs gap-1.5 h-9 bg-card border-border hover:bg-muted/60"
           >
-            <FileJson className="size-3.5 text-cyan-500" />
+            <FileJson className="size-3.5 text-blue-600 dark:text-blue-400" />
             JSON
           </Button>
 
@@ -405,11 +418,11 @@ export function ReportsClient({
             variant="ghost"
             size="sm"
             onClick={handleCopyApiUrl}
-            className="font-mono text-xs gap-1 text-muted-foreground hover:text-foreground"
+            className="rounded-xl text-xs gap-1 text-muted-foreground hover:text-foreground h-9"
             title="Copy Headless API Endpoint"
           >
             {isCopiedApi ? (
-              <Check className="size-3.5 text-emerald-500" />
+              <Check className="size-3.5 text-emerald-600 dark:text-emerald-400" />
             ) : (
               <Copy className="size-3.5" />
             )}
@@ -419,23 +432,23 @@ export function ReportsClient({
       </div>
 
       {/* Interactive Controls Bar */}
-      <Card className="border-border bg-card/40 backdrop-blur-md">
+      <Card className="border-border bg-card shadow-xs rounded-2xl">
         <CardContent className="p-4">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             {/* Scope Selector */}
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5 uppercase">
-                <SlidersHorizontal className="size-3 text-primary" />
+              <Label className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                <SlidersHorizontal className="size-3 text-foreground" />
                 Report Scope
               </Label>
               <Select value={scope} onValueChange={setScope}>
-                <SelectTrigger className="h-9 font-mono text-xs bg-background/60">
+                <SelectTrigger className="h-9 font-mono text-xs rounded-xl bg-background border-border">
                   <SelectValue placeholder="Select scope" />
                 </SelectTrigger>
-                <SelectContent className="font-mono text-xs">
+                <SelectContent className="font-mono text-xs rounded-xl">
                   <SelectItem value="all">
                     <div className="flex items-center gap-2">
-                      <Layers className="size-3.5 text-primary" />
+                      <Layers className="size-3.5 text-foreground" />
                       <span>All Workspace Monitors</span>
                     </div>
                   </SelectItem>
@@ -448,7 +461,7 @@ export function ReportsClient({
                       {initialStatusPages.map((sp) => (
                         <SelectItem key={sp.id} value={`status_page:${sp.id}`}>
                           <div className="flex items-center gap-2">
-                            <Globe className="size-3.5 text-cyan-400" />
+                            <Globe className="size-3.5 text-blue-500" />
                             <span>{sp.title}</span>
                           </div>
                         </SelectItem>
@@ -464,7 +477,7 @@ export function ReportsClient({
                       {initialMonitors.map((m) => (
                         <SelectItem key={m.id} value={`monitor:${m.id}`}>
                           <div className="flex items-center gap-2">
-                            <MonitorIcon className="size-3.5 text-emerald-400" />
+                            <MonitorIcon className="size-3.5 text-emerald-500" />
                             <span>{m.name}</span>
                           </div>
                         </SelectItem>
@@ -477,15 +490,15 @@ export function ReportsClient({
 
             {/* Timeframe Range */}
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5 uppercase">
-                <Calendar className="size-3 text-primary" />
+              <Label className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                <Calendar className="size-3 text-foreground" />
                 Audit Timeframe
               </Label>
               <Select value={range} onValueChange={setRange}>
-                <SelectTrigger className="h-9 font-mono text-xs bg-background/60">
+                <SelectTrigger className="h-9 font-mono text-xs rounded-xl bg-background border-border">
                   <SelectValue placeholder="Select period" />
                 </SelectTrigger>
-                <SelectContent className="font-mono text-xs">
+                <SelectContent className="font-mono text-xs rounded-xl">
                   <SelectItem value="7d">Last 7 Days</SelectItem>
                   <SelectItem value="30d">Last 30 Days</SelectItem>
                   <SelectItem value="90d">Last 90 Days</SelectItem>
@@ -498,18 +511,18 @@ export function ReportsClient({
 
             {/* Target Contractual SLA */}
             <div className="space-y-1.5">
-              <Label className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5 uppercase">
-                <ShieldCheck className="size-3 text-primary" />
+              <Label className="text-[11px] font-mono text-muted-foreground flex items-center gap-1.5 uppercase tracking-wider">
+                <ShieldCheck className="size-3 text-foreground" />
                 Target SLA Threshold
               </Label>
               <Select
                 value={targetSla.toString()}
                 onValueChange={(val) => setTargetSla(parseFloat(val))}
               >
-                <SelectTrigger className="h-9 font-mono text-xs bg-background/60">
+                <SelectTrigger className="h-9 font-mono text-xs rounded-xl bg-background border-border">
                   <SelectValue placeholder="Target SLA" />
                 </SelectTrigger>
-                <SelectContent className="font-mono text-xs">
+                <SelectContent className="font-mono text-xs rounded-xl">
                   <SelectItem value="99.0">99.00% (Single 9 — 7.2h downtime/mo)</SelectItem>
                   <SelectItem value="99.5">99.50% (3.6h downtime/mo)</SelectItem>
                   <SelectItem value="99.9">99.90% (Three 9s — 43.2m downtime/mo)</SelectItem>
@@ -522,7 +535,7 @@ export function ReportsClient({
             {/* Custom Dates Inputs or Scope Summary */}
             {range === "custom" ? (
               <div className="space-y-1.5">
-                <Label className="text-[11px] font-mono text-muted-foreground uppercase">
+                <Label className="text-[11px] font-mono text-muted-foreground uppercase tracking-wider">
                   Custom Dates (Start / End)
                 </Label>
                 <div className="grid grid-cols-2 gap-2">
@@ -530,22 +543,22 @@ export function ReportsClient({
                     type="date"
                     value={startDate}
                     onChange={(e) => setStartDate(e.target.value)}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs font-mono rounded-xl bg-background border-border"
                   />
                   <Input
                     type="date"
                     value={endDate}
                     onChange={(e) => setEndDate(e.target.value)}
-                    className="h-9 text-xs font-mono"
+                    className="h-9 text-xs font-mono rounded-xl bg-background border-border"
                   />
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col justify-center font-mono text-[11px] text-muted-foreground border-l border-border/50 pl-4">
+              <div className="flex flex-col justify-center font-mono text-[11px] text-muted-foreground border-l border-border pl-4">
                 <span className="text-[9px] uppercase tracking-wider text-muted-foreground">
                   ACTIVE WINDOW
                 </span>
-                <span className="text-foreground font-semibold">
+                <span className="text-foreground font-medium">
                   {report ? `${report.startDate} to ${report.endDate}` : "Calculating..."}
                 </span>
               </div>
@@ -557,18 +570,18 @@ export function ReportsClient({
       {/* Loading / Error States */}
       {isLoading ? (
         <div className="space-y-4">
-          <Skeleton className="h-28 w-full bg-card/40" />
+          <Skeleton className="h-28 w-full bg-card rounded-2xl" />
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Skeleton className="h-24 bg-card/40" />
-            <Skeleton className="h-24 bg-card/40" />
-            <Skeleton className="h-24 bg-card/40" />
-            <Skeleton className="h-24 bg-card/40" />
+            <Skeleton className="h-24 bg-card rounded-2xl" />
+            <Skeleton className="h-24 bg-card rounded-2xl" />
+            <Skeleton className="h-24 bg-card rounded-2xl" />
+            <Skeleton className="h-24 bg-card rounded-2xl" />
           </div>
-          <Skeleton className="h-72 w-full bg-card/40" />
+          <Skeleton className="h-72 w-full bg-card rounded-2xl" />
         </div>
       ) : error || !report ? (
-        <Card className="border-red-500/30 bg-red-500/10">
-          <CardContent className="p-8 text-center text-red-400 font-mono text-sm">
+        <Card className="border-rose-500/30 bg-rose-500/10 rounded-2xl">
+          <CardContent className="p-8 text-center text-rose-600 dark:text-rose-400 font-mono text-sm">
             Failed to generate SLA analytics report. Please verify date parameters or try again.
           </CardContent>
         </Card>
@@ -577,17 +590,17 @@ export function ReportsClient({
           {/* Executive Verdict Banner */}
           <div
             className={cn(
-              "p-6 border backdrop-blur-md transition-all duration-500 flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative overflow-hidden",
+              "p-6 rounded-2xl border transition-all duration-300 flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative overflow-hidden shadow-xs",
               report.isSlaMet
-                ? "bg-emerald-950/20 border-emerald-500/30 shadow-emerald-950/20 shadow-lg"
-                : "bg-rose-950/20 border-rose-500/30 shadow-rose-950/20 shadow-lg",
+                ? "bg-emerald-500/5 border-emerald-500/30"
+                : "bg-rose-500/5 border-rose-500/30",
             )}
           >
             <div className="flex flex-col gap-1.5 z-10">
               <span className="text-[10px] font-mono uppercase tracking-widest text-muted-foreground">
                 DELIVERABLE AUDIT FOR
               </span>
-              <h2 className="text-xl font-bold font-mono text-foreground flex items-center gap-2">
+              <h2 className="text-2xl font-serif font-medium text-foreground flex items-center gap-2">
                 {report.scopeName}
               </h2>
               <p className="text-xs text-muted-foreground font-mono">
@@ -599,12 +612,12 @@ export function ReportsClient({
             <div className="flex flex-col md:items-end gap-2 z-10">
               <div className="flex items-center gap-2">
                 {report.isSlaMet ? (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 font-mono font-bold text-sm tracking-wider">
+                  <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-700 dark:text-emerald-400 font-mono font-medium text-xs tracking-wider">
                     <CheckCircle2 className="size-4" />
                     SLA COMPLIANT (PASS)
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded bg-rose-500/20 border border-rose-500/40 text-rose-400 font-mono font-bold text-sm tracking-wider">
+                  <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-rose-500/15 border border-rose-500/30 text-rose-700 dark:text-rose-400 font-mono font-medium text-xs tracking-wider">
                     <AlertTriangle className="size-4" />
                     SLA BREACHED (FAIL)
                   </div>
@@ -617,7 +630,9 @@ export function ReportsClient({
                 <span
                   className={cn(
                     "font-bold",
-                    report.isSlaMet ? "text-emerald-400" : "text-rose-400",
+                    report.isSlaMet
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-rose-600 dark:text-rose-400",
                   )}
                 >
                   {report.aggregate.uptimePct.toFixed(3)}%
@@ -628,17 +643,19 @@ export function ReportsClient({
 
           {/* KPI Cards Grid */}
           <div className="grid grid-cols-2 lg:grid-cols-6 gap-4">
-            <Card className="border-border bg-card/40 backdrop-blur-md">
+            <Card className="border-border bg-card shadow-xs rounded-2xl">
               <CardHeader className="p-4 pb-1">
-                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase">
+                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                   Availability
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-1">
                 <div
                   className={cn(
-                    "text-xl font-bold font-mono",
-                    report.isSlaMet ? "text-emerald-400" : "text-rose-400",
+                    "text-2xl font-serif font-medium",
+                    report.isSlaMet
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-rose-600 dark:text-rose-400",
                   )}
                 >
                   {report.aggregate.uptimePct.toFixed(3)}%
@@ -649,14 +666,14 @@ export function ReportsClient({
               </CardContent>
             </Card>
 
-            <Card className="border-border bg-card/40 backdrop-blur-md">
+            <Card className="border-border bg-card shadow-xs rounded-2xl">
               <CardHeader className="p-4 pb-1">
-                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase">
+                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                   Outage Time
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-1">
-                <div className="text-xl font-bold font-mono text-foreground">
+                <div className="text-2xl font-serif font-medium text-foreground">
                   {report.aggregate.totalDowntimeMinutes}m
                 </div>
                 <p className="text-[10px] text-muted-foreground font-mono mt-1">
@@ -665,19 +682,19 @@ export function ReportsClient({
               </CardContent>
             </Card>
 
-            <Card className="border-border bg-card/40 backdrop-blur-md">
+            <Card className="border-border bg-card shadow-xs rounded-2xl">
               <CardHeader className="p-4 pb-1">
-                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase">
+                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                   Error Budget
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-1">
                 <div
                   className={cn(
-                    "text-xl font-bold font-mono",
+                    "text-2xl font-serif font-medium",
                     report.aggregate.remainingErrorBudgetPct >= 0
-                      ? "text-emerald-400"
-                      : "text-rose-400",
+                      ? "text-emerald-600 dark:text-emerald-400"
+                      : "text-rose-600 dark:text-rose-400",
                   )}
                 >
                   {report.aggregate.remainingErrorBudgetPct.toFixed(1)}%
@@ -688,14 +705,14 @@ export function ReportsClient({
               </CardContent>
             </Card>
 
-            <Card className="border-border bg-card/40 backdrop-blur-md">
+            <Card className="border-border bg-card shadow-xs rounded-2xl">
               <CardHeader className="p-4 pb-1">
-                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase">
-                  Mean Recovery (MTTR)
+                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
+                  Mean Recovery
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-1">
-                <div className="text-xl font-bold font-mono text-foreground">
+                <div className="text-2xl font-serif font-medium text-foreground">
                   {report.aggregate.mttrMinutes > 0
                     ? `${report.aggregate.mttrMinutes.toFixed(1)}m`
                     : "0m"}
@@ -706,14 +723,14 @@ export function ReportsClient({
               </CardContent>
             </Card>
 
-            <Card className="border-border bg-card/40 backdrop-blur-md">
+            <Card className="border-border bg-card shadow-xs rounded-2xl">
               <CardHeader className="p-4 pb-1">
-                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase">
+                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                   Verification Checks
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-1">
-                <div className="text-xl font-bold font-mono text-foreground">
+                <div className="text-2xl font-serif font-medium text-foreground">
                   {report.aggregate.totalChecks.toLocaleString()}
                 </div>
                 <p className="text-[10px] text-muted-foreground font-mono mt-1">
@@ -722,14 +739,14 @@ export function ReportsClient({
               </CardContent>
             </Card>
 
-            <Card className="border-border bg-card/40 backdrop-blur-md">
+            <Card className="border-border bg-card shadow-xs rounded-2xl">
               <CardHeader className="p-4 pb-1">
-                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase">
+                <CardTitle className="text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
                   Avg Latency
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-4 pt-1">
-                <div className="text-xl font-bold font-mono text-foreground">
+                <div className="text-2xl font-serif font-medium text-foreground">
                   {report.aggregate.avgLatencyMs}ms
                 </div>
                 <p className="text-[10px] text-muted-foreground font-mono mt-1">
@@ -740,13 +757,13 @@ export function ReportsClient({
           </div>
 
           {/* Daily Breakdown Chart */}
-          <Card className="border-border bg-card/40 backdrop-blur-md">
+          <Card className="border-border bg-card shadow-xs rounded-2xl">
             <CardHeader className="p-5 pb-2 flex flex-row items-center justify-between">
               <div>
-                <CardTitle className="text-sm font-mono uppercase text-foreground">
+                <CardTitle className="text-base font-serif font-medium text-foreground">
                   Daily Availability & SLA Compliance
                 </CardTitle>
-                <CardDescription className="text-xs font-mono">
+                <CardDescription className="text-xs text-muted-foreground font-mono">
                   Daily measured uptime percentage vs SLA target line ({targetSla}%)
                 </CardDescription>
               </div>
@@ -762,13 +779,13 @@ export function ReportsClient({
                       <XAxis
                         dataKey="date"
                         tickFormatter={(val) => format(new Date(val), "MMM d")}
-                        stroke="#71717a"
+                        stroke="#8a877d"
                         fontSize={11}
                         tickLine={false}
                         axisLine={false}
                       />
                       <YAxis
-                        stroke="#71717a"
+                        stroke="#8a877d"
                         fontSize={11}
                         tickLine={false}
                         axisLine={false}
@@ -776,7 +793,7 @@ export function ReportsClient({
                         tickFormatter={(val) => `${val}%`}
                       />
                       <Tooltip
-                        cursor={{ fill: "#27272a", opacity: 0.3 }}
+                        cursor={{ fill: "rgba(0,0,0,0.05)" }}
                         content={({ active, payload, label }) => {
                           if (active && payload && payload.length) {
                             const data = payload[0].payload;
@@ -784,8 +801,8 @@ export function ReportsClient({
                               ? format(new Date(label as string | number), "MMMM d, yyyy")
                               : "";
                             return (
-                              <div className="rounded border border-border bg-popover/95 p-3 shadow-xl backdrop-blur-md text-xs font-mono">
-                                <p className="font-bold text-foreground mb-1">{dateStr}</p>
+                              <div className="rounded-xl border border-border bg-card p-3 shadow-lg text-xs font-mono">
+                                <p className="font-semibold text-foreground mb-1">{dateStr}</p>
                                 <div className="space-y-1">
                                   <div className="flex items-center gap-2">
                                     <div
@@ -818,7 +835,7 @@ export function ReportsClient({
                         strokeWidth={1.5}
                         opacity={0.8}
                       />
-                      <Bar dataKey="uptimePct" radius={[2, 2, 0, 0]}>
+                      <Bar dataKey="uptimePct" radius={[4, 4, 0, 0]}>
                         {report.dailyBreakdown.map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
@@ -840,39 +857,39 @@ export function ReportsClient({
 
           {/* Monitored Services Table */}
           {report.services.length > 0 && (
-            <Card className="border-border bg-card/40 backdrop-blur-md">
+            <Card className="border-border bg-card shadow-xs rounded-2xl overflow-hidden">
               <CardHeader className="p-5 pb-3">
-                <CardTitle className="text-sm font-mono uppercase text-foreground">
+                <CardTitle className="text-base font-serif font-medium text-foreground">
                   Monitored Services Breakdown ({report.services.length})
                 </CardTitle>
-                <CardDescription className="text-xs font-mono">
+                <CardDescription className="text-xs text-muted-foreground font-mono">
                   Performance and SLA compliance breakdown per service endpoint.
                 </CardDescription>
               </CardHeader>
               <CardContent className="p-0">
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs font-mono text-left">
-                    <thead className="bg-muted/40 border-y border-border text-muted-foreground uppercase text-[10px]">
+                    <thead className="bg-muted/50 border-y border-border text-muted-foreground uppercase text-[10px]">
                       <tr>
-                        <th className="py-2.5 px-4">Service</th>
-                        <th className="py-2.5 px-4">Type</th>
-                        <th className="py-2.5 px-4 text-right">Checks</th>
-                        <th className="py-2.5 px-4 text-right">Downtime</th>
-                        <th className="py-2.5 px-4 text-right">Uptime %</th>
-                        <th className="py-2.5 px-4 text-right">Status</th>
+                        <th className="py-3 px-4 font-medium">Service</th>
+                        <th className="py-3 px-4 font-medium">Type</th>
+                        <th className="py-3 px-4 text-right font-medium">Checks</th>
+                        <th className="py-3 px-4 text-right font-medium">Downtime</th>
+                        <th className="py-3 px-4 text-right font-medium">Uptime %</th>
+                        <th className="py-3 px-4 text-right font-medium">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60">
                       {report.services.map((srv) => (
-                        <tr key={srv.id} className="hover:bg-muted/20 transition-colors">
-                          <td className="py-3 px-4 font-semibold text-foreground">
+                        <tr key={srv.id} className="hover:bg-muted/30 transition-colors">
+                          <td className="py-3 px-4 font-medium text-foreground">
                             {srv.name}
                             <span className="block text-[10px] text-muted-foreground truncate max-w-xs font-normal">
                               {srv.url}
                             </span>
                           </td>
                           <td className="py-3 px-4">
-                            <span className="px-1.5 py-0.5 rounded bg-muted text-[10px] text-muted-foreground border border-border">
+                            <span className="px-2 py-0.5 rounded-md bg-muted text-[10px] text-muted-foreground border border-border">
                               {srv.type}
                             </span>
                           </td>
@@ -885,7 +902,9 @@ export function ReportsClient({
                           <td
                             className={cn(
                               "py-3 px-4 text-right font-bold",
-                              srv.status === "PASS" ? "text-emerald-400" : "text-rose-400",
+                              srv.status === "PASS"
+                                ? "text-emerald-600 dark:text-emerald-400"
+                                : "text-rose-600 dark:text-rose-400",
                             )}
                           >
                             {srv.uptimePct.toFixed(3)}%
@@ -893,10 +912,10 @@ export function ReportsClient({
                           <td className="py-3 px-4 text-right">
                             <span
                               className={cn(
-                                "px-2 py-0.5 rounded text-[10px] font-bold border",
+                                "px-2 py-0.5 rounded-full text-[10px] font-medium border",
                                 srv.status === "PASS"
-                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                                  : "bg-rose-500/10 text-rose-400 border-rose-500/30",
+                                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                                  : "bg-rose-500/10 text-rose-700 dark:text-rose-400 border-rose-500/30",
                               )}
                             >
                               {srv.status}
@@ -912,12 +931,12 @@ export function ReportsClient({
           )}
 
           {/* Outage & Incident Log */}
-          <Card className="border-border bg-card/40 backdrop-blur-md">
+          <Card className="border-border bg-card shadow-xs rounded-2xl overflow-hidden">
             <CardHeader className="p-5 pb-3">
-              <CardTitle className="text-sm font-mono uppercase text-foreground">
+              <CardTitle className="text-base font-serif font-medium text-foreground">
                 Outage & Incident Audit Log ({report.incidents.length})
               </CardTitle>
-              <CardDescription className="text-xs font-mono">
+              <CardDescription className="text-xs text-muted-foreground font-mono">
                 Historical record of service interruptions during the audit window.
               </CardDescription>
             </CardHeader>
@@ -925,20 +944,20 @@ export function ReportsClient({
               {report.incidents.length > 0 ? (
                 <div className="overflow-x-auto">
                   <table className="w-full text-xs font-mono text-left">
-                    <thead className="bg-muted/40 border-y border-border text-muted-foreground uppercase text-[10px]">
+                    <thead className="bg-muted/50 border-y border-border text-muted-foreground uppercase text-[10px]">
                       <tr>
-                        <th className="py-2.5 px-4">Timestamp (UTC)</th>
-                        <th className="py-2.5 px-4">Service</th>
-                        <th className="py-2.5 px-4">Root Cause / Description</th>
-                        <th className="py-2.5 px-4 text-right">Duration</th>
-                        <th className="py-2.5 px-4 text-right">Status</th>
+                        <th className="py-3 px-4 font-medium">Timestamp (UTC)</th>
+                        <th className="py-3 px-4 font-medium">Service</th>
+                        <th className="py-3 px-4 font-medium">Root Cause / Description</th>
+                        <th className="py-3 px-4 text-right font-medium">Duration</th>
+                        <th className="py-3 px-4 text-right font-medium">Status</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-border/60">
                       {report.incidents.map((inc) => (
-                        <tr key={inc.id} className="hover:bg-muted/20 transition-colors">
+                        <tr key={inc.id} className="hover:bg-muted/30 transition-colors">
                           <td className="py-3 px-4 text-muted-foreground">{inc.startedAt}</td>
-                          <td className="py-3 px-4 font-semibold text-foreground">
+                          <td className="py-3 px-4 font-medium text-foreground">
                             {inc.serviceName}
                           </td>
                           <td className="py-3 px-4 text-muted-foreground max-w-sm">{inc.reason}</td>
@@ -948,10 +967,10 @@ export function ReportsClient({
                           <td className="py-3 px-4 text-right">
                             <span
                               className={cn(
-                                "px-2 py-0.5 rounded text-[10px] font-bold border",
+                                "px-2 py-0.5 rounded-full text-[10px] font-medium border",
                                 inc.status === "RESOLVED"
-                                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                                  : "bg-amber-500/10 text-amber-400 border-amber-500/30",
+                                  ? "bg-emerald-500/10 text-emerald-700 dark:text-emerald-400 border-emerald-500/30"
+                                  : "bg-amber-500/10 text-amber-700 dark:text-amber-400 border-amber-500/30",
                               )}
                             >
                               {inc.status}
@@ -963,7 +982,7 @@ export function ReportsClient({
                   </table>
                 </div>
               ) : (
-                <div className="p-6 text-center text-xs font-mono text-emerald-400 flex items-center justify-center gap-2">
+                <div className="p-6 text-center text-xs font-mono text-emerald-600 dark:text-emerald-400 flex items-center justify-center gap-2">
                   <CheckCircle2 className="size-4" />
                   Zero service disruptions recorded during this audit window. 100% continuous uptime
                   verified.

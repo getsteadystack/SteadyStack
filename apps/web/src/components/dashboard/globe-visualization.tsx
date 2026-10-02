@@ -493,20 +493,22 @@ export function GlobeVisualization({ monitors }: GlobeVisualizationProps) {
   }, [isOpen]);
 
   return (
-    <div className="border border-primary/20 bg-card/40 backdrop-blur-md rounded-xl overflow-hidden shadow-lg transition-all duration-300">
+    <div className="border border-border bg-card rounded-2xl overflow-hidden shadow-xs transition-all duration-300">
       {/* Panel Header */}
       <div
-        className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-primary/5 transition-colors border-b border-zinc-900/60"
+        className="flex items-center justify-between px-6 py-4 cursor-pointer hover:bg-muted/40 transition-colors border-b border-border"
         onClick={() => setIsOpen(!isOpen)}
       >
         <div className="flex items-center gap-3">
-          <Globe className="size-4.5 text-primary animate-pulse" />
+          <div className="size-8 rounded-xl bg-[#ffd439] text-[#23211a] flex items-center justify-center font-bold shadow-xs">
+            <Globe className="size-4" />
+          </div>
           <div className="flex flex-col">
-            <span className="text-xs font-bold text-foreground uppercase tracking-wider">
-              3D Matrix Network Globe
+            <span className="text-sm font-serif font-semibold text-foreground tracking-tight">
+              3D Edge Consensus Mesh
             </span>
-            <span className="text-[10px] text-zinc-500 font-mono">
-              Live Edge telemetry visualization mapping regional ping pings
+            <span className="text-[11px] text-muted-foreground font-mono">
+              Live Edge telemetry visualization mapping regional quorum pings
             </span>
           </div>
         </div>
@@ -514,14 +516,14 @@ export function GlobeVisualization({ monitors }: GlobeVisualizationProps) {
         <Button
           variant="outline"
           size="sm"
-          className="h-7 px-3 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary font-mono text-[9px] uppercase tracking-wider"
+          className="h-8 px-3 border-border bg-card text-foreground hover:bg-muted font-mono text-[10px] uppercase tracking-wider rounded-xl cursor-pointer"
         >
-          {isOpen ? "Collapse Matrix" : "Deploy Matrix"}
+          {isOpen ? "Collapse View" : "Expand 3D View"}
         </Button>
       </div>
 
       {isOpen && (
-        <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+        <div className="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6 items-center bg-card">
           {/* Globe Canvas Container */}
           <div className="col-span-1 lg:col-span-2 relative min-h-[400px]">
             <div
@@ -530,47 +532,48 @@ export function GlobeVisualization({ monitors }: GlobeVisualizationProps) {
             />
 
             {/* Visual HUD overlays */}
-            <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 p-2 bg-black/60 border border-zinc-800 rounded font-mono text-[9px] text-zinc-400">
-              <div className="flex items-center gap-1.5">
-                <span className="size-2 bg-emerald-500 rounded-full shadow-[0_0_5px_#10b981]"></span>
+            <div className="absolute top-2 left-2 z-10 flex flex-col gap-1 p-2.5 bg-background/90 backdrop-blur-md border border-border rounded-xl font-mono text-[10px] text-foreground shadow-xs">
+              <div className="flex items-center gap-1.5 font-bold">
+                <span className="size-2 bg-emerald-500 rounded-full"></span>
                 <span>Active Target Nodes</span>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="size-2 bg-green-500 rounded-full"></span>
-                <span>US-East, US-West, EU, APAC, OCE, SA</span>
+              <div className="text-[9px] text-muted-foreground">
+                US-East, US-West, EU, APAC, OCE, SA
               </div>
             </div>
           </div>
 
           {/* HUD Event Log stream */}
-          <div className="col-span-1 border border-zinc-800 bg-zinc-950/60 rounded-xl p-4 h-[350px] flex flex-col justify-between font-mono select-none">
+          <div className="col-span-1 border border-border bg-muted/40 rounded-2xl p-4 h-[350px] flex flex-col justify-between font-mono select-none shadow-xs">
             <div className="flex flex-col gap-3">
-              <span className="text-[10px] font-bold text-primary uppercase tracking-wider flex items-center gap-1">
-                <Zap className="size-3 text-primary animate-pulse" />
+              <span className="text-[10px] font-bold text-foreground uppercase tracking-wider flex items-center gap-1.5">
+                <Zap className="size-3 text-[#ffd439]" />
                 Live Uplink Stream
               </span>
-              <div className="space-y-2.5 text-[10px] leading-relaxed text-zinc-400 border-t border-zinc-900 pt-3 overflow-y-auto max-h-[250px] scrollbar-none">
+              <div className="space-y-2 text-[10px] leading-relaxed text-muted-foreground border-t border-border pt-3 overflow-y-auto max-h-[250px] scrollbar-none">
                 {activeChecks.map((msg, i) => (
-                  <div key={i} className="animate-fade-in truncate">
-                    <span className="text-zinc-600 mr-1.5">&gt;&gt;</span>
+                  <div key={i} className="truncate">
+                    <span className="text-foreground/40 mr-1.5">&gt;&gt;</span>
                     {msg}
                   </div>
                 ))}
                 {activeChecks.length === 0 && (
-                  <div className="text-zinc-600 italic">Listening for websocket pings...</div>
+                  <div className="text-muted-foreground/60 italic">
+                    Listening for quorum pings...
+                  </div>
                 )}
               </div>
             </div>
 
-            <div className="border-t border-zinc-900 pt-3 text-[9px] text-zinc-500 leading-tight">
+            <div className="border-t border-border pt-3 text-[9px] text-muted-foreground leading-tight">
               <div className="flex justify-between mb-1 items-center">
-                <span>LATENCY MATRIX:</span>
-                <span className="text-emerald-400 font-bold flex items-center gap-1">
+                <span className="font-semibold uppercase">Consensus Status:</span>
+                <span className="text-emerald-700 font-bold flex items-center gap-1">
                   <span className="size-1.5 rounded-full bg-emerald-500 animate-ping" />
-                  STREAMING
+                  ONLINE
                 </span>
               </div>
-              <p>Drag to spin globe. Ping events spawn laser arcs from origins to targets.</p>
+              <p>Drag to spin globe. Ping events spawn quorum arcs across regional edges.</p>
             </div>
           </div>
         </div>

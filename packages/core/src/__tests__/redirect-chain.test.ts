@@ -13,7 +13,9 @@ const HTTPBIN = "https://httpbin.org";
 describe("checkHttpUniversal redirect chain", () => {
   test("follows redirects and reports each hop", async () => {
     // /redirect/3 issues 3 chained 302s before landing on /get
-    const result = await checkHttpUniversal(`${HTTPBIN}/redirect/3`, { timeoutSeconds: 15 });
+    const result = await checkHttpUniversal(`${HTTPBIN}/redirect/3`, {
+      timeoutSeconds: 15,
+    });
     expect(result.status).toBe("UP");
     expect(result.statusCode).toBe(200);
     expect(result.redirectChain).toHaveLength(3);
@@ -23,14 +25,18 @@ describe("checkHttpUniversal redirect chain", () => {
   });
 
   test("reports no redirectChain when the target responds directly", async () => {
-    const result = await checkHttpUniversal(`${HTTPBIN}/get`, { timeoutSeconds: 15 });
+    const result = await checkHttpUniversal(`${HTTPBIN}/get`, {
+      timeoutSeconds: 15,
+    });
     expect(result.status).toBe("UP");
     expect(result.redirectChain).toBeUndefined();
   });
 
   test("detects redirect chains beyond the hop cap", async () => {
     // /redirect/25 issues 25 chained 302s — past the 5-hop platform cap
-    const result = await checkHttpUniversal(`${HTTPBIN}/redirect/25`, { timeoutSeconds: 15 });
+    const result = await checkHttpUniversal(`${HTTPBIN}/redirect/25`, {
+      timeoutSeconds: 15,
+    });
     expect(result.status).toBe("DOWN");
     expect(result.errorReason).toContain("TOO_MANY_REDIRECTS");
     expect(result.redirectChain).toHaveLength(5);
@@ -48,7 +54,9 @@ describe("checkHttpUniversal redirect chain", () => {
   });
 
   test("reports bodySizeBytes as the exact received byte count", async () => {
-    const result = await checkHttpUniversal(`${HTTPBIN}/bytes/2048`, { timeoutSeconds: 15 });
+    const result = await checkHttpUniversal(`${HTTPBIN}/bytes/2048`, {
+      timeoutSeconds: 15,
+    });
     expect(result.status).toBe("UP");
     expect(result.bodySizeBytes).toBe(2048);
   });
@@ -56,7 +64,9 @@ describe("checkHttpUniversal redirect chain", () => {
 
 describe("inspectRedirectChain", () => {
   test("traces each hop and the final destination", async () => {
-    const result = await inspectRedirectChain(`${HTTPBIN}/redirect/2`, { timeoutSeconds: 15 });
+    const result = await inspectRedirectChain(`${HTTPBIN}/redirect/2`, {
+      timeoutSeconds: 15,
+    });
     expect(result.hops).toHaveLength(2);
     expect(result.hops[0]!.status).toBe(302);
     expect(result.hops[1]!.location).toBe(`${HTTPBIN}/get`);
@@ -66,7 +76,9 @@ describe("inspectRedirectChain", () => {
   });
 
   test("returns zero hops for a direct response", async () => {
-    const result = await inspectRedirectChain(`${HTTPBIN}/get`, { timeoutSeconds: 15 });
+    const result = await inspectRedirectChain(`${HTTPBIN}/get`, {
+      timeoutSeconds: 15,
+    });
     expect(result.hops).toHaveLength(0);
     expect(result.finalStatus).toBe(200);
   });
@@ -90,7 +102,9 @@ describe("inspectRedirectChain", () => {
   test("reports connection errors without throwing", async () => {
     // Documentation-range IP that never routes — expect a connection failure,
     // not an exception.
-    const result = await inspectRedirectChain("http://192.0.2.1/", { timeoutSeconds: 3 });
+    const result = await inspectRedirectChain("http://192.0.2.1/", {
+      timeoutSeconds: 3,
+    });
     expect(result.finalStatus).toBeNull();
     expect(result.errorReason).toBeDefined();
   });

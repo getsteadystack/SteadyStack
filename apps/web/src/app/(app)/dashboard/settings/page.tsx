@@ -29,7 +29,9 @@ export default async function SettingsPage({
     tab?: string;
     session_id?: string;
     mock_checkout?: string;
+    success?: string;
     plan?: string;
+    deal?: string;
     sync?: string;
   }>;
 }) {
@@ -42,21 +44,99 @@ export default async function SettingsPage({
   }
 
   const resolvedParams = await searchParams;
-  const rawTab = resolvedParams.tab || "general";
+  const rawTab = resolvedParams.tab || (resolvedParams.deal ? "billing" : "general");
   const sessionId = resolvedParams.session_id;
   const isMockCheckout = resolvedParams.mock_checkout === "true";
   const mockPlan = resolvedParams.plan?.toUpperCase();
   const shouldSync = resolvedParams.sync === "true";
 
-  // If returning from Stripe checkout with a session_id, verify and apply plan immediately!
+  const isSuccess =
+    resolvedParams.success === "true" || sessionId === "{CHECKOUT_SESSION_ID}" || isMockCheckout;
+
+  // 1. If returning from Stripe checkout with a real session_id, verify and apply plan via Stripe API
   if (sessionId && sessionId.startsWith("cs_")) {
-    await verifyAndApplyCheckoutSession({
+    const verified = await verifyAndApplyCheckoutSession({
       userId: session.user.id,
       sessionId,
     });
+    if (!verified.success && resolvedParams.deal) {
+      // Fallback for mock/test sessions with deal
+      const deal = resolvedParams.deal;
+      const dealTier = deal.includes("3") ? 3 : deal.includes("2") ? 2 : 1;
+      const targetPlan = dealTier === 3 ? "CONSTRUCT" : "NETRUNNER";
+      const tierVersion = `appsumo_tier_${dealTier}`;
+      const prisma = (await import("@steadystack/db")).default;
+
+      await prisma.subscription.upsert({
+        where: { userId: session.user.id },
+        create: {
+          userId: session.user.id,
+          plan: targetPlan,
+          status: "ACTIVE",
+          isLifetime: true,
+          appsumoTier: dealTier,
+          tierVersion,
+          trialEndsAt: null,
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: null,
+        },
+        update: {
+          plan: targetPlan,
+          status: "ACTIVE",
+          isLifetime: true,
+          appsumoTier: dealTier,
+          tierVersion,
+          trialEndsAt: null,
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: null,
+        },
+      });
+
+      await prisma.user.update({
+        where: { id: session.user.id },
+        data: { tier: targetPlan },
+      });
+    }
+  } else if (resolvedParams.deal && isSuccess) {
+    // 2. If returning with success/mock and deal parameter (e.g. ?deal=ltd-tier-1&success=true)
+    const deal = resolvedParams.deal;
+    const dealTier = deal.includes("3") ? 3 : deal.includes("2") ? 2 : 1;
+    const targetPlan = dealTier === 3 ? "CONSTRUCT" : "NETRUNNER";
+    const tierVersion = `appsumo_tier_${dealTier}`;
+    const prisma = (await import("@steadystack/db")).default;
+
+    await prisma.subscription.upsert({
+      where: { userId: session.user.id },
+      create: {
+        userId: session.user.id,
+        plan: targetPlan,
+        status: "ACTIVE",
+        isLifetime: true,
+        appsumoTier: dealTier,
+        tierVersion,
+        trialEndsAt: null,
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: null,
+      },
+      update: {
+        plan: targetPlan,
+        status: "ACTIVE",
+        isLifetime: true,
+        appsumoTier: dealTier,
+        tierVersion,
+        trialEndsAt: null,
+        currentPeriodStart: new Date(),
+        currentPeriodEnd: null,
+      },
+    });
+
+    await prisma.user.update({
+      where: { id: session.user.id },
+      data: { tier: targetPlan },
+    });
   } else if (
-    isMockCheckout &&
     mockPlan &&
+    isSuccess &&
     (mockPlan === "CONSTRUCT" || mockPlan === "NETRUNNER" || mockPlan === "INITIATE")
   ) {
     const prisma = (await import("@steadystack/db")).default;
@@ -105,13 +185,13 @@ export default async function SettingsPage({
   ];
   const tab = validTabs.includes(cleanTab) ? cleanTab : "general";
   const usageSummary = tab === "billing" ? await getUserUsageSummary(session.user.id) : undefined;
-  const dbUser = await (await import("@steadystack/db")).default.user.findUnique({
+  const dbUser = await (
+    await import("@steadystack/db")
+  ).default.user.findUnique({
     where: { id: session.user.id },
     select: { holidayModeUntil: true },
   });
-  const holidayModeUntil = dbUser?.holidayModeUntil
-    ? dbUser.holidayModeUntil.toISOString()
-    : null;
+  const holidayModeUntil = dbUser?.holidayModeUntil ? dbUser.holidayModeUntil.toISOString() : null;
 
   return (
     <div className="flex flex-col md:flex-row gap-8 max-w-6xl">

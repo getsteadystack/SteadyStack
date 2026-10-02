@@ -64,57 +64,57 @@ export function ServiceDiagnostics({ service, probeResult }: ServiceDiagnosticsP
   ];
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
       {/* 1. Global Multi-Region Vantage Point Latency Grid */}
-      <div className="rounded-2xl border border-border bg-card/40 p-6 md:p-8 backdrop-blur-sm">
+      <div className="rounded-2xl border border-[#e8e6df] bg-white p-6 sm:p-8 shadow-xs">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-primary/10 text-primary">
+            <div className="p-2.5 rounded-xl bg-[#ffd439]/20 border border-[#ffd439]/40 text-[#23211a]">
               <Globe className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-xl font-bold text-foreground">
+              <h3 className="text-xl sm:text-2xl font-serif font-medium text-[#23211a]">
                 Global Edge Reachability & Regional Latency
               </h3>
-              <p className="text-sm text-muted-foreground">
-                Synthetic probe response times tested from SteadyStack worldwide vantage points.
+              <p className="text-xs sm:text-sm text-[#5c5c5c] font-sans">
+                Synthetic probe response times tested from SteadyStack sovereign vantage points.
               </p>
             </div>
           </div>
-          <Badge variant="outline" className="hidden sm:inline-flex font-mono text-xs">
+          <span className="hidden sm:inline-flex px-3 py-1 rounded-full font-mono text-xs text-[#868279] border border-[#e8e6df] bg-[#fbfbf9]">
             Live HTTP / TCP Ping
-          </Badge>
+          </span>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
           {probes.map((p) => (
             <div
               key={p.region}
-              className="flex items-center justify-between p-4 rounded-xl border border-border/70 bg-background/60 hover:border-primary/40 transition-colors"
+              className="flex items-center justify-between p-4 rounded-xl border border-[#e8e6df] bg-[#fbfbf9] hover:bg-[#f5f3ec] transition-colors"
             >
               <div className="flex items-center gap-3">
                 <span className="text-2xl" role="img" aria-label={p.location}>
                   {p.flag}
                 </span>
                 <div>
-                  <div className="text-sm font-semibold text-foreground">{p.location}</div>
-                  <div className="text-xs text-muted-foreground font-mono">{p.region}</div>
+                  <div className="text-xs font-mono font-semibold text-[#23211a]">{p.location}</div>
+                  <div className="text-[11px] text-[#868279] font-mono">{p.region}</div>
                 </div>
               </div>
 
               <div className="text-right">
                 <div
-                  className={`text-sm font-bold font-mono ${
+                  className={`text-sm font-serif font-medium ${
                     p.status === "DOWN"
-                      ? "text-rose-500"
+                      ? "text-rose-700"
                       : p.status === "SLOW"
-                        ? "text-amber-500"
-                        : "text-emerald-500"
+                        ? "text-amber-700"
+                        : "text-emerald-700"
                   }`}
                 >
                   {p.latencyMs > 0 ? `${p.latencyMs} ms` : "Timeout"}
                 </div>
-                <div className="flex items-center justify-end gap-1 text-[10px] text-muted-foreground uppercase font-semibold">
+                <div className="flex items-center justify-end gap-1 text-[10px] text-[#868279] uppercase font-mono font-semibold">
                   <span
                     className={`h-1.5 w-1.5 rounded-full ${
                       p.status === "DOWN"
@@ -134,47 +134,52 @@ export function ServiceDiagnostics({ service, probeResult }: ServiceDiagnosticsP
 
       {/* 2. Incident Symptoms & Monitored Core Components */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-border bg-card/40 p-6 md:p-8 space-y-4">
+        <div className="rounded-2xl border border-[#e8e6df] bg-white p-6 sm:p-8 space-y-4 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-rose-500/10 text-rose-500">
+            <div className="p-2.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700">
               <ServerCrash className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-foreground">Downtime Impact Analysis</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="text-xl font-serif font-medium text-[#23211a]">
+                Downtime Impact Analysis
+              </h3>
+              <p className="text-xs text-[#868279] font-mono">
                 What happens when {service.name} degrades
               </p>
             </div>
           </div>
 
-          <p className="text-sm text-muted-foreground leading-relaxed">{service.impactSummary}</p>
+          <p className="text-xs sm:text-sm text-[#5c5c5c] leading-relaxed font-sans">
+            {service.impactSummary}
+          </p>
 
-          <div className="pt-3 border-t border-border/60">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-2">
+          <div className="pt-3 border-t border-[#e8e6df]">
+            <h4 className="text-[11px] font-mono font-semibold uppercase tracking-wider text-[#868279] mb-2">
               Common HTTP Error Codes Observed
             </h4>
             <div className="flex flex-wrap gap-2">
               {service.commonErrorCodes.map((code) => (
-                <Badge
+                <span
                   key={code}
-                  variant="outline"
-                  className="font-mono text-xs border-rose-500/30 bg-rose-500/5 text-rose-600 dark:text-rose-400"
+                  className="font-mono text-xs border border-rose-200 bg-rose-50 text-rose-700 px-2.5 py-0.5 rounded-full font-medium"
                 >
                   {code}
-                </Badge>
+                </span>
               ))}
             </div>
           </div>
         </div>
 
-        <div className="rounded-2xl border border-border bg-card/40 p-6 md:p-8 space-y-4">
+        <div className="rounded-2xl border border-[#e8e6df] bg-white p-6 sm:p-8 space-y-4 shadow-xs">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-500">
+            <div className="p-2.5 rounded-xl bg-[#ffd439]/20 border border-[#ffd439]/40 text-[#23211a]">
               <Layers className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-lg font-bold text-foreground">Critical Monitored Subsystems</h3>
-              <p className="text-xs text-muted-foreground">
+              <h3 className="text-xl font-serif font-medium text-[#23211a]">
+                Critical Monitored Subsystems
+              </h3>
+              <p className="text-xs text-[#868279] font-mono">
                 Components tracked on {service.domain}
               </p>
             </div>
@@ -184,15 +189,15 @@ export function ServiceDiagnostics({ service, probeResult }: ServiceDiagnosticsP
             {service.keyComponents.map((comp) => (
               <div
                 key={comp}
-                className="flex items-center justify-between p-3 rounded-lg border border-border/60 bg-background/50 text-xs font-medium"
+                className="flex items-center justify-between p-3 rounded-xl border border-[#e8e6df] bg-[#fbfbf9] text-xs font-medium"
               >
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
-                  <span className="text-foreground">{comp}</span>
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+                  <span className="text-[#23211a] font-mono">{comp}</span>
                 </div>
-                <Badge variant="secondary" className="text-[10px] font-mono">
+                <span className="text-[10px] font-mono text-[#868279] uppercase tracking-wider bg-white px-2 py-0.5 rounded-full border border-[#e8e6df]">
                   Synthetic Active
-                </Badge>
+                </span>
               </div>
             ))}
           </div>
@@ -200,16 +205,16 @@ export function ServiceDiagnostics({ service, probeResult }: ServiceDiagnosticsP
       </div>
 
       {/* 3. Engineering Resiliency & Failover Architecture Guide */}
-      <div className="rounded-2xl border border-border bg-card/40 p-6 md:p-8 space-y-6">
+      <div className="rounded-2xl border border-[#e8e6df] bg-white p-6 sm:p-8 space-y-6 shadow-xs">
         <div className="flex items-center gap-3">
-          <div className="p-2 rounded-xl bg-primary/10 text-primary">
+          <div className="p-2.5 rounded-xl bg-[#ffd439]/20 border border-[#ffd439]/40 text-[#23211a]">
             <Wrench className="h-5 w-5" />
           </div>
           <div>
-            <h3 className="text-xl font-bold text-foreground">
+            <h3 className="text-xl sm:text-2xl font-serif font-medium text-[#23211a]">
               Engineering Resilience Guide: Surviving {service.name} Outages
             </h3>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-xs sm:text-sm text-[#5c5c5c] font-sans">
               Defensive software architecture patterns to prevent third-party cascade failures.
             </p>
           </div>
@@ -217,11 +222,13 @@ export function ServiceDiagnostics({ service, probeResult }: ServiceDiagnosticsP
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-3">
-            <h4 className="text-sm font-bold text-foreground">Immediate Tactical Steps</h4>
+            <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#868279]">
+              Immediate Tactical Steps
+            </h4>
             <ul className="space-y-2.5">
               {service.troubleshootingSteps.map((step, idx) => (
-                <li key={idx} className="flex items-start gap-2.5 text-xs text-muted-foreground">
-                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/10 font-mono text-[11px] font-bold text-primary">
+                <li key={idx} className="flex items-start gap-2.5 text-xs text-[#5c5c5c] font-sans">
+                  <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[#ffd439]/20 border border-[#ffd439]/40 font-mono text-[11px] font-bold text-[#23211a]">
                     {idx + 1}
                   </span>
                   <span className="leading-relaxed">{step}</span>
@@ -230,31 +237,31 @@ export function ServiceDiagnostics({ service, probeResult }: ServiceDiagnosticsP
             </ul>
           </div>
 
-          <div className="space-y-3 p-4 rounded-xl border border-border/80 bg-background/60">
-            <h4 className="text-sm font-bold text-foreground">Recommended Resiliency Patterns</h4>
-            <div className="space-y-2 text-xs text-muted-foreground">
+          <div className="space-y-3 p-5 rounded-xl border border-[#e8e6df] bg-[#fbfbf9]">
+            <h4 className="text-xs font-mono font-semibold uppercase tracking-wider text-[#868279]">
+              Recommended Resiliency Patterns
+            </h4>
+            <div className="space-y-2.5 text-xs text-[#5c5c5c] font-sans">
               <div className="flex items-start gap-2">
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
                 <p>
-                  <strong className="text-foreground">Circuit Breaker Pattern:</strong>{" "}
-                  Automatically trip and fallback to cache when {service.name} error rates exceed
-                  15% in a 30s rolling window.
+                  <strong className="text-[#23211a]">Circuit Breaker Pattern:</strong> Automatically
+                  trip and fallback to cache when {service.name} error rates exceed 15% in a 30s
+                  rolling window.
                 </p>
               </div>
               <div className="flex items-start gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-cyan-500 mt-1.5 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#ffd439] mt-1.5 shrink-0" />
                 <p>
-                  <strong className="text-foreground">Idempotent Background Retries:</strong> Push
+                  <strong className="text-[#23211a]">Idempotent Background Retries:</strong> Push
                   failed API events into an asynchronous dead-letter queue with exponential backoff
                   and jitter.
                 </p>
               </div>
               <div className="flex items-start gap-2">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                <span className="h-1.5 w-1.5 rounded-full bg-[#23211a] mt-1.5 shrink-0" />
                 <p>
-                  <strong className="text-foreground">
-                    Multi-Region Edge Synthetic Consensus:
-                  </strong>{" "}
+                  <strong className="text-[#23211a]">Multi-Region Edge Synthetic Consensus:</strong>{" "}
                   Rely on SteadyStack to alert your team before end-users notice degradation.
                 </p>
               </div>

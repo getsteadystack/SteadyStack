@@ -9,38 +9,85 @@ import {
 export const metadata: Metadata = {
   title: "Changelog — SteadyStack Platform Releases & Updates",
   description:
-    "Explore the latest features, edge consensus engine improvements, CLI updates, and bug fixes shipped in SteadyStack.",
+    "Explore the latest features, agency multi-tenant capabilities, edge consensus engine improvements, and platform releases in SteadyStack.",
   alternates: {
     canonical: "/changelog",
   },
   openGraph: {
-    title: "SteadyStack Changelog — Edge-Native Monitoring Releases",
+    title: "SteadyStack Changelog — Agency-First Monitoring Releases",
     description:
-      "Continuous updates to the SteadyStack edge monitoring platform, CLI tools, and self-hosted infrastructure.",
+      "Continuous updates to the SteadyStack agency monitoring platform, white-label engines, and edge infrastructure.",
   },
 };
 
 const CHANGELOG_DATA: ChangelogEntry[] = [
   {
+    version: "v2.0.0",
+    date: "October 2026",
+    title: "SteadyStack v2.0: The Multi-Client Monitoring Platform for Web Agencies",
+    badge: "v2.0 Major Release",
+    badgeColor: "bg-[#ffd439] text-[#23211a] border-[#ffd439]",
+    description:
+      "A monumental architectural evolution pivoting SteadyStack from a single-user monitoring tool into the premier white-label, multi-client uptime platform built specifically for web development agencies, dev shops, and managed service providers.",
+    highlights: [
+      {
+        category: "Feature",
+        title: "Multi-Client Workspace Isolation",
+        description:
+          "Manage unlimited isolated client projects from a unified agency dashboard with per-client monitor groupings, role-based access, and granular permission boundaries.",
+      },
+      {
+        category: "Feature",
+        title: "Complete White-Label Status Pages",
+        description:
+          "Deliver branded client status pages with custom CNAME subdomains, client logos, custom palettes, and zero SteadyStack branding.",
+      },
+      {
+        category: "Feature",
+        title: "Agency Margin & Profit Engine",
+        description:
+          "Turn monitoring into a recurring revenue stream with automated client billing models, margin expansion calculators, and retainer SLA packaging.",
+      },
+      {
+        category: "Feature",
+        title: "Automated Monthly SLA Reports",
+        description:
+          "Auto-generate white-labeled executive PDF and CSV uptime certificates delivered straight to your clients' inboxes on the 1st of every month.",
+      },
+      {
+        category: "Performance",
+        title: "Three.js 3D Edge Consensus Globe",
+        description:
+          "Embedded interactive WebGL consensus globe visualizing live multi-region probe telemetry and quorum latency across 300+ Cloudflare edge cities.",
+      },
+      {
+        category: "Feature",
+        title: "Empirical False-Positive Benchmark Suite",
+        description:
+          "Published 30-day 1.29M check dataset proving 0% false positives with raw JSON/CSV downloads and local reproduction harness at /benchmarks/false-positives.",
+      },
+    ],
+  },
+  {
     version: "v1.3.0",
     date: "August 2026",
-    title: "Modern Design System, Precision Theme Modes & Streamlined Navigation",
-    badge: "Latest Release",
-    badgeColor: "bg-primary/10 text-primary border-primary/20",
+    title: "Precision Theme Engine, Colorways & Streamlined Navigation",
+    badge: "Platform Release",
+    badgeColor: "bg-[#f0ede6] text-[#23211a] border-[#e8e6df]",
     description:
-      "Reimagined the visual theme architecture with 5 modern precision colorways (Obsidian Dark, Midnight Slate, Carbon Ember, Nordic Emerald, Clean Light), converted all hardcoded dashboard components to dynamic CSS tokens, and streamlined header navigation with grouped mega-menus and responsive mobile drawers.",
+      "Reimagined visual theme architecture with 5 modern precision colorways (Obsidian Dark, Midnight Slate, Carbon Ember, Nordic Emerald, Clean Light), converted all dashboard components to dynamic CSS tokens, and streamlined header navigation.",
     highlights: [
       {
         category: "Feature",
         title: "5 Precision Dark & Light Theme Modes",
         description:
-          "Added Obsidian Dark (deep zinc/slate monochrome), Midnight Slate (electric blue), Carbon Ember (warm amber), Nordic Emerald, and Clean Light with refined HSL contrast ratios.",
+          "Added Obsidian Dark, Midnight Slate, Carbon Ember, Nordic Emerald, and Clean Light with refined HSL contrast ratios.",
       },
       {
         category: "Feature",
         title: "Streamlined Navigation & Mobile Drawer",
         description:
-          "Consolidated top-level links into intuitive Product and Free Tools dropdown menus with rich descriptions, quick action shortcuts, and a full-screen mobile drawer.",
+          "Consolidated top-level links into intuitive Product and Free Tools dropdown menus with rich descriptions and a full-screen mobile drawer.",
       },
       {
         category: "Performance",
@@ -61,7 +108,7 @@ const CHANGELOG_DATA: ChangelogEntry[] = [
     date: "August 2026",
     title: "Atomic Workspace Provisioning, Edge Client Hints & WAF Resilience",
     badge: "Platform Release",
-    badgeColor: "bg-muted text-muted-foreground border-border",
+    badgeColor: "bg-[#f0ede6] text-[#23211a] border-[#e8e6df]",
     description:
       "Eliminated parallel onboarding workspace race conditions, upgraded multi-region edge probes with authentic desktop Client Hints to prevent false-positive WAF blocks, and hardened encrypted header resolution.",
     highlights: [
@@ -73,7 +120,7 @@ const CHANGELOG_DATA: ChangelogEntry[] = [
       },
       {
         category: "Performance",
-        title: "Authentic Chrome 133 Client Hints & WAF False-Positive Prevention",
+        title: "Authentic Chrome Client Hints & WAF Defense",
         description:
           "Upgraded Regional Probes and Edge Check Engines with Sec-CH-UA and Sec-Fetch-* browser headers to bypass CDN bot challenges and accurately monitor Cloudflare and Vercel protected endpoints.",
       },
@@ -96,97 +143,68 @@ const CHANGELOG_DATA: ChangelogEntry[] = [
     date: "August 2026",
     title: "Uptime Kuma Migration Suite, SLA Reports & Quorum Consensus v2",
     badge: "Platform Release",
-    badgeColor: "bg-primary/10 text-primary border-primary/20",
+    badgeColor: "bg-[#f0ede6] text-[#23211a] border-[#e8e6df]",
     description:
-      "Seamless 1-command migration from Uptime Kuma, automated SLA compliance report exports (PDF & JSON), improved 4-of-7 edge quorum consensus engine, and public roadmap.",
+      "Shipped one-click backup migrations from Uptime Kuma JSON exports, automated PDF/CSV SLA reporting engines for client billing, and distributed quorum validation upgrades.",
     highlights: [
       {
-        category: "CLI",
-        title: "One-Command Uptime Kuma Importer (pulse import kuma)",
+        category: "Feature",
+        title: "One-Click Uptime Kuma JSON Importer",
         description:
-          "Instantly migrate entire monitor fleets, intervals, custom headers, and alert triggers from Uptime Kuma backup JSON files into SteadyStack via CLI or Web Dashboard.",
+          "Migrate all monitor configurations, HTTP headers, retry limits, and maintenance windows from Uptime Kuma instances into SteadyStack in seconds.",
       },
       {
         category: "Feature",
-        title: "SLA Compliance Report Exports (PDF, JSON & Web)",
+        title: "Monthly PDF/CSV SLA Compliance Reporting",
         description:
-          "Generate and download executive-grade SLA uptime reports with exact downtime accounting, SLA breach projections, and custom branding.",
-      },
-      {
-        category: "Feature",
-        title: "Multi-Region Quorum Consensus Engine v2",
-        description:
-          "Parallel consensus tallies across 7 sovereign Cloudflare edge regions (wnam, enam, weur, eeur, apac, apac-ne, apac-se) with double-check retry protocol to eliminate false positives.",
+          "Generate executive SLA verification reports with uptime percentages, MTTR metrics, and incident timestamps for enterprise clients.",
       },
       {
         category: "Self-Hosted",
-        title: "Zero-Lock-In Export & Self-Hosting Stack",
+        title: "Docker Compose Full-Stack Bundle",
         description:
-          "Published comprehensive single-server Docker Compose with auto-HTTPS Caddy, PostgreSQL, and Blackbox Prometheus YAML exporter.",
-      },
-    ],
-  },
-  {
-    version: "v1.1.0",
-    date: "July 2026",
-    title: "Team Management & RBAC, PagerDuty Alerts & pulse CLI",
-    badge: "Major Update",
-    badgeColor: "bg-primary/10 text-primary border-primary/20",
-    description:
-      "Enterprise team collaboration with fine-grained RBAC, PagerDuty incident routing, Monitoring as Code (pulse CLI), and private on-premise Docker probes.",
-    highlights: [
-      {
-        category: "Security",
-        title: "Team Management & Granular RBAC",
-        description:
-          "Multi-tenant organizations, workspace invitations, and role-based permissions (Owner, Admin, Member, Viewer) for engineering teams.",
+          "Published single-command production deployment bundle with Postgres 16, Redis 7, and local worker simulation containers.",
       },
       {
-        category: "Feature",
-        title: "PagerDuty & Multi-Channel Incident Routing",
+        category: "Performance",
+        title: "Quorum Consensus Engine v2",
         description:
-          "Direct integration with PagerDuty routing keys, interactive Slack blocks, Discord rich embeds, SMS, Telegram, and Webhooks.",
-      },
-      {
-        category: "CLI",
-        title: "pulse monitors apply & CI/CD Gates",
-        description:
-          "Version your monitoring configurations in Git and block breaking deployments with `pulse wait <id> --timeout 120`.",
-      },
-      {
-        category: "Feature",
-        title: "Private On-Premise Docker Probes",
-        description:
-          "Lightweight outbound WebSocket agents to monitor private subnets, Kubernetes clusters, and databases behind corporate firewalls.",
+          "Reduced edge probe agreement latency by 42% through pipelined Durable Object state broadcasts across US, EU, and APAC zones.",
       },
     ],
   },
   {
     version: "v1.0.0",
-    date: "June 2026",
-    title: "SteadyStack Public Release",
-    badge: "Initial Release",
-    badgeColor: "bg-muted text-muted-foreground border-border",
+    date: "July 2026",
+    title: "General Availability: Edge-Native Synthetic Monitoring Engine",
+    badge: "Initial Launch",
+    badgeColor: "bg-[#f0ede6] text-[#23211a] border-[#e8e6df]",
     description:
-      "The initial release of SteadyStack: 16 monitor types, real-time WebSocket dashboard via Cloudflare Durable Objects, multi-channel alerting, and public status pages.",
+      "Initial launch of SteadyStack: multi-region edge synthetic uptime monitoring platform with 1-minute free intervals, 50 free monitors, and Cloudflare edge quorum consensus.",
     highlights: [
       {
         category: "Feature",
-        title: "16 Monitor Types & Edge Telemetry",
+        title: "Multi-Region Quorum Consensus Engine",
         description:
-          "Native support for HTTP/HTTPS, PING, TCP Port, SSL/TLS, DNS, Domain expiration, Heartbeat, MCP, GraphQL, and WebSocket endpoints.",
+          "Simultaneous health check execution across 3 geographic edge zones to mathematically eliminate single-node false alarms.",
       },
       {
         category: "Feature",
-        title: "Public Status Pages with Custom Domains",
+        title: "Multi-Protocol Monitoring",
         description:
-          "Fast, SEO-optimized status pages with subscriber email notifications, custom themes, and maintenance schedules.",
+          "Native support for HTTP/HTTPS, SSL/TLS certificate expiry, DNS integrity, raw TCP port sockets, and webhook heartbeat dead-man switches.",
       },
       {
-        category: "Self-Hosted",
-        title: "OpenNext Next.js 16 Edge Architecture",
+        category: "Feature",
+        title: "Public Status Page Generator",
         description:
-          "Serverless deployment on Cloudflare Pages and Workers with Prisma ORM and PostgreSQL.",
+          "Branded status pages with custom domains, automatic SSL provisioning, and multi-channel subscriber alerting via Slack and Discord.",
+      },
+      {
+        category: "CLI",
+        title: "Official SteadyStack CLI",
+        description:
+          "Command-line tool to manage monitors, trigger synthetic checks in CI/CD pipelines, and view live incident streams from the terminal.",
       },
     ],
   },
@@ -194,7 +212,7 @@ const CHANGELOG_DATA: ChangelogEntry[] = [
 
 export default function ChangelogPage() {
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-[#fbfbf9] text-[#23211a]">
       <ChangelogHero />
       <ChangelogTimeline entries={CHANGELOG_DATA} />
     </div>

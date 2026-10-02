@@ -166,7 +166,10 @@ function effectiveDownThreshold(monitor: Pick<DueMonitor, "alertThreshold">): nu
 }
 
 /** Count consecutive DOWN events currently recorded for a monitor. */
-export async function countRecentConsecutiveFailures(monitorId: string, limit = 6): Promise<number> {
+export async function countRecentConsecutiveFailures(
+  monitorId: string,
+  limit = 6,
+): Promise<number> {
   try {
     const recent = await prisma.monitorEvent.findMany({
       where: { monitorId, status: { in: ["UP", "DOWN"] } },
@@ -196,16 +199,31 @@ export function resolvePersistenceDecision(input: {
   previousStatus: string;
   priorConsecutiveFailures: number;
   downThreshold: number;
-}): { persistedStatus: "UP" | "DOWN"; latency: number; errorReason?: string; unconfirmed: boolean } {
+}): {
+  persistedStatus: "UP" | "DOWN";
+  latency: number;
+  errorReason?: string;
+  unconfirmed: boolean;
+} {
   const { attempt, previousStatus, priorConsecutiveFailures, downThreshold } = input;
 
   if (attempt.status === "UP") {
-    return { persistedStatus: "UP", latency: attempt.latency, errorReason: attempt.errorReason, unconfirmed: false };
+    return {
+      persistedStatus: "UP",
+      latency: attempt.latency,
+      errorReason: attempt.errorReason,
+      unconfirmed: false,
+    };
   }
 
   // Already recorded as DOWN and still failing: keep DOWN (no re-alert).
   if (previousStatus === "DOWN") {
-    return { persistedStatus: "DOWN", latency: attempt.latency, errorReason: attempt.errorReason, unconfirmed: false };
+    return {
+      persistedStatus: "DOWN",
+      latency: attempt.latency,
+      errorReason: attempt.errorReason,
+      unconfirmed: false,
+    };
   }
 
   // Healthy monitor failing: only flip to DOWN once the threshold is met.
@@ -220,7 +238,12 @@ export function resolvePersistenceDecision(input: {
     };
   }
 
-  return { persistedStatus: "DOWN", latency: attempt.latency, errorReason: attempt.errorReason, unconfirmed: false };
+  return {
+    persistedStatus: "DOWN",
+    latency: attempt.latency,
+    errorReason: attempt.errorReason,
+    unconfirmed: false,
+  };
 }
 
 /** One check attempt over the right transport for this monitor. */
@@ -232,7 +255,12 @@ async function performCheckAttempt(monitor: DueMonitor, start: number): Promise<
       monitor.type === "PING"
     ) {
       const latency = await checkPingMonitor(monitor, start);
-      return { status: "UP", latency, errorReason: undefined, transport: "ping" };
+      return {
+        status: "UP",
+        latency,
+        errorReason: undefined,
+        transport: "ping",
+      };
     }
     if (monitor.url.startsWith("http://") || monitor.url.startsWith("https://")) {
       const result = await checkHttpMonitor(monitor, start);
@@ -272,7 +300,11 @@ async function checkHttpMonitor(monitor: DueMonitor, start: number) {
 
   const ssrfCheck = await isPrivateOrInternalUrlAsync(monitor.url);
   if (ssrfCheck.isForbidden) {
-    return { status: "DOWN" as const, latency, errorReason: `SSRF Protection: ${ssrfCheck.reason || "Private address forbidden"}` };
+    return {
+      status: "DOWN" as const,
+      latency,
+      errorReason: `SSRF Protection: ${ssrfCheck.reason || "Private address forbidden"}`,
+    };
   }
 
   const method = monitor.method || "GET";
@@ -536,7 +568,12 @@ export async function runDueChecks(take = 50): Promise<DueCheckResult[]> {
 
       await dispatchAlerts(monitor, previousStatus, persistedStatus, errorReason);
 
-      results.push({ id: monitor.id, name: monitor.name, status: persistedStatus, latency });
+      results.push({
+        id: monitor.id,
+        name: monitor.name,
+        status: persistedStatus,
+        latency,
+      });
     }),
   );
 

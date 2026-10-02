@@ -182,58 +182,48 @@ export function MonitorList({ monitors }: { monitors: any[] }) {
 
   return (
     <>
-      <div className="border border-primary/20 bg-card/40 relative overflow-hidden shadow-lg backdrop-blur-sm">
-        {/* Decor corners */}
-        <div className="absolute top-0 right-0 w-4 h-4 border-t border-r border-primary/50 pointer-events-none"></div>
-        <div className="absolute bottom-0 left-0 w-4 h-4 border-b border-l border-primary/50 pointer-events-none"></div>
-
+      <div className="border border-border bg-card rounded-2xl relative overflow-hidden shadow-xs">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
-            <thead className="bg-primary/5 border-b border-primary/20">
+            <thead className="bg-muted/50 border-b border-border">
               <tr>
-                <th className="p-4 text-[10px] text-primary/60 uppercase tracking-widest font-normal font-mono">
+                <th className="p-4 text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-bold">
                   Status
                 </th>
-                <th className="p-4 text-[10px] text-primary/60 uppercase tracking-widest font-normal font-mono">
+                <th className="p-4 text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-bold">
                   Monitor Info
                 </th>
-                <th className="p-4 text-[10px] text-primary/60 uppercase tracking-widest font-normal font-mono">
+                <th className="p-4 text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-bold">
                   History (Latest)
                 </th>
-                <th className="p-4 text-[10px] text-primary/60 uppercase tracking-widest font-normal font-mono">
+                <th className="p-4 text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-bold">
                   Response
                 </th>
-                <th className="p-4 text-[10px] text-primary/60 uppercase tracking-widest font-normal font-mono text-right">
+                <th className="p-4 text-[10px] text-muted-foreground uppercase tracking-wider font-mono font-bold text-right">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-primary/10 text-sm">
+            <tbody className="divide-y divide-border text-sm">
               {monitors.length === 0 ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className="p-8 text-center text-primary/40 font-mono text-xs uppercase tracking-widest"
+                    className="p-12 text-center text-muted-foreground font-mono text-xs uppercase tracking-wider"
                   >
-                    No monitors active. Dispatch new targets.
+                    No monitors active in this view.
                   </td>
                 </tr>
               ) : (
                 currentMonitors.map((monitor) => {
-                  // Calculate history for bars (last 20 events reversed for display left-to-right?)
-                  // Assuming events are desc, so [0] is latest. We take the first 20.
                   const recentEvents = monitor.events ? monitor.events.slice(0, 20) : [];
 
-                  // Map events to status codes
                   const rawHistory = [...recentEvents].reverse().map((e: any) => {
                     if (e.status === "MAINTENANCE") return 2;
                     return e.status === "UP" ? 1 : 0;
                   });
 
-                  // Pad with "empty" slots (3) to ensure 20 bars
                   const history = Array(20).fill(3);
-                  // Fill the end of the array with the actual history
-                  // We want [empty, empty, ..., old, new]
                   const startIndex = 20 - rawHistory.length;
                   rawHistory.forEach((status, index) => {
                     if (startIndex + index < 20) {
@@ -248,50 +238,40 @@ export function MonitorList({ monitors }: { monitors: any[] }) {
                     <tr
                       key={monitor.id}
                       onClick={() => router.push(`/dashboard/monitors/${monitor.id}`)}
-                      className="group hover:bg-primary/5 transition-colors cursor-pointer font-mono border-l-2 border-transparent hover:border-primary/50"
+                      className="group hover:bg-muted/40 transition-colors cursor-pointer"
                     >
                       <td className="p-4 w-32">
                         {monitor.status === "UP" && (
-                          <div className="flex items-center gap-2 px-2 py-1 bg-primary/10 border border-primary/20 w-fit rounded-sm">
-                            <div className="size-1.5 bg-primary rounded-full shadow-[0_0_5px_currentColor] animate-pulse"></div>
-                            <span className="text-[10px] uppercase text-primary font-bold tracking-wider">
-                              UP
-                            </span>
+                          <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-emerald-500/10 border border-emerald-500/20 w-fit rounded-full text-emerald-700 dark:text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+                            <div className="size-1.5 bg-emerald-500 rounded-full animate-pulse"></div>
+                            <span>UP</span>
                           </div>
                         )}
                         {monitor.status === "DOWN" && (
-                          <div className="flex items-center gap-2 px-2 py-1 bg-red-500/10 border border-red-500/20 w-fit rounded-sm">
-                            <div className="size-1.5 bg-red-500 rounded-full shadow-[0_0_5px_currentColor] animate-ping"></div>
-                            <span className="text-[10px] uppercase text-red-500 font-bold tracking-wider">
-                              DOWN
-                            </span>
+                          <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-red-500/10 border border-red-500/20 w-fit rounded-full text-red-600 dark:text-red-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+                            <div className="size-1.5 bg-red-500 rounded-full animate-ping"></div>
+                            <span>DOWN</span>
                           </div>
                         )}
                         {monitor.status === "PAUSED" && (
-                          <div className="flex items-center gap-2 px-2 py-1 bg-yellow-500/10 border border-yellow-500/20 w-fit rounded-sm">
-                            <div className="size-1.5 bg-yellow-500 rounded-full"></div>
-                            <span className="text-[10px] uppercase text-yellow-500 font-bold tracking-wider">
-                              PAUSED
-                            </span>
+                          <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/20 w-fit rounded-full text-amber-700 dark:text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
+                            <div className="size-1.5 bg-amber-500 rounded-full"></div>
+                            <span>PAUSED</span>
                           </div>
                         )}
                         {monitor.status === "MAINTENANCE" && (
-                          <div className="flex items-center gap-2 px-2 py-1 bg-amber-500/10 border border-amber-500/20 w-fit rounded-sm">
+                          <div className="flex items-center gap-1.5 px-2.5 py-0.5 bg-amber-500/10 border border-amber-500/20 w-fit rounded-full text-amber-700 dark:text-amber-400 text-[10px] font-mono font-bold uppercase tracking-wider">
                             <div className="size-1.5 bg-amber-500 rounded-full animate-pulse"></div>
-                            <span className="text-[10px] uppercase text-amber-500 font-bold tracking-wider">
-                              MAINT
-                            </span>
+                            <span>MAINT</span>
                           </div>
                         )}
                       </td>
                       <td className={`p-4 ${monitor.status === "PAUSED" ? "opacity-75" : ""}`}>
                         <div className="flex flex-col">
-                          <span
-                            className={`font-bold text-foreground group-hover:text-primary transition-colors ${monitor.status === "DOWN" ? "group-hover:text-red-500" : monitor.status === "PAUSED" ? "group-hover:text-yellow-500" : ""}`}
-                          >
+                          <span className="font-semibold text-foreground group-hover:text-primary transition-colors text-sm">
                             {monitor.name}
                           </span>
-                          <span className="text-[10px] text-primary/50 mt-0.5 font-sans break-all">
+                          <span className="text-[11px] text-muted-foreground mt-0.5 font-mono truncate max-w-sm">
                             {monitor.type === "HEARTBEAT" ? "Heartbeat Monitor" : monitor.url}
                           </span>
                           {monitor.tags && monitor.tags.length > 0 && (
@@ -299,7 +279,7 @@ export function MonitorList({ monitors }: { monitors: any[] }) {
                               {monitor.tags.map((tag: string) => (
                                 <span
                                   key={tag}
-                                  className="px-1.5 py-0.5 text-[9px] font-mono tracking-wider bg-primary/5 border border-primary/25 text-primary/60 rounded-xs uppercase"
+                                  className="px-2 py-0.5 text-[9px] font-mono tracking-wider bg-muted border border-border text-muted-foreground rounded-md uppercase font-semibold"
                                 >
                                   {tag}
                                 </span>
@@ -310,13 +290,13 @@ export function MonitorList({ monitors }: { monitors: any[] }) {
                       </td>
                       <td className={`p-4 ${monitor.status === "PAUSED" ? "opacity-50" : ""}`}>
                         <div className="flex items-center gap-3">
-                          <div className="flex gap-px h-4 items-end">
+                          <div className="flex gap-0.5 h-4 items-end">
                             {history.map((h: number, i: number) => (
                               <UptimeBar key={i} status={h} />
                             ))}
                           </div>
                           <span
-                            className={`text-xs font-bold ${uptime < 100 ? "text-red-500" : "text-primary"}`}
+                            className={`text-xs font-mono font-bold ${uptime < 100 ? "text-red-500" : "text-foreground"}`}
                           >
                             {uptime}%
                           </span>
@@ -324,11 +304,11 @@ export function MonitorList({ monitors }: { monitors: any[] }) {
                       </td>
                       <td className={`p-4 ${monitor.status === "PAUSED" ? "opacity-50" : ""}`}>
                         {monitor.status !== "PAUSED" ? (
-                          <div className="flex items-center gap-2 text-xs">
+                          <div className="flex items-center gap-2 text-xs font-mono font-semibold">
                             {monitor.status === "DOWN" ? (
-                              <WifiOff className="size-3 text-red-500" />
+                              <WifiOff className="size-3.5 text-red-500" />
                             ) : (
-                              <Zap className="size-3 text-primary" />
+                              <Zap className="size-3.5 text-emerald-600" />
                             )}
                             <span
                               className={
@@ -339,78 +319,77 @@ export function MonitorList({ monitors }: { monitors: any[] }) {
                             </span>
                           </div>
                         ) : (
-                          <span className="text-xs text-muted-foreground">--</span>
+                          <span className="text-xs text-muted-foreground font-mono">--</span>
                         )}
                       </td>
                       <td className="p-4 text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger
                             onClick={(e) => e.stopPropagation()}
-                            className="p-2 hover:bg-primary/20 text-primary/50 hover:text-primary transition-colors rounded-sm cursor-pointer outline-none"
+                            className="p-2 hover:bg-muted text-muted-foreground hover:text-foreground transition-colors rounded-xl cursor-pointer outline-none"
                           >
                             <MoreHorizontal className="size-4" />
                           </DropdownMenuTrigger>
                           <DropdownMenuContent
                             align="end"
-                            className="rounded-none border-primary/20 bg-background/95 backdrop-blur-md min-w-[140px] font-mono"
+                            className="rounded-2xl border border-border bg-popover p-1.5 min-w-[150px] shadow-md text-xs font-medium"
                           >
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
                                 router.push(`/dashboard/monitors/${monitor.id}`);
                               }}
-                              className="cursor-pointer"
+                              className="cursor-pointer rounded-xl px-2.5 py-1.5"
                             >
                               <ExternalLink className="size-3.5 mr-2" />
-                              View Details
+                              View Telemetry
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
                                 router.push(`/dashboard/monitors/${monitor.id}/settings`);
                               }}
-                              className="cursor-pointer"
+                              className="cursor-pointer rounded-xl px-2.5 py-1.5"
                             >
                               <Settings className="size-3.5 mr-2" />
                               Edit Settings
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-primary/10" />
+                            <DropdownMenuSeparator className="bg-border/60" />
                             <DropdownMenuItem
                               onClick={(e) => handleCheckNow(e, monitor.id, monitor.name)}
                               disabled={monitor.status === "PAUSED" || isChecking[monitor.id]}
-                              className="cursor-pointer"
+                              className="cursor-pointer rounded-xl px-2.5 py-1.5"
                             >
                               {isChecking[monitor.id] ? (
-                                <Loader2 className="size-3.5 mr-2 animate-spin text-primary" />
+                                <Loader2 className="size-3.5 mr-2 animate-spin" />
                               ) : (
-                                <Play className="size-3.5 mr-2 text-primary" />
+                                <Play className="size-3.5 mr-2" />
                               )}
-                              Run Check
+                              Trigger Check
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               onClick={(e) =>
                                 handleToggle(e, monitor.id, monitor.name, monitor.status)
                               }
                               disabled={isToggling[monitor.id]}
-                              className="cursor-pointer"
+                              className="cursor-pointer rounded-xl px-2.5 py-1.5"
                             >
                               {isToggling[monitor.id] ? (
-                                <Loader2 className="size-3.5 mr-2 animate-spin text-primary" />
+                                <Loader2 className="size-3.5 mr-2 animate-spin" />
                               ) : monitor.status === "PAUSED" ? (
-                                <Play className="size-3.5 mr-2 text-primary" />
+                                <Play className="size-3.5 mr-2" />
                               ) : (
-                                <Pause className="size-3.5 mr-2 text-yellow-500" />
+                                <Pause className="size-3.5 mr-2" />
                               )}
                               {monitor.status === "PAUSED" ? "Resume" : "Pause"}
                             </DropdownMenuItem>
-                            <DropdownMenuSeparator className="bg-primary/10" />
+                            <DropdownMenuSeparator className="bg-border/60" />
                             <DropdownMenuItem
                               onClick={(e) => handleDeleteClick(e, monitor.id)}
-                              variant="destructive"
-                              className="cursor-pointer text-red-500 focus:bg-red-500/10 focus:text-red-500"
+                              className="cursor-pointer text-red-600 focus:bg-red-500/10 focus:text-red-600 rounded-xl px-2.5 py-1.5"
                             >
                               <Trash2 className="size-3.5 mr-2" />
-                              Delete
+                              Delete Monitor
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -423,8 +402,8 @@ export function MonitorList({ monitors }: { monitors: any[] }) {
           </table>
         </div>
 
-        <div className="p-4 border-t border-primary/20 flex items-center justify-between bg-primary/5">
-          <span className="text-[10px] text-primary/60 uppercase tracking-widest font-mono">
+        <div className="p-4 border-t border-border flex items-center justify-between bg-muted/20">
+          <span className="text-[11px] text-muted-foreground font-mono">
             Showing {startIndex + 1}-{Math.min(startIndex + itemsPerPage, monitors.length)} of{" "}
             {monitors.length} targets
           </span>
@@ -432,16 +411,16 @@ export function MonitorList({ monitors }: { monitors: any[] }) {
             <button
               onClick={handlePrevPage}
               disabled={currentPage === 1}
-              className="px-3 py-1 border border-primary/20 text-primary/60 hover:text-primary hover:border-primary/50 text-[10px] uppercase font-bold tracking-wider disabled:opacity-30 disabled:hover:text-primary/60 flex items-center gap-1 font-mono transition-all rounded-sm"
+              className="px-3 py-1.5 border border-border bg-card text-foreground hover:bg-muted text-xs font-semibold disabled:opacity-30 flex items-center gap-1 transition-all rounded-xl cursor-pointer shadow-xs"
             >
-              <ChevronLeft className="size-3" /> Prev
+              <ChevronLeft className="size-3.5" /> Prev
             </button>
             <button
               onClick={handleNextPage}
               disabled={currentPage >= totalPages}
-              className="px-3 py-1 border border-primary/20 text-primary/60 hover:text-primary hover:border-primary/50 text-[10px] uppercase font-bold tracking-wider disabled:opacity-30 disabled:hover:text-primary/60 flex items-center gap-1 font-mono transition-all rounded-sm"
+              className="px-3 py-1.5 border border-border bg-card text-foreground hover:bg-muted text-xs font-semibold disabled:opacity-30 flex items-center gap-1 transition-all rounded-xl cursor-pointer shadow-xs"
             >
-              Next <ChevronRight className="size-3" />
+              Next <ChevronRight className="size-3.5" />
             </button>
           </div>
         </div>
@@ -451,31 +430,31 @@ export function MonitorList({ monitors }: { monitors: any[] }) {
         open={deleteMonitorId !== null}
         onOpenChange={(open) => !open && setDeleteMonitorId(null)}
       >
-        <DialogContent className="rounded-none border-primary/20 bg-card/95 backdrop-blur-md max-w-md font-mono text-foreground">
+        <DialogContent className="rounded-2xl border border-border bg-card p-6 shadow-xl max-w-md text-foreground">
           <DialogHeader>
-            <DialogTitle className="text-sm font-bold text-red-500 uppercase tracking-widest flex items-center gap-2">
-              <Trash2 className="size-4" /> Decommission Target
+            <DialogTitle className="text-base font-serif font-semibold text-foreground flex items-center gap-2">
+              <Trash2 className="size-4 text-red-600" /> Delete Monitor
             </DialogTitle>
-            <DialogDescription className="text-xs text-primary/60 mt-2 font-mono">
+            <DialogDescription className="text-xs text-muted-foreground mt-2 leading-relaxed">
               Are you sure you want to permanently delete monitor{" "}
-              <span className="text-foreground font-bold">{monitorToDelete?.name}</span>? This
-              action is irreversible and will erase all telemetry history.
+              <strong className="text-foreground">{monitorToDelete?.name}</strong>? This action is
+              irreversible and will erase all recorded uptime and latency telemetry.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter className="mt-4 gap-2 sm:gap-0">
+          <DialogFooter className="mt-5 gap-2 sm:gap-2">
             <button
               onClick={() => setDeleteMonitorId(null)}
-              className="px-3 py-2 border border-primary/20 text-primary/60 hover:text-primary hover:border-primary/50 text-[10px] uppercase font-bold tracking-wider transition-all rounded-sm cursor-pointer"
+              className="px-4 py-2 border border-border text-foreground hover:bg-muted text-xs font-semibold transition-all rounded-xl cursor-pointer"
             >
-              Abort Mission
+              Cancel
             </button>
             <button
               onClick={handleDeleteConfirm}
               disabled={isDeleting}
-              className="px-3 py-2 bg-red-500/10 border border-red-500/20 text-red-500 hover:bg-red-500/20 hover:border-red-500 text-[10px] uppercase font-bold tracking-wider transition-all rounded-sm flex items-center gap-1 cursor-pointer disabled:opacity-50"
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-semibold transition-all rounded-xl flex items-center gap-1.5 cursor-pointer disabled:opacity-50 shadow-xs"
             >
-              {isDeleting ? <Loader2 className="size-3 animate-spin" /> : null}
-              Confirm Destruction
+              {isDeleting ? <Loader2 className="size-3.5 animate-spin" /> : null}
+              Delete Permanently
             </button>
           </DialogFooter>
         </DialogContent>

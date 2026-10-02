@@ -5,7 +5,6 @@ import {
   DEFAULT_SSL_EXPIRY_ALERT_DAYS,
   MonitorStatus as Status,
   NotificationType,
-  ProxyError,
   SSL_ALERT_MILESTONES,
 } from "./constants";
 import { ProxyMesh, QuantumAnomalyDetector, isProxyInfrastructureError } from "./services/mesh";
@@ -19,7 +18,6 @@ import {
   shouldSendAlert,
 } from "./check-runner";
 import { queueNotification } from "./lib/send-notification";
-import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 import { evaluateQuorum } from "./services/quorum-engine";
 import type { ProbeCheckResult } from "@steadystack/types";
 import type { Env } from "./env";

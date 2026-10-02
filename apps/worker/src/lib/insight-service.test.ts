@@ -49,7 +49,9 @@ describe("InsightService", () => {
     });
 
     it("should update existing insight if a recent active one exists within window", async () => {
-      mockPrisma.monitorInsight.findFirst.mockResolvedValueOnce({ id: "insight-existing" });
+      mockPrisma.monitorInsight.findFirst.mockResolvedValueOnce({
+        id: "insight-existing",
+      });
 
       const result = await service.createInsight({
         monitorId: "mon-1",

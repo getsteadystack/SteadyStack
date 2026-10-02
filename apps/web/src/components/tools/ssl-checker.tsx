@@ -119,41 +119,53 @@ export function SSLChecker() {
   const getGradeColor = (grade: string) => {
     switch (grade) {
       case "A+":
-        return "text-green-500 border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.3)]";
+        return "text-emerald-700 border-emerald-300 bg-emerald-50 shadow-xs";
       case "A":
-        return "text-green-400 border-green-400";
+        return "text-emerald-600 border-emerald-200 bg-emerald-50";
       case "B":
-        return "text-yellow-400 border-yellow-400";
+        return "text-amber-700 border-amber-300 bg-amber-50";
       case "C":
-        return "text-orange-500 border-orange-500";
+        return "text-orange-700 border-orange-300 bg-orange-50";
       default:
-        return "text-red-500 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.3)]";
+        return "text-rose-700 border-rose-300 bg-rose-50 shadow-xs";
     }
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-700">
+    <div className="space-y-8 animate-in fade-in duration-700 font-sans">
       {/* Input */}
-      <Card className="border-primary/20 bg-background/50 backdrop-blur-sm">
-        <CardContent className="pt-6">
-          <form onSubmit={handleCheck} className="flex gap-4 items-end">
-            <div className="grid w-full items-center gap-1.5">
-              <Label htmlFor="url">Target Domain</Label>
+      <Card className="border-[#e8e6df] bg-white shadow-xs rounded-2xl overflow-hidden">
+        <CardContent className="p-6 sm:p-8">
+          <form
+            onSubmit={handleCheck}
+            className="flex flex-col sm:flex-row gap-4 items-stretch sm:items-end"
+          >
+            <div className="grid w-full items-center gap-2">
+              <Label
+                htmlFor="url"
+                className="text-xs font-mono font-semibold text-[#868279] uppercase tracking-wider"
+              >
+                Target Domain or Hostname
+              </Label>
               <Input
                 id="url"
-                placeholder="example.com"
+                placeholder="example.com or api.domain.com"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="font-mono"
+                className="font-mono text-sm h-12 bg-[#fbfbf9] border-[#e8e6df] text-[#23211a] focus-visible:ring-[#23211a] rounded-xl"
               />
             </div>
-            <Button type="submit" disabled={loading} className="min-w-[120px]">
+            <Button
+              type="submit"
+              disabled={loading}
+              className="h-12 px-7 min-w-[140px] bg-[#23211a] hover:bg-black text-[#ffd439] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs"
+            >
               {loading ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               ) : (
                 <ShieldCheck className="mr-2 h-4 w-4" />
               )}
-              {loading ? "Scanning..." : "Analyze"}
+              {loading ? "Scanning..." : "Analyze TLS"}
             </Button>
           </form>
         </CardContent>
@@ -163,19 +175,19 @@ export function SSLChecker() {
       {result && (
         <div className="grid gap-6 md:grid-cols-2">
           {/* Left Col: Main Grade */}
-          <Card className="md:col-span-2 border-border/50 bg-background/50">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ShieldCheck className="h-5 w-5 text-primary" />
+          <Card className="md:col-span-2 border-[#e8e6df] bg-white rounded-2xl shadow-xs overflow-hidden">
+            <CardHeader className="p-6 sm:p-8 border-b border-[#e8e6df] bg-[#fbfbf9]/50">
+              <CardTitle className="flex items-center gap-2 text-xl font-serif font-medium text-[#23211a]">
+                <ShieldCheck className="h-5 w-5 text-[#23211a]" />
                 Security Report for {result.domain}
               </CardTitle>
             </CardHeader>
-            <CardContent className="flex flex-col md:flex-row gap-8 items-center justify-center p-8">
+            <CardContent className="flex flex-col md:flex-row gap-8 items-center justify-center p-6 sm:p-8">
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 className={cn(
-                  "w-32 h-32 md:w-40 md:h-40 rounded-full border-4 flex items-center justify-center text-4xl md:text-6xl font-black bg-background/80 backdrop-blur-md",
+                  "w-32 h-32 md:w-36 md:h-36 rounded-2xl border-2 flex items-center justify-center text-4xl md:text-5xl font-serif font-medium",
                   getGradeColor(result.grade),
                 )}
               >
@@ -183,30 +195,32 @@ export function SSLChecker() {
               </motion.div>
 
               <div className="flex-1 space-y-4 w-full">
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="p-4 rounded-lg bg-card border border-border">
-                    <div className="text-sm text-muted-foreground flex items-center gap-2 mb-1">
-                      <Calendar className="h-4 w-4" /> Valid Until
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="p-4 rounded-xl bg-[#fbfbf9] border border-[#e8e6df]">
+                    <div className="text-xs font-mono font-semibold text-[#868279] uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                      <Calendar className="h-3.5 w-3.5 text-[#23211a]" /> Valid Until
                     </div>
-                    <div className="text-lg font-bold">
+                    <div className="text-base font-serif font-medium text-[#23211a]">
                       {new Date(result.validTo).toLocaleDateString()}
                     </div>
                     <div
                       className={cn(
-                        "text-xs mt-1",
-                        result.daysRemaining < 30 ? "text-red-500" : "text-green-500",
+                        "text-xs font-mono font-medium mt-1",
+                        result.daysRemaining < 30 ? "text-rose-700" : "text-emerald-700",
                       )}
                     >
                       {result.daysRemaining} days remaining
                     </div>
                   </div>
-                  <div className="p-4 rounded-lg bg-card border border-border">
-                    <div className="text-sm text-muted-foreground flex items-center gap-2 mb-1">
-                      <Server className="h-4 w-4" /> Issuer
+                  <div className="p-4 rounded-xl bg-[#fbfbf9] border border-[#e8e6df]">
+                    <div className="text-xs font-mono font-semibold text-[#868279] uppercase tracking-wider flex items-center gap-1.5 mb-1.5">
+                      <Server className="h-3.5 w-3.5 text-[#23211a]" /> Issuer
                     </div>
-                    <div className="text-lg font-bold truncate">{result.issuer}</div>
-                    <div className="text-xs text-green-500 mt-1 flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" /> Trusted
+                    <div className="text-base font-serif font-medium text-[#23211a] truncate">
+                      {result.issuer}
+                    </div>
+                    <div className="text-xs font-mono font-medium text-emerald-700 mt-1 flex items-center gap-1">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Trusted Authority
                     </div>
                   </div>
                 </div>
@@ -215,58 +229,59 @@ export function SSLChecker() {
           </Card>
 
           {/* Detailed Specs (Locked/Unlocked) */}
-          <Card className="md:col-span-2 border-border/50 relative overflow-hidden">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <FileKey className="text-primary h-5 w-5" />
+          <Card className="md:col-span-2 border-[#e8e6df] bg-white rounded-2xl shadow-xs relative overflow-hidden">
+            <CardHeader className="p-6 sm:p-8 border-b border-[#e8e6df] bg-[#fbfbf9]/50">
+              <CardTitle className="flex items-center gap-2 text-xl font-serif font-medium text-[#23211a]">
+                <FileKey className="text-[#23211a] h-5 w-5" />
                 Certificate Chain & Protocols
               </CardTitle>
-              <CardDescription>Detailed technical analysis of the handshake.</CardDescription>
+              <CardDescription className="text-[#5c5c5c] text-sm">
+                Detailed cryptographic breakdown of the handshake.
+              </CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-6 sm:p-8">
               <div
                 className={cn(
                   "space-y-6 transition-all duration-500",
-                  !unlocked && "blur-md select-none opacity-50",
+                  !unlocked && "blur-xs select-none opacity-40",
                 )}
               >
                 {/* Protocol Support */}
                 <div>
-                  <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">
+                  <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-[#868279] mb-3">
                     Supported Protocols
                   </h3>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2.5">
                     {Object.entries(result.details).map(([key, enabled]) => (
-                      <Badge
+                      <div
                         key={key}
-                        variant={enabled ? "outline" : "secondary"}
                         className={cn(
-                          "justify-center py-2",
+                          "flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl border text-xs font-mono font-medium",
                           enabled
-                            ? "border-green-500/50 bg-green-500/10 text-green-500"
-                            : "text-muted-foreground opacity-50",
+                            ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+                            : "border-[#e8e6df] bg-[#fbfbf9] text-[#868279] opacity-60",
                         )}
                       >
-                        {key.toUpperCase()} {enabled ? "✔" : "✘"}
-                      </Badge>
+                        <span>{key.toUpperCase()}</span>
+                        <span>{enabled ? "✓" : "✗"}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
 
                 {/* Certificate Chain */}
                 <div>
-                  <h3 className="font-semibold mb-3 text-sm uppercase tracking-wider text-muted-foreground">
+                  <h3 className="font-mono text-xs font-semibold uppercase tracking-wider text-[#868279] mb-3">
                     Trust Chain
                   </h3>
-                  <div className="space-y-2 border-l-2 border-primary/20 pl-4 py-2">
+                  <div className="space-y-3 border-l-2 border-[#ffd439] pl-4 py-1">
                     {result.chain.map((cert, i) => (
                       <div key={i} className="flex flex-col gap-1 relative">
-                        {/* Connector line */}
-                        <div className="font-mono text-sm font-bold flex items-center gap-2">
-                          <div className="w-2 h-2 rounded-full bg-primary" />
+                        <div className="font-mono text-xs font-bold text-[#23211a] flex items-center gap-2">
+                          <div className="w-2 h-2 rounded-full bg-[#23211a]" />
                           {cert.subject}
                         </div>
-                        <div className="text-xs text-muted-foreground ml-4">
+                        <div className="text-xs text-[#5c5c5c] font-sans ml-4">
                           Issued by: {cert.issuer}
                         </div>
                       </div>
@@ -277,15 +292,23 @@ export function SSLChecker() {
 
               {/* Gate Overlay */}
               {!unlocked && (
-                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-background/50 backdrop-blur-[2px]">
-                  <div className="p-6 text-center max-w-sm">
-                    <Lock className="h-10 w-10 text-primary mx-auto mb-4" />
-                    <h3 className="text-xl font-bold mb-2">Unlock Detailed Analysis</h3>
-                    <p className="text-muted-foreground mb-6">
-                      Get specialized protocol details, cipher suites, and the full trust chain.
+                <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 backdrop-blur-[2px] p-6">
+                  <div className="p-6 text-center max-w-sm flex flex-col items-center">
+                    <div className="p-2.5 rounded-full bg-[#ffd439]/20 border border-[#ffd439]/40 mb-3">
+                      <Lock className="h-5 w-5 text-[#23211a]" />
+                    </div>
+                    <h3 className="font-serif font-medium text-xl text-[#23211a] mb-2">
+                      Unlock Detailed Analysis
+                    </h3>
+                    <p className="text-[#5c5c5c] text-xs mb-5 font-sans leading-relaxed">
+                      View complete cipher suite negotiations, OCSP stapling verification, and the
+                      raw trust chain.
                     </p>
-                    <Button size="lg" onClick={() => setGateOpen(true)}>
-                      Unlock Report <ArrowRight className="ml-2 h-4 w-4" />
+                    <Button
+                      onClick={() => setGateOpen(true)}
+                      className="h-10 px-6 bg-[#23211a] hover:bg-black text-[#ffd439] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs"
+                    >
+                      Unlock Full TLS Report <ArrowRight className="ml-2 h-3.5 w-3.5" />
                     </Button>
                   </div>
                 </div>
@@ -297,21 +320,31 @@ export function SSLChecker() {
 
       {/* Unlock Dialog */}
       <Dialog open={gateOpen} onOpenChange={setGateOpen}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md bg-white border-[#e8e6df] text-[#23211a] rounded-2xl p-6 sm:p-8">
           <DialogHeader>
-            <DialogTitle>Access Advanced Security Data</DialogTitle>
-            <DialogDescription>
-              Enter your email to view the full protocol stack and certificate chain analysis.
+            <DialogTitle className="font-serif font-medium text-2xl text-[#23211a]">
+              Access TLS Security Telemetry
+            </DialogTitle>
+            <DialogDescription className="text-[#5c5c5c] text-sm">
+              Enter your email to reveal the complete protocol stack and intermediate certificate
+              chain analysis.
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label
+                htmlFor="email"
+                className="text-xs font-mono font-semibold text-[#868279] uppercase tracking-wider"
+              >
+                Email Address
+              </Label>
               <Input
                 id="email"
+                type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="security@company.com"
+                placeholder="developer@company.com"
+                className="font-mono text-sm h-11 bg-[#fbfbf9] border-[#e8e6df] text-[#23211a] focus-visible:ring-[#23211a] rounded-xl"
               />
             </div>
           </div>
@@ -320,10 +353,10 @@ export function SSLChecker() {
               type="button"
               onClick={handleUnlock}
               disabled={isEmailSubmitting}
-              className="w-full"
+              className="w-full h-11 bg-[#23211a] hover:bg-black text-[#ffd439] font-mono font-semibold text-xs uppercase tracking-wider rounded-xl transition-all shadow-xs"
             >
               {isEmailSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Reveal Sensitive Data
+              Access TLS Report
             </Button>
           </DialogFooter>
         </DialogContent>

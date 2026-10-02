@@ -84,17 +84,20 @@ export function WorkspaceSwitcher() {
   const handleSwitchWorkspace = async (workspace: WorkspaceItem) => {
     if (workspace.isActive) return;
     try {
-      // 1. Call server action to update database session and cookies
+      // 1. Set cookie immediately on client
+      document.cookie = `pg_active_org_id=${encodeURIComponent(workspace.id)}; path=/; max-age=2592000; SameSite=Lax`;
+
+      // 2. Call server action to update database session and cookies
       await switchActiveWorkspace(workspace.id);
 
-      // 2. Also call BetterAuth client plugin
+      // 3. Also call BetterAuth client plugin
       try {
         await authClient.organization.setActive({
           organizationId: workspace.id,
         });
       } catch {}
 
-      // 3. Update local state
+      // 4. Update local state
       setWorkspaces((prev) =>
         prev.map((w) => ({
           ...w,
@@ -102,8 +105,7 @@ export function WorkspaceSwitcher() {
         })),
       );
 
-      // 4. Trigger page reload to update all server rendered components
-      router.refresh();
+      // 5. Hard reload to guarantee fresh server state across all components
       window.location.reload();
     } catch (err) {
       console.error("Failed to switch workspace:", err);
@@ -120,6 +122,9 @@ export function WorkspaceSwitcher() {
         setIsCreateOpen(false);
         setNewTeamName("");
 
+        // Set cookie immediately on client
+        document.cookie = `pg_active_org_id=${encodeURIComponent(res.organization.id)}; path=/; max-age=2592000; SameSite=Lax`;
+
         // Switch to the newly created workspace
         await switchActiveWorkspace(res.organization.id);
         try {
@@ -128,8 +133,6 @@ export function WorkspaceSwitcher() {
           });
         } catch {}
 
-        await loadWorkspaces();
-        router.refresh();
         window.location.reload();
       } else if (res.requiresUpgrade) {
         setIsCreateOpen(false);
@@ -152,25 +155,16 @@ export function WorkspaceSwitcher() {
       <DropdownMenu>
         <DropdownMenuTrigger
           id="workspace-switcher-trigger"
-          className="flex items-center gap-2 h-9 px-2.5 sm:px-3 rounded-lg border border-border/80 bg-accent/20 hover:bg-accent/50 text-foreground transition-all duration-200 text-xs font-mono outline-none group cursor-pointer shrink-0 max-w-[150px] sm:max-w-[200px]"
+          className="flex items-center gap-2 h-9 px-2.5 sm:px-3 rounded-xl border border-border bg-card hover:bg-muted text-foreground transition-all duration-200 text-xs outline-none group cursor-pointer shrink-0 max-w-[150px] sm:max-w-[200px] shadow-xs"
           aria-label="Select workspace"
         >
-          <div className="size-5 rounded bg-primary/10 border border-primary/30 flex items-center justify-center text-primary shrink-0">
+          <div className="size-5 rounded-lg bg-[#ffd439] text-[#23211a] flex items-center justify-center shrink-0 shadow-xs font-bold">
             <Building2 className="size-3" />
           </div>
-          <span className="font-bold truncate text-left flex-1">
+          <span className="font-semibold truncate text-left flex-1">
             {activeWorkspace?.name || "My Workspace"}
           </span>
-          <span
-            className={cn(
-              "hidden sm:inline-block text-[9px] font-bold px-1.5 py-0.2 rounded border uppercase tracking-wider",
-              activeWorkspace?.role === "owner"
-                ? "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                : activeWorkspace?.role === "admin"
-                  ? "bg-cyan-500/10 text-cyan-400 border-cyan-500/30"
-                  : "bg-primary/10 text-primary border-primary/30",
-            )}
-          >
+          <span className="hidden sm:inline-block text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-amber-500/15 text-amber-700 dark:text-amber-400 border border-amber-500/30 uppercase tracking-wider">
             {activeWorkspace?.role || "OWNER"}
           </span>
           <ChevronsUpDown className="size-3 text-muted-foreground group-hover:text-foreground shrink-0" />
@@ -178,10 +172,10 @@ export function WorkspaceSwitcher() {
 
         <DropdownMenuContent
           align="start"
-          className="w-64 bg-popover/95 backdrop-blur-xl border border-border/80 text-foreground rounded-xl p-1.5 shadow-[0_12px_38px_rgba(0,0,0,0.12)]"
+          className="w-64 bg-card border border-border text-foreground rounded-2xl p-1.5 shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
         >
           <DropdownMenuGroup>
-            <DropdownMenuLabel className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest px-2 py-1.5">
+            <DropdownMenuLabel className="text-[10px] font-mono font-bold text-muted-foreground uppercase tracking-widest px-2.5 py-1.5">
               Workspaces & Teams
             </DropdownMenuLabel>
             {workspaces.map((ws) => (
@@ -189,20 +183,27 @@ export function WorkspaceSwitcher() {
                 key={ws.id}
                 onClick={() => handleSwitchWorkspace(ws)}
                 className={cn(
-                  "flex items-center justify-between px-2.5 py-2 rounded-lg text-xs font-mono cursor-pointer transition-colors group",
+                  "flex items-center justify-between px-2.5 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors group",
                   ws.isActive
-                    ? "bg-primary/10 text-primary border border-primary/20"
-                    : "hover:bg-accent hover:text-foreground",
+                    ? "bg-muted border border-border text-foreground font-semibold shadow-xs"
+                    : "hover:bg-muted/50 text-foreground border border-transparent",
                 )}
               >
-                <div className="flex items-center gap-2 min-w-0 flex-1">
-                  <div className="size-6 rounded bg-card border border-border flex items-center justify-center shrink-0">
-                    <Building2 className="size-3.5 text-muted-foreground group-hover:text-foreground" />
+                <div className="flex items-center gap-2.5 min-w-0 flex-1">
+                  <div
+                    className={cn(
+                      "size-6 rounded-lg flex items-center justify-center shrink-0 shadow-xs",
+                      ws.isActive
+                        ? "bg-[#ffd439] text-[#23211a] font-bold"
+                        : "bg-card border border-border text-muted-foreground group-hover:text-foreground",
+                    )}
+                  >
+                    <Building2 className="size-3.5" />
                   </div>
                   <div className="flex flex-col min-w-0">
-                    <span className="font-bold truncate text-foreground">{ws.name}</span>
+                    <span className="font-semibold truncate text-foreground">{ws.name}</span>
                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground">
-                      <span className="uppercase">{ws.role}</span>
+                      <span className="uppercase font-mono">{ws.role}</span>
                       <span>•</span>
                       <span className="flex items-center gap-0.5">
                         <Users className="size-2.5" />
@@ -211,7 +212,9 @@ export function WorkspaceSwitcher() {
                     </div>
                   </div>
                 </div>
-                {ws.isActive && <Check className="size-4 text-primary shrink-0 ml-2" />}
+                {ws.isActive && (
+                  <Check className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 ml-2" />
+                )}
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
@@ -220,9 +223,9 @@ export function WorkspaceSwitcher() {
 
           <DropdownMenuItem
             onClick={() => setIsCreateOpen(true)}
-            className="flex items-center gap-2 px-2.5 py-2 rounded-lg text-xs font-mono font-bold text-primary hover:bg-primary/10 cursor-pointer transition-colors"
+            className="flex items-center gap-2 px-2.5 py-2 rounded-xl text-xs font-semibold text-foreground hover:bg-muted cursor-pointer transition-colors"
           >
-            <Plus className="size-3.5" />
+            <Plus className="size-3.5 text-[#ffd439]" />
             <span>Create New Team</span>
           </DropdownMenuItem>
         </DropdownMenuContent>
@@ -301,7 +304,7 @@ export function WorkspaceSwitcher() {
           <div className="p-4 rounded-xl border border-primary/20 bg-primary/5 space-y-2.5 font-mono text-xs my-2">
             <div className="flex items-center gap-2 font-bold text-foreground">
               <Shield className="size-4 text-primary" />
-              <span>Included with The Construct ($79/mo):</span>
+              <span>Included with Agency Pro ($99/mo):</span>
             </div>
             <ul className="space-y-1.5 text-muted-foreground text-[11px] pl-6 list-disc">
               <li>

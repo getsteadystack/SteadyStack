@@ -1,338 +1,596 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Activity, ShieldCheck, Zap, Server, RefreshCw } from "lucide-react";
+import { Activity, ChevronRight, FileText, Globe, Play, RefreshCw, Zap } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
+import { ThreeEdgeGlobe } from "./three-edge-globe";
+
+type RegionCheck = {
+  id: string;
+  name: string;
+  flag: string;
+  latency: number;
+  status: "verified" | "checking" | "fluke_suppressed";
+  httpCode: number;
+};
+
+const INITIAL_NODES: RegionCheck[] = [
+  {
+    id: "sjc",
+    name: "San Jose (US West)",
+    flag: "🇺🇸",
+    latency: 14,
+    status: "verified",
+    httpCode: 200,
+  },
+  {
+    id: "iad",
+    name: "Ashburn (US East)",
+    flag: "🇺🇸",
+    latency: 19,
+    status: "verified",
+    httpCode: 200,
+  },
+  {
+    id: "lhr",
+    name: "London (EU West)",
+    flag: "🇬🇧",
+    latency: 34,
+    status: "verified",
+    httpCode: 200,
+  },
+  {
+    id: "fra",
+    name: "Frankfurt (EU Central)",
+    flag: "🇩🇪",
+    latency: 38,
+    status: "verified",
+    httpCode: 200,
+  },
+  {
+    id: "nrt",
+    name: "Tokyo (Asia East)",
+    flag: "🇯🇵",
+    latency: 82,
+    status: "verified",
+    httpCode: 200,
+  },
+  {
+    id: "sin",
+    name: "Singapore (Asia SE)",
+    flag: "🇸🇬",
+    latency: 94,
+    status: "verified",
+    httpCode: 200,
+  },
+];
+
+const PRESETS = [
+  {
+    label: "Client Ecommerce Store",
+    target: "checkout.clientstore.com/api/cart",
+    desc: "Monitors storefront & checkout across 7 regions every 30s",
+  },
+  {
+    label: "Client B2B SaaS App",
+    target: "api.clientgrowth.io/v1/health",
+    desc: "Validates JSON payloads & 99.99% SLA uptime requirements",
+  },
+  {
+    label: "Branded Status Portal",
+    target: "status.acmeproducts.com",
+    desc: "White-label status page on client CNAME domain with monthly PDF",
+  },
+  {
+    label: "Agency Cron Sentinel",
+    target: "worker.clientpipeline.net/heartbeat",
+    desc: "Dead-man switch for client background sync pipelines",
+  },
+];
 
 export default function Hero() {
-  const [inputUrl, setInputUrl] = useState("");
-  const [displayUrl, setDisplayUrl] = useState("api.your-app.com/health");
-  const [latencies, setLatencies] = useState({
-    wnam: 18,
-    enam: 24,
-    weur: 42,
-    apac: 88,
-  });
-  const [isScanning, setIsScanning] = useState(false);
-  const [scanProgress, setScanProgress] = useState(100);
-  const [activeNodes, setActiveNodes] = useState<number[]>(Array.from({ length: 30 }, (_, i) => i));
+  const [selectedPreset, setSelectedPreset] = useState(0);
+  const [viewMode, setViewMode] = useState<"3d-globe" | "terminal">("3d-globe");
+  const [nodes, setNodes] = useState<RegionCheck[]>(INITIAL_NODES);
+  const [isSimulating, setIsSimulating] = useState(false);
+  const [flukeMode, setFlukeMode] = useState(false);
+  const [logMessages, setLogMessages] = useState<string[]>([
+    "✓ Target configured: checkout.clientstore.com/api/cart",
+    "✓ Discovered SSL cert: Let's Encrypt (valid for 84 days)",
+    "✓ 7 global edge probes active · 0 false alarms waking agency team",
+  ]);
 
-  // Simulate continuous background telemetry fluctuations
+  // Jitter effect
   useEffect(() => {
-    if (isScanning) return;
-
+    if (isSimulating) return;
     const interval = setInterval(() => {
-      setLatencies({
-        wnam: Math.floor(Math.random() * 8) + 14,
-        enam: Math.floor(Math.random() * 10) + 20,
-        weur: Math.floor(Math.random() * 15) + 38,
-        apac: Math.floor(Math.random() * 18) + 82,
-      });
-    }, 3500);
-
+      setNodes((prev) =>
+        prev.map((n) => {
+          const jitter = Math.floor(Math.random() * 5) - 2;
+          const base =
+            n.id === "sjc"
+              ? 14
+              : n.id === "iad"
+                ? 19
+                : n.id === "lhr"
+                  ? 34
+                  : n.id === "fra"
+                    ? 38
+                    : n.id === "nrt"
+                      ? 82
+                      : 94;
+          return { ...n, latency: Math.max(8, base + jitter) };
+        }),
+      );
+    }, 4000);
     return () => clearInterval(interval);
-  }, [isScanning]);
+  }, [isSimulating]);
 
-  const handleScan = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inputUrl || isScanning) return;
-
-    setIsScanning(true);
-    setScanProgress(0);
-
-    let progress = 0;
-    const progressInterval = setInterval(() => {
-      progress += 5;
-      setScanProgress(progress);
-      if (progress >= 100) {
-        clearInterval(progressInterval);
-      }
-    }, 90);
-
-    setActiveNodes([]);
+  const runTest = (presetIndex: number) => {
+    setSelectedPreset(presetIndex);
+    setIsSimulating(true);
+    setFlukeMode(false);
+    setNodes((prev) => prev.map((n) => ({ ...n, status: "checking" })));
+    setLogMessages([
+      `⚡ Dispatching test to 7 edge nodes for: ${PRESETS[presetIndex].target}`,
+      "⏳ Awaiting quorum consensus confirmation...",
+    ]);
 
     setTimeout(() => {
-      let cleanUrl = inputUrl.trim().replace(/^https?:\/\//i, "");
-      if (cleanUrl.length > 35) cleanUrl = cleanUrl.substring(0, 32) + "...";
-      setDisplayUrl(cleanUrl);
+      setNodes((prev) =>
+        prev.map((n) => ({
+          ...n,
+          status: "verified",
+          latency:
+            Math.floor(Math.random() * 10) + (n.id === "sjc" ? 12 : n.id === "iad" ? 18 : 32),
+          httpCode: 200,
+        })),
+      );
+      setLogMessages([
+        `✓ ${PRESETS[presetIndex].target} verified healthy`,
+        "✓ Quorum 6-of-6 reached in 28ms mean round-trip",
+        "✓ Consensus confirmed: 100% operational uptime",
+      ]);
+      setIsSimulating(false);
+    }, 1100);
+  };
 
-      let count = 0;
-      const nodeInterval = setInterval(() => {
-        setActiveNodes((prev) => [...prev, count]);
-        count++;
-        if (count >= 30) {
-          clearInterval(nodeInterval);
-        }
-      }, 25);
-
-      setLatencies({
-        wnam: Math.floor(Math.random() * 6) + 12,
-        enam: Math.floor(Math.random() * 8) + 18,
-        weur: Math.floor(Math.random() * 12) + 34,
-        apac: Math.floor(Math.random() * 15) + 76,
-      });
-      setIsScanning(false);
-    }, 1800);
+  const simulateFluke = () => {
+    setIsSimulating(true);
+    setFlukeMode(true);
+    setNodes((prev) =>
+      prev.map((n) =>
+        n.id === "lhr"
+          ? { ...n, status: "fluke_suppressed", latency: 999, httpCode: 504 }
+          : { ...n, status: "verified", httpCode: 200 },
+      ),
+    );
+    setLogMessages([
+      "⚠️ London probe timed out (packet drop detected on carrier transit)",
+      "🔄 Instant consensus trigger: querying San Jose, Ashburn, Frankfurt & Tokyo...",
+      "🛡️ Quorum consensus: 5/6 regions report 200 OK → 3 AM PagerDuty alert suppressed!",
+    ]);
+    setTimeout(() => {
+      setIsSimulating(false);
+    }, 900);
   };
 
   return (
-    <section className="relative pt-36 pb-20 overflow-hidden min-h-screen flex flex-col justify-center bg-background border-b border-border">
-      {/* Sleek, soft radial backdrop glows */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[500px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent rounded-full blur-[100px] pointer-events-none" />
-
-      <div className="max-w-5xl mx-auto px-6 md:px-12 relative z-20 w-full text-center flex flex-col items-center">
-        {/* Badge */}
-        <div className="animate-[heroBadge_0.5s_ease-out] inline-flex items-center gap-2 mb-8 text-[11px] font-bold tracking-wider text-foreground bg-primary/10 border border-primary/20 px-3.5 py-1.5 rounded-full uppercase shadow-sm font-mono">
-          <span className="relative flex size-1.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
-            <span className="relative inline-flex rounded-full size-1.5 bg-primary" />
+    <section className="relative pt-12 pb-24 md:pt-16 md:pb-32 bg-[#fbfbf9] text-[#23211a] overflow-hidden">
+      {/* Top Hero Copy Block (Twin.so exact alignment) */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-20 flex flex-col items-center text-center">
+        {/* Top Pill Tag */}
+        <Link
+          href="/agencies"
+          className="group inline-flex items-center gap-2 rounded-full border border-[#e8e6df] bg-white py-1.5 pr-3 pl-2 text-[13px] font-medium text-[#23211a] transition-colors hover:border-black/25 shadow-xs mb-8"
+        >
+          <span className="inline-flex size-[18px] items-center justify-center rounded-[5px] bg-[#ffd439] text-[#23211a] font-bold text-[10px]">
+            ✳
           </span>
-          <span>Free for commercial use · No credit card</span>
-        </div>
+          <span>Built for Agencies & Dev Studios · 7 Global Edge Regions</span>
+          <ChevronRight className="size-3 text-[#868279] group-hover:translate-x-0.5 transition-transform" />
+        </Link>
 
-        {/* H1 */}
-        <h1 className="text-4xl sm:text-6xl md:text-7xl font-extrabold tracking-tight leading-[1.05] mb-8 text-balance text-foreground max-w-4xl">
-          Know the second <br className="hidden sm:inline" />
-          <span className="text-muted-foreground">your stack breaks.</span>
+        {/* Serif Headline (Twin.so exact font styling) */}
+        <h1 className="max-w-4xl font-serif text-[clamp(40px,4.5vw,58px)] leading-[1.02] font-medium tracking-[-0.03em] text-[#23211a] text-balance mb-6">
+          Multi-client uptime monitoring & SLA proof built for agencies.
         </h1>
 
-        {/* Subhead */}
-        <p className="text-muted-foreground text-base md:text-lg leading-relaxed max-w-2xl mb-8 text-balance font-sans">
-          SteadyStack is an uptime monitoring service that confirms failures across multiple global
-          regions before alerting you - zero false positives, zero alert fatigue.
+        {/* Subtitle */}
+        <p className="text-[#5c5c5c] text-base sm:text-lg max-w-[38rem] text-balance leading-relaxed mb-8">
+          Monitor all your client websites and APIs across 7 global regions. Eliminate 3 AM false
+          alarms with multi-region quorum consensus, deliver branded white-label status portals, and
+          generate monthly SLA reports that prove your retainer value.
         </p>
 
-        {/* Probe Input Form */}
-        <form
-          onSubmit={handleScan}
-          className="relative w-full max-w-xl mb-8 bg-background/50 border border-border p-1.5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.3)] rounded-xl flex items-center transition-all duration-300 hover:border-primary/30 focus-within:border-primary/40"
-        >
-          <input
-            type="text"
-            value={inputUrl}
-            onChange={(e) => setInputUrl(e.target.value)}
-            disabled={isScanning}
-            placeholder="https://api.your-app.com/health"
-            aria-label="Endpoint URL to check"
-            className="flex-1 bg-transparent text-foreground placeholder:text-muted-foreground/50 border-none outline-none px-3.5 text-sm min-w-0 font-mono"
-          />
-          <button
-            type="submit"
-            disabled={isScanning || !inputUrl}
-            className="bg-primary hover:bg-primary/95 text-primary-foreground text-xs font-semibold px-4.5 py-2.5 rounded-lg transition-colors flex items-center gap-1.5 shrink-0 disabled:opacity-40 font-mono uppercase tracking-wider cursor-pointer"
-          >
-            {isScanning ? (
-              <>
-                <RefreshCw className="size-3.5 animate-spin" />
-                Scanning...
-              </>
-            ) : (
-              <>
-                Verify Uptime
-                <ArrowRight className="size-3.5" />
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* CTAs */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-10">
+        {/* Action Buttons */}
+        <div className="flex flex-wrap items-center justify-center gap-3.5 mb-4">
           <Link
             href="/signup"
-            className="flex items-center justify-center h-11 px-6 bg-primary hover:bg-primary/90 text-primary-foreground text-xs font-semibold rounded-lg transition-colors font-mono uppercase tracking-wider"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-[#23211a] text-white font-medium text-sm sm:text-base px-6 py-3.5 shadow-md hover:bg-[#373428] transition-all hover:scale-[1.01] active:scale-[0.99]"
           >
-            Start free — 50 monitors &rarr;
+            <span>Start Free Agency Trial</span>
           </Link>
-          <Link
-            href="#how-it-works"
-            className="flex items-center justify-center h-11 px-6 bg-transparent border border-border text-foreground hover:bg-accent text-xs font-semibold rounded-lg transition-colors font-mono uppercase tracking-wider"
+
+          <button
+            type="button"
+            onClick={simulateFluke}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-[#e8e6df] bg-white text-[#23211a] font-medium text-sm sm:text-base px-5 py-3.5 shadow-xs hover:bg-[#f4f2eb] transition-all"
           >
-            See how verification works
-          </Link>
+            <Play className="size-3.5 fill-current text-[#ffd439]" />
+            <span>Simulate Transit Blip</span>
+          </button>
         </div>
 
-        {/* Trust Row */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full max-w-3xl mb-16 text-xs font-mono text-muted-foreground/90 border-y border-border/60 py-4 bg-muted/20 rounded-xl px-4">
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-primary font-bold">✓</span> 1m fast checks (first 10) & 3m
-            standard
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-primary font-bold">✓</span> 3-region 2-of-3 quorum on free
-          </div>
-          <div className="flex items-center justify-center gap-2">
-            <span className="text-primary font-bold">✓</span> Commercial use permitted, in writing
-          </div>
-        </div>
+        {/* Microcopy */}
+        <p className="text-xs text-[#868279] font-sans mb-7">
+          7-day free trial · No credit card required · Unlimited white-label client portals
+        </p>
 
-        {/* Interactive Animated Dashboard Visualization */}
-        <div className="w-full max-w-4xl border border-border bg-card/90 backdrop-blur-xl rounded-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] overflow-hidden text-left relative">
-          {/* Scan overlay loader bar */}
-          {isScanning && (
-            <div
-              className="absolute top-0 left-0 h-1 bg-primary transition-all duration-100 shadow-sm"
-              style={{ width: `${scanProgress}%` }}
-            />
-          )}
+        {/* ========================================================================= */}
+        {/* TWIN.SO HERO STAGE: Orbit Floats + Live Product Frame                     */}
+        {/* ========================================================================= */}
+        <div className="relative w-full max-w-5xl mt-6 px-2 sm:px-8 py-8 lg:py-12">
+          {/* Floating Pill Integration Badges & Pastel Avatars (Visible with z-30) */}
+          {/* Top-Left: Slack Alerts Pill */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.1 }}
+            className="hidden sm:flex absolute -top-3 left-4 lg:-left-6 z-30 items-center gap-2 rounded-xl bg-white border border-[#e8e6df] px-3.5 py-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:scale-105 transition-transform"
+          >
+            <span className="size-2.5 rounded-full bg-[#4a154b]" />
+            <span className="text-xs font-semibold font-mono text-[#23211a]">Slack Alerts</span>
+          </motion.div>
 
-          {/* Window control header */}
-          <div className="border-b border-border/80 px-4 py-3 flex items-center justify-between bg-muted/40 select-none">
-            <div className="flex items-center gap-2">
-              <span className="size-2.5 rounded-full bg-red-500/80" />
-              <span className="size-2.5 rounded-full bg-yellow-500/80" />
-              <span className="size-2.5 rounded-full bg-primary/80" />
-            </div>
-            <div className="text-[10px] font-bold text-muted-foreground tracking-widest font-mono uppercase flex items-center gap-1.5">
-              <Server className="size-3 text-primary" />
-              STEADYSTACK_CONSENSUS_TELEMETRY
-            </div>
-            <div className="flex items-center gap-2 text-[10px] font-mono text-primary bg-primary/10 border border-primary/20 px-2 py-0.5 rounded">
-              <span className="size-1.5 rounded-full bg-primary animate-ping" />
-              200 OK (Quorum Verified · 2/3 Free · 4/7 Pro)
-            </div>
-          </div>
+          {/* Top-Left Avatar: SJC Edge Node */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="absolute -top-7 left-1/4 sm:left-[22%] z-30 size-14 rounded-full bg-[#f5e6bc] border-[3px] border-white shadow-[0_8px_25px_rgba(0,0,0,0.1)] flex items-center justify-center text-xs font-bold text-[#23211a] hover:scale-110 transition-transform cursor-pointer"
+          >
+            <span>SJC</span>
+            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-[#3c79d2] text-white flex items-center justify-center text-[8px] font-bold shadow-xs">
+              ✓
+            </span>
+          </motion.div>
 
-          {/* Content area */}
-          <div className="p-6 grid grid-cols-1 md:grid-cols-12 gap-6">
-            {/* Monitor Information Side */}
-            <div className="md:col-span-7 flex flex-col justify-between space-y-6">
+          {/* Top-Right Avatar: LHR Edge Node */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.25 }}
+            className="absolute -top-7 right-1/4 sm:right-[22%] z-30 size-14 rounded-full bg-[#d8eaf5] border-[3px] border-white shadow-[0_8px_25px_rgba(0,0,0,0.1)] flex items-center justify-center text-xs font-bold text-[#23211a] hover:scale-110 transition-transform cursor-pointer"
+          >
+            <span>LHR</span>
+            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-[#3c79d2] text-white flex items-center justify-center text-[8px] font-bold shadow-xs">
+              ✓
+            </span>
+          </motion.div>
+
+          {/* Top-Right: PagerDuty Pill */}
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+            className="hidden sm:flex absolute -top-3 right-4 lg:-right-6 z-30 items-center gap-2 rounded-xl bg-white border border-[#e8e6df] px-3.5 py-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:scale-105 transition-transform"
+          >
+            <span className="size-2.5 rounded-full bg-[#06ac38]" />
+            <span className="text-xs font-semibold font-mono text-[#23211a]">PagerDuty</span>
+          </motion.div>
+
+          {/* Mid-Left: Cloudflare Edge Pill */}
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.35 }}
+            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -left-6 lg:-left-12 z-30 items-center gap-2 rounded-xl bg-white border border-[#e8e6df] px-3.5 py-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:scale-105 transition-transform"
+          >
+            <span className="size-2.5 rounded-full bg-[#f6821f]" />
+            <span className="text-xs font-semibold font-mono text-[#23211a]">Cloudflare Edge</span>
+          </motion.div>
+
+          {/* Mid-Right: Discord Webhooks Pill */}
+          <motion.div
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.4 }}
+            className="hidden md:flex absolute top-1/2 -translate-y-1/2 -right-6 lg:-right-12 z-30 items-center gap-2 rounded-xl bg-white border border-[#e8e6df] px-3.5 py-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:scale-105 transition-transform"
+          >
+            <span className="size-2.5 rounded-full bg-[#5865F2]" />
+            <span className="text-xs font-semibold font-mono text-[#23211a]">Discord Webhooks</span>
+          </motion.div>
+
+          {/* Bottom-Left Avatar: NRT Tokyo Node */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.45 }}
+            className="absolute -bottom-6 left-1/4 sm:left-[22%] z-30 size-14 rounded-full bg-[#f2d9e2] border-[3px] border-white shadow-[0_8px_25px_rgba(0,0,0,0.1)] flex items-center justify-center text-xs font-bold text-[#23211a] hover:scale-110 transition-transform cursor-pointer"
+          >
+            <span>NRT</span>
+            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-[#3c79d2] text-white flex items-center justify-center text-[8px] font-bold shadow-xs">
+              ✓
+            </span>
+          </motion.div>
+
+          {/* Bottom-Left: Quorum Consensus Pill */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.5 }}
+            className="hidden sm:flex absolute -bottom-3 left-4 lg:-left-4 z-30 items-center gap-2 rounded-xl bg-white border border-[#e8e6df] px-3.5 py-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:scale-105 transition-transform"
+          >
+            <span className="size-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <span className="text-xs font-semibold font-mono text-[#23211a]">Quorum 6/6 OK</span>
+          </motion.div>
+
+          {/* Bottom-Right Avatar: FRA Frankfurt Node */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.55 }}
+            className="absolute -bottom-6 right-1/4 sm:right-[22%] z-30 size-14 rounded-full bg-[#dcebd9] border-[3px] border-white shadow-[0_8px_25px_rgba(0,0,0,0.1)] flex items-center justify-center text-xs font-bold text-[#23211a] hover:scale-110 transition-transform cursor-pointer"
+          >
+            <span>FRA</span>
+            <span className="absolute -top-1 -right-1 size-4 rounded-full bg-[#3c79d2] text-white flex items-center justify-center text-[8px] font-bold shadow-xs">
+              ✓
+            </span>
+          </motion.div>
+
+          {/* Bottom-Right: PDF SLA Reports Pill */}
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="hidden sm:flex absolute -bottom-3 right-4 lg:-right-4 z-30 items-center gap-2 rounded-xl bg-white border border-[#e8e6df] px-3.5 py-1.5 shadow-[0_8px_20px_rgba(0,0,0,0.06)] hover:scale-105 transition-transform"
+          >
+            <span className="size-2.5 rounded-full bg-[#ffd439]" />
+            <span className="text-xs font-semibold font-mono text-[#23211a]">
+              Automated PDF SLA
+            </span>
+          </motion.div>
+
+          {/* Hero Live App Frame (Twin.so Live App Window) */}
+          <div className="w-full min-h-[520px] rounded-2xl border border-black/[0.08] bg-[#fbfbf9] text-left shadow-[0_0_0_1px_rgba(0,0,0,0.06),0_20px_50px_rgba(0,0,0,0.05)] flex overflow-hidden">
+            {/* Left Narrow Sidebar (Twin.so exact 64px width) */}
+            <aside className="w-16 shrink-0 flex flex-col items-center border-r border-black/[0.06] bg-[#fdfdfb] py-3.5 gap-3">
+              {/* App Logo */}
+              <div className="size-8 rounded-xl bg-[#ffd439] text-[#23211a] flex items-center justify-center font-serif font-bold text-sm">
+                S
+              </div>
+
+              {/* Action Icons */}
+              <div className="flex flex-col items-center gap-1 mt-2">
+                <button
+                  type="button"
+                  title="3D Consensus Mesh"
+                  onClick={() => setViewMode("3d-globe")}
+                  className={cn(
+                    "size-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer",
+                    viewMode === "3d-globe"
+                      ? "bg-[#23211a] text-[#ffd439]"
+                      : "text-[#868279] hover:bg-black/5 hover:text-[#23211a]",
+                  )}
+                >
+                  <Globe className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  title="Terminal View"
+                  onClick={() => setViewMode("terminal")}
+                  className={cn(
+                    "size-8 rounded-lg flex items-center justify-center transition-colors cursor-pointer",
+                    viewMode === "terminal"
+                      ? "bg-[#23211a] text-[#ffd439]"
+                      : "text-[#868279] hover:bg-black/5 hover:text-[#23211a]",
+                  )}
+                >
+                  <Activity className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  title="Execute Test"
+                  onClick={() => runTest(selectedPreset)}
+                  className="size-8 rounded-lg text-[#868279] flex items-center justify-center hover:bg-black/5 hover:text-[#23211a] transition-colors cursor-pointer"
+                >
+                  <Zap className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  title="SLA Reports"
+                  className="size-8 rounded-lg text-[#868279] flex items-center justify-center hover:bg-black/5 hover:text-[#23211a] transition-colors"
+                >
+                  <FileText className="size-4" />
+                </button>
+              </div>
+
+              {/* Bottom Assistant Mark */}
+              <div className="mt-auto flex flex-col items-center gap-2">
+                <span className="size-6 rounded-md bg-[#ffd439] text-[#23211a] flex items-center justify-center font-bold text-[10px]">
+                  ✳
+                </span>
+              </div>
+            </aside>
+
+            {/* Right Main Live Interactive Stage */}
+            <div className="flex-1 flex flex-col justify-between p-6 sm:p-8 bg-[#fbfbf9]">
+              {/* Top Prompt / Search Box */}
               <div>
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-wrap items-center justify-between gap-3 pb-4 mb-5 border-b border-black/[0.06]">
                   <div className="flex items-center gap-2">
-                    <Activity className="size-4 text-primary animate-pulse" />
-                    <span className="text-[11px] font-mono font-bold text-muted-foreground uppercase tracking-wider">
-                      Target Endpoint
+                    <span className="size-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-xs font-mono font-bold uppercase tracking-wider text-[#23211a]">
+                      Active Edge Consensus Terminal
                     </span>
                   </div>
-                  <span className="text-[10px] font-mono text-muted-foreground bg-accent/40 px-2 py-0.5 rounded border border-border">
-                    GET / 200 OK
+
+                  {/* View Mode Toggle */}
+                  <div className="flex items-center gap-2">
+                    <div className="inline-flex items-center p-0.5 bg-[#f0eee6] rounded-lg border border-[#e8e6df]">
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("3d-globe")}
+                        className={cn(
+                          "px-2.5 py-1 text-[11px] font-mono font-bold rounded-md transition-all cursor-pointer flex items-center gap-1.5",
+                          viewMode === "3d-globe"
+                            ? "bg-white text-[#23211a] shadow-xs"
+                            : "text-[#868279] hover:text-[#23211a]",
+                        )}
+                      >
+                        <Globe className="size-3 text-[#ffd439]" />
+                        <span>3D Mesh</span>
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setViewMode("terminal")}
+                        className={cn(
+                          "px-2.5 py-1 text-[11px] font-mono font-bold rounded-md transition-all cursor-pointer flex items-center gap-1.5",
+                          viewMode === "terminal"
+                            ? "bg-white text-[#23211a] shadow-xs"
+                            : "text-[#868279] hover:text-[#23211a]",
+                        )}
+                      >
+                        <Activity className="size-3" />
+                        <span>Cards</span>
+                      </button>
+                    </div>
+
+                    <span
+                      className={cn(
+                        "text-[11px] font-mono font-semibold px-2.5 py-0.5 rounded-full border",
+                        flukeMode
+                          ? "bg-amber-500/10 text-amber-700 border-amber-500/30"
+                          : "bg-emerald-500/10 text-emerald-700 border-emerald-500/20",
+                      )}
+                    >
+                      {flukeMode
+                        ? "1 Region Dropped (Fluke Filtered)"
+                        : "7 Global Edge Regions in Consensus"}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Prompt Box */}
+                <div className="p-4 rounded-2xl bg-white border border-[#e8e6df] shadow-sm mb-5">
+                  <div className="text-xs font-mono text-[#868279] mb-1.5">
+                    Describe client endpoints to monitor:
+                  </div>
+                  <div className="text-base font-serif text-[#23211a] font-medium flex items-center justify-between">
+                    <span className="truncate pr-2">{PRESETS[selectedPreset].target}</span>
+                    <button
+                      type="button"
+                      onClick={() => runTest(selectedPreset)}
+                      disabled={isSimulating}
+                      className="inline-flex items-center gap-1.5 text-xs font-mono font-bold bg-[#23211a] text-white px-3.5 py-1.5 rounded-lg hover:bg-[#373428] transition-colors disabled:opacity-50 shrink-0 cursor-pointer"
+                    >
+                      <RefreshCw className={cn("size-3", isSimulating && "animate-spin")} />
+                      <span>{isSimulating ? "Probing Nodes..." : "Execute Test"}</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Preset Chips */}
+                <div className="flex flex-wrap items-center gap-2 mb-5">
+                  <span className="text-[11px] font-mono text-[#868279] uppercase font-semibold">
+                    Ready-Made:
                   </span>
-                </div>
-                <div className="text-xl font-bold font-mono text-foreground truncate max-w-full">
-                  {displayUrl}
-                </div>
-              </div>
-
-              {/* Animated Latency Wave Chart */}
-              <div className="relative h-20 w-full overflow-hidden flex items-end">
-                <svg
-                  className="w-full h-full overflow-visible text-primary"
-                  viewBox="0 0 300 60"
-                  preserveAspectRatio="none"
-                >
-                  <defs>
-                    <linearGradient id="waveGradient" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="currentColor" stopOpacity="0.3" />
-                      <stop offset="100%" stopColor="currentColor" stopOpacity="0.0" />
-                    </linearGradient>
-                  </defs>
-                  <path
-                    d="M 0,45 Q 30,20 60,40 T 120,25 T 180,45 T 240,15 T 300,35 L 300,60 L 0,60 Z"
-                    fill="url(#waveGradient)"
-                  />
-                  <motion.path
-                    d="M 0,45 Q 30,20 60,40 T 120,25 T 180,45 T 240,15 T 300,35"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    initial={{ pathLength: 0 }}
-                    animate={{ pathLength: 1 }}
-                    transition={{
-                      duration: 2,
-                      repeat: Infinity,
-                      repeatType: "reverse",
-                    }}
-                  />
-                </svg>
-                <div className="absolute top-2 right-2 text-[9px] font-mono text-primary bg-primary/10 border border-primary/30 px-1.5 py-0.5 rounded">
-                  Avg: {latencies.wnam}ms
-                </div>
-              </div>
-
-              {/* 30-Day Operational Matrix */}
-              <div>
-                <div className="flex justify-between items-center text-[10px] text-muted-foreground font-mono font-bold mb-2">
-                  <span>30-DAY OPERATIONAL MATRIX</span>
-                  <span className="text-primary font-bold">100.0% UPTIME</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: 30 }).map((_, idx) => (
-                    <div
-                      key={idx}
-                      className={`flex-1 h-6 rounded-sm transition-all duration-300 ${
-                        activeNodes.includes(idx) ? "bg-primary shadow-xs" : "bg-muted/40"
-                      }`}
-                      style={{
-                        opacity: activeNodes.includes(idx) ? 1 : 0.2,
-                      }}
-                    />
+                  {PRESETS.map((preset, pIdx) => (
+                    <button
+                      key={pIdx}
+                      type="button"
+                      onClick={() => runTest(pIdx)}
+                      className={cn(
+                        "text-xs font-mono px-3 py-1.5 rounded-full border transition-all cursor-pointer",
+                        selectedPreset === pIdx
+                          ? "bg-[#23211a] text-white border-[#23211a] font-bold shadow-xs"
+                          : "bg-white text-[#5c5c5c] border-[#e8e6df] hover:border-black/20 hover:text-[#23211a]",
+                      )}
+                    >
+                      {preset.label}
+                    </button>
                   ))}
                 </div>
+
+                {/* Main View Area: 3D Three.js Globe or Terminal Cards */}
+                {viewMode === "3d-globe" ? (
+                  <div className="relative w-full h-[280px] sm:h-[310px] rounded-2xl bg-gradient-to-b from-white to-[#fbfbf9] border border-[#e8e6df] shadow-xs mb-5 overflow-hidden flex items-center justify-center">
+                    <ThreeEdgeGlobe flukeActive={flukeMode} className="w-full h-full" />
+
+                    {/* Drag & Rotate Hint Badge */}
+                    <div className="absolute bottom-3 left-3 pointer-events-none z-10 flex items-center gap-2 px-2.5 py-1 rounded-lg bg-white/90 border border-[#e8e6df] shadow-xs text-[10px] font-mono text-[#868279] backdrop-blur-xs">
+                      <span className="size-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>Drag to rotate · Hover nodes for live telemetry</span>
+                    </div>
+
+                    {/* Live Consensus Quorum Gauge */}
+                    <div className="absolute top-3 right-3 pointer-events-none z-10 px-3 py-1.5 rounded-xl bg-white/95 border border-[#e8e6df] shadow-xs text-right backdrop-blur-xs">
+                      <div className="text-[9px] font-mono font-bold text-[#868279] uppercase">
+                        Quorum Status
+                      </div>
+                      <div className="text-xs font-mono font-bold text-emerald-600">
+                        {flukeMode ? "6 / 7 Verified" : "7 / 7 In Consensus"}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* 6 Regional Probe Cards */
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 mb-5">
+                    {nodes.map((node) => {
+                      const isDropped = node.status === "fluke_suppressed";
+                      return (
+                        <div
+                          key={node.id}
+                          className={cn(
+                            "p-3 rounded-xl border flex items-center justify-between transition-all",
+                            isDropped
+                              ? "bg-amber-500/10 border-amber-500/30 text-amber-900"
+                              : "bg-white border-[#e8e6df] text-[#23211a]",
+                          )}
+                        >
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm">{node.flag}</span>
+                            <div>
+                              <div className="text-xs font-semibold truncate max-w-[90px]">
+                                {node.name.split(" ")[0]}
+                              </div>
+                              <div className="text-[10px] font-mono text-[#868279]">
+                                {isDropped ? "504 Carrier Fluke" : `HTTP ${node.httpCode}`}
+                              </div>
+                            </div>
+                          </div>
+                          <div className="text-right font-mono">
+                            <div
+                              className={cn(
+                                "text-xs font-bold",
+                                isDropped ? "text-amber-600" : "text-emerald-600",
+                              )}
+                            >
+                              {isDropped ? "Dropped" : `${node.latency}ms`}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
               </div>
-            </div>
 
-            {/* Regional Latencies Side */}
-            <div className="md:col-span-5 border-t md:border-t-0 md:border-l border-border/80 pt-6 md:pt-0 md:pl-6 flex flex-col justify-between font-mono">
-              <div>
-                <div className="flex items-center justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-wider mb-3">
-                  <span>Sovereign Edge Probes</span>
-                  <Zap className="size-3.5 text-amber-400" />
-                </div>
-
-                <div className="flex flex-col gap-2.5">
-                  {/* Region 1: US West */}
-                  <div className="flex items-center justify-between p-2 rounded bg-card/40 border border-border">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="size-2 bg-primary rounded-full animate-pulse" />
-                      <span className="text-muted-foreground font-sans text-[11px]">
-                        wnam (San Jose)
-                      </span>
-                    </div>
-                    <span className="text-xs font-bold text-primary">{latencies.wnam}ms</span>
+              {/* Terminal Log Output */}
+              <div className="rounded-xl bg-[#23211a] text-white p-3.5 text-xs font-mono space-y-1">
+                {logMessages.map((msg, mIdx) => (
+                  <div key={mIdx} className="leading-relaxed flex items-center gap-2">
+                    <span className="text-[#ffd439]">›</span>
+                    <span
+                      className={cn(msg.includes("suppressed") && "text-emerald-400 font-bold")}
+                    >
+                      {msg}
+                    </span>
                   </div>
-
-                  {/* Region 2: US East */}
-                  <div className="flex items-center justify-between p-2 rounded bg-card/40 border border-border">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="size-2 bg-primary rounded-full animate-pulse" />
-                      <span className="text-muted-foreground font-sans text-[11px]">
-                        enam (Ashburn)
-                      </span>
-                    </div>
-                    <span className="text-xs font-bold text-primary">{latencies.enam}ms</span>
-                  </div>
-
-                  {/* Region 3: Western Europe */}
-                  <div className="flex items-center justify-between p-2 rounded bg-card/40 border border-border">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="size-2 bg-primary rounded-full animate-pulse" />
-                      <span className="text-muted-foreground font-sans text-[11px]">
-                        weur (London)
-                      </span>
-                    </div>
-                    <span className="text-xs font-bold text-primary">{latencies.weur}ms</span>
-                  </div>
-
-                  {/* Region 4: Asia Pacific */}
-                  <div className="flex items-center justify-between p-2 rounded bg-card/40 border border-border">
-                    <div className="flex items-center gap-2 text-xs">
-                      <span className="size-2 bg-primary rounded-full animate-pulse" />
-                      <span className="text-muted-foreground font-sans text-[11px]">
-                        apac-ne (Tokyo)
-                      </span>
-                    </div>
-                    <span className="text-xs font-bold text-primary">{latencies.apac}ms</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-border flex items-center justify-between text-[10px] text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="size-3 text-primary" />
-                  Cloudflare Edge DOs
-                </span>
-                <span className="text-primary font-mono font-bold">4-of-7 Quorum (Paid)</span>
+                ))}
               </div>
             </div>
           </div>

@@ -13,9 +13,19 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
-export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () => void }) {
+export default function SignUpForm({
+  onSwitchToSignIn,
+  deal: propDeal,
+  plan: propPlan,
+}: {
+  onSwitchToSignIn: () => void;
+  deal?: string;
+  plan?: string;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const deal = propDeal || searchParams?.get("deal");
+  const plan = propPlan || searchParams?.get("plan");
   const [isPending, setIsPending] = useState(false);
   const [refCode, setRefCode] = useState<string | null>(null);
 
@@ -73,7 +83,14 @@ export default function SignUpForm({ onSwitchToSignIn }: { onSwitchToSignIn: () 
                 document.cookie = "steadystack_ref=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT";
               }
             }
-            router.push("/dashboard");
+
+            if (deal) {
+              router.push(`/dashboard/settings?tab=billing&deal=${encodeURIComponent(deal)}`);
+            } else if (plan) {
+              router.push(`/dashboard/settings?tab=billing&plan=${encodeURIComponent(plan)}`);
+            } else {
+              router.push("/dashboard");
+            }
             toast.success("Sign up successful");
           },
           onError: (error) => {

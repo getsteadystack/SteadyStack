@@ -98,15 +98,15 @@ export * from "./styles/theme";
 // ============================================================================
 
 export const EMAIL_SENDERS = {
-  alerts: "SteadyStack <alerts@steadystack.dev>",
-  auth: "SteadyStack <auth@steadystack.dev>",
-  billing: "SteadyStack Billing <billing@steadystack.dev>",
-  general: "SteadyStack <hello@steadystack.dev>",
-  reports: "SteadyStack <reports@steadystack.dev>",
-  status: "SteadyStack <status@steadystack.dev>",
-  teams: "SteadyStack Teams <invitations@steadystack.dev>",
-  updates: "SteadyStack <updates@steadystack.dev>",
-  verify: "SteadyStack <verify@steadystack.dev>",
+  alerts: "System Alerts <alerts@steadystack.dev>",
+  auth: "Account Security <auth@steadystack.dev>",
+  billing: "Billing <billing@steadystack.dev>",
+  general: "Notifications <notifications@steadystack.dev>",
+  reports: "Performance Reports <reports@steadystack.dev>",
+  status: "Status Updates <status@steadystack.dev>",
+  teams: "Team Invitations <invitations@steadystack.dev>",
+  updates: "Product Updates <updates@steadystack.dev>",
+  verify: "Verification <verify@steadystack.dev>",
 } as const;
 
 // ============================================================================
@@ -281,7 +281,7 @@ export async function sendWelcomeEmail(
     to,
     from: EMAIL_SENDERS.general,
     replyTo: "hello@steadystack.dev",
-    subject: "Welcome to SteadyStack - Your Monitors Await",
+    subject: "Welcome - Your Monitoring Station is Active",
     html,
     text,
     apiKey,
@@ -299,7 +299,7 @@ export async function sendVerificationEmail(
   return sendEmail({
     to,
     from: EMAIL_SENDERS.verify,
-    subject: "Verify Your Email - SteadyStack",
+    subject: "Verify Your Email Address",
     html,
     apiKey,
   });
@@ -316,7 +316,7 @@ export async function sendPasswordResetEmail(
   return sendEmail({
     to,
     from: EMAIL_SENDERS.auth,
-    subject: "🔑 Reset Your Password - SteadyStack",
+    subject: "🔑 Reset Your Password",
     html,
     apiKey,
   });
@@ -414,7 +414,119 @@ export async function sendMonthlyReport(
     html: `<p>Please find attached your monthly performance report for <strong>${monthName}</strong>.</p>`,
     attachments: [
       {
-        filename: `SteadyStack-Report-${monthName}.pdf`,
+        filename: `Performance-Report-${monthName}.pdf`,
+        content: pdfBuffer,
+      },
+    ],
+    apiKey,
+  });
+}
+
+export interface AgencyMonthlyReportEmailOptions {
+  to: string | string[];
+  clientName: string;
+  agencyName: string;
+  monthName: string;
+  globalUptime: number;
+  targetSla: number;
+  slaMet: boolean;
+  pdfBuffer: Buffer;
+  apiKey?: string | undefined;
+  portalUrl?: string | undefined;
+}
+
+export async function sendAgencyClientMonthlyReport(
+  options: AgencyMonthlyReportEmailOptions,
+): Promise<SendEmailResult> {
+  const {
+    to,
+    clientName,
+    agencyName,
+    monthName,
+    globalUptime,
+    targetSla,
+    slaMet,
+    pdfBuffer,
+    apiKey,
+    portalUrl,
+  } = options;
+
+  const subject = `[Monthly SLA Report] ${clientName} — ${monthName} (${globalUptime}% Availability)`;
+
+  const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 30px 20px; }
+    .container { max-width: 580px; margin: 0 auto; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 32px; }
+    .badge { display: inline-block; padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 700; font-family: monospace; }
+    .badge-success { background: #dcfce7; color: #16a34a; }
+    .badge-warning { background: #fef3c7; color: #d97706; }
+    .metric-box { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin: 20px 0; }
+    .metric-value { font-size: 28px; font-weight: 800; color: #0f172a; font-family: monospace; }
+    .footer { font-size: 12px; color: #64748b; margin-top: 30px; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 16px; }
+    .btn { display: inline-block; background: #0f172a; color: #ffffff !important; font-weight: 600; font-size: 13px; text-decoration: none; padding: 10px 20px; border-radius: 8px; margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div style="margin-bottom: 20px;">
+      <span class="badge ${slaMet ? "badge-success" : "badge-warning"}">
+        ${slaMet ? "✓ SLA TARGET MET" : "⚠ SLA DEGRADED"}
+      </span>
+      <h1 style="font-size: 20px; font-weight: 800; color: #0f172a; margin: 12px 0 4px 0;">
+        Monthly Infrastructure Performance Audit
+      </h1>
+      <p style="font-size: 13px; color: #64748b; margin: 0;">
+        Client: <strong>${clientName}</strong> • Period: <strong>${monthName}</strong>
+      </p>
+    </div>
+
+    <div class="metric-box">
+      <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 700;">
+        Verified Uptime Availability
+      </div>
+      <div class="metric-value">${globalUptime}%</div>
+      <div style="font-size: 12px; color: #64748b; margin-top: 4px;">
+        Target Retainer SLA: <strong>${targetSla}%</strong>
+      </div>
+    </div>
+
+    <p style="font-size: 13px; line-height: 1.6; color: #334155;">
+      Your executive monthly infrastructure report for <strong>${monthName}</strong> has been generated by <strong>${agencyName}</strong>. A full high-resolution PDF breakdown of response times, endpoint availability, and incident timelines is attached.
+    </p>
+
+    ${
+      portalUrl
+        ? `
+    <div style="text-align: center; margin: 24px 0;">
+      <a href="${portalUrl}" class="btn" style="color: #ffffff;">View Live Telemetry Portal &rarr;</a>
+    </div>
+    `
+        : ""
+    }
+
+    <div class="footer">
+      Infrastructure Management & 24/7 SLA Protection guaranteed by <strong>${agencyName}</strong>.
+    </div>
+  </div>
+</body>
+</html>
+  `.trim();
+
+  const cleanClientSlug = clientName.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-");
+  const cleanMonthSlug = monthName.toLowerCase().replaceAll(/[^a-z0-9]+/g, "-");
+
+  return sendEmail({
+    to,
+    from: EMAIL_SENDERS.reports,
+    subject,
+    html,
+    attachments: [
+      {
+        filename: `${cleanClientSlug}-sla-report-${cleanMonthSlug}.pdf`,
         content: pdfBuffer,
       },
     ],

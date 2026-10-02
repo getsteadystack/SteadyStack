@@ -27,42 +27,66 @@ export function IncidentTable({
   const f = useFormatters();
   if (incidents.length === 0) {
     return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center animate-in fade-in-50">
+      <div className="flex min-h-[360px] flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card p-8 text-center animate-in fade-in duration-300">
         <div className="mx-auto flex max-w-[420px] flex-col items-center justify-center text-center">
-          <h3 className="mt-4 text-lg font-semibold">No incidents recorded</h3>
-          <p className="mb-4 mt-2 text-sm text-muted-foreground">Everything is running smoothly.</p>
+          <div className="p-3.5 bg-muted rounded-2xl border border-border text-foreground mb-3">
+            <span className="text-xl">✨</span>
+          </div>
+          <h3 className="text-lg font-serif font-medium text-foreground">No incidents recorded</h3>
+          <p className="mb-4 mt-1.5 text-xs text-muted-foreground font-sans">
+            All monitored systems and endpoints are running smoothly without interruptions.
+          </p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-2xl border border-border bg-card shadow-xs overflow-hidden">
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>Monitor</TableHead>
-            <TableHead>Title</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Started</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+        <TableHeader className="bg-muted/50">
+          <TableRow className="border-border hover:bg-transparent">
+            <TableHead className="font-medium text-xs text-muted-foreground uppercase font-mono py-3">
+              Monitor
+            </TableHead>
+            <TableHead className="font-medium text-xs text-muted-foreground uppercase font-mono py-3">
+              Title
+            </TableHead>
+            <TableHead className="font-medium text-xs text-muted-foreground uppercase font-mono py-3">
+              Status
+            </TableHead>
+            <TableHead className="font-medium text-xs text-muted-foreground uppercase font-mono py-3">
+              Started
+            </TableHead>
+            <TableHead className="text-right font-medium text-xs text-muted-foreground uppercase font-mono py-3">
+              Actions
+            </TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
+        <TableBody className="divide-y divide-border/60">
           {incidents.map((incident) => (
-            <TableRow key={incident.id}>
-              <TableCell className="font-medium">{incident.monitor.name}</TableCell>
-              <TableCell>{incident.title}</TableCell>
+            <TableRow
+              key={incident.id}
+              className="border-border hover:bg-muted/30 transition-colors"
+            >
+              <TableCell className="font-medium text-sm text-foreground">
+                {incident.monitor.name}
+              </TableCell>
+              <TableCell className="text-sm font-sans text-foreground">{incident.title}</TableCell>
               <TableCell>
                 <IncidentStatusBadge status={incident.status} />
               </TableCell>
-              <TableCell>
+              <TableCell className="font-mono text-xs text-muted-foreground">
                 {f.formatDate(incident.startedAt, { style: "datetime" })}
               </TableCell>
               <TableCell className="text-right">
                 <Link href={`/dashboard/incidents/${incident.id}`}>
-                  <Button variant="ghost" size="sm">
-                    Details
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-xl text-xs hover:bg-muted font-medium"
+                  >
+                    Details →
                   </Button>
                 </Link>
               </TableCell>

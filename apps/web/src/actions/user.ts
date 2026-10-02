@@ -65,7 +65,10 @@ export async function setHolidayMode(data: { until?: string | null }) {
       // A deadline in the past would silently do nothing — reject it so the
       // UI can tell the user to pick a future date instead.
       if (until.getTime() <= Date.now()) {
-        return { success: false, error: "Holiday mode end must be in the future" };
+        return {
+          success: false,
+          error: "Holiday mode end must be in the future",
+        };
       }
     }
 
@@ -77,7 +80,7 @@ export async function setHolidayMode(data: { until?: string | null }) {
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/settings");
 
-    return { success: true, holidayModeUntil: until }; 
+    return { success: true, holidayModeUntil: until };
   } catch (error) {
     console.error("Failed to set holiday mode:", error);
     return { success: false, error: "Failed to update holiday mode" };
@@ -183,12 +186,12 @@ export async function getLicenseTelemetry() {
       edgeNodes = "7 Nodes (4-of-7)";
       maxVpcProbes = 3;
       pingInterval = "30s Rapid";
-      regions = "7 Sovereign Regions";
+      regions = "7 Edge Regions";
     } else if (userTier === "CONSTRUCT" || userTier === "ADMIN") {
       edgeNodes = "7 Nodes + VPC Mesh";
       maxVpcProbes = 10;
       pingInterval = "10s Ultra-Fast";
-      regions = "7 Sovereign Regions";
+      regions = "7 Edge Regions";
     }
 
     return {
@@ -219,7 +222,7 @@ export async function getLicenseTelemetry() {
           : fallbackTier === "CONSTRUCT"
             ? "10s Ultra-Fast"
             : "3m / 1m Fast",
-      regions: fallbackTier === "INITIATE" ? "3 Primary Regions" : "7 Sovereign Regions",
+      regions: fallbackTier === "INITIATE" ? "3 Primary Regions" : "7 Edge Regions",
     };
   }
 }

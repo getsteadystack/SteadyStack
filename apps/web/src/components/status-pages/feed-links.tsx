@@ -62,44 +62,44 @@ export function FeedLinks({ pageSlug, pageTitle }: FeedLinksProps) {
       {feeds.map((feed) => (
         <div
           key={feed.id}
-          className="flex items-center justify-between p-3 border border-primary/20 rounded-md bg-black/30 hover:bg-primary/5 transition-colors group"
+          className="flex items-center justify-between p-3.5 border border-border rounded-2xl bg-card hover:bg-muted/40 transition-colors group"
         >
           <div className="flex items-center gap-3">
-            <div className="size-10 rounded-md bg-primary/10 border border-primary/20 flex items-center justify-center">
-              <feed.icon className="size-5 text-primary" />
+            <div className="size-9 rounded-xl bg-muted border border-border flex items-center justify-center">
+              <feed.icon className="size-4 text-foreground" />
             </div>
             <div>
-              <p className="text-sm font-medium text-primary">{feed.name}</p>
-              <p className="text-xs text-primary/50">{feed.subtitle}</p>
+              <p className="text-xs font-semibold text-foreground">{feed.name}</p>
+              <p className="text-[11px] text-muted-foreground">{feed.subtitle}</p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <button
               onClick={() => copyToClipboard(feed.id, feed.url)}
-              className="p-2 rounded-md hover:bg-primary/10 text-primary/50 hover:text-primary transition-colors"
+              className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               title="Copy URL"
             >
               {copiedFeed === feed.id ? (
-                <Check className="size-4 text-primary" />
+                <Check className="size-3.5 text-emerald-500" />
               ) : (
-                <Copy className="size-4" />
+                <Copy className="size-3.5" />
               )}
             </button>
             <a
               href={feed.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 rounded-md hover:bg-primary/10 text-primary/50 hover:text-primary transition-colors"
+              className="p-2 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
               title="Open Feed"
             >
-              <ExternalLink className="size-4" />
+              <ExternalLink className="size-3.5" />
             </a>
           </div>
         </div>
       ))}
 
-      <p className="text-xs text-primary/30 text-center mt-4">
+      <p className="text-[11px] text-muted-foreground text-center mt-3 font-mono">
         Add these URLs to your RSS reader app (like Feedly, Inoreader, or NewsBlur)
       </p>
     </div>

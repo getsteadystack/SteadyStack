@@ -4,6 +4,8 @@ import { redirect, notFound } from "next/navigation";
 import { getStatusPage } from "@/actions/status-pages";
 import { getMonitors } from "@/actions/monitors";
 import { StatusPageEditor } from "@/components/status-pages/status-page-editor";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -14,9 +16,9 @@ type Props = {
 /**
  * Renders the status page editor for a specific page.
  *
- * This function retrieves the user session and checks for authentication. If the user is not authenticated, it redirects to the login page. It then fetches the status page using the provided id from params and checks if the page exists. If the page is not found, it triggers a not found response. Finally, it retrieves all monitors and returns the StatusPageEditor component with the fetched page and monitors.
- *
- * @param {Props} props - The properties object containing the params for the status page.
+ * Wraps StatusPageEditor in NextIntlClientProvider so next-intl hooks
+ * (useLocale, useFormatters, etc.) work inside child components like
+ * MaintenanceTimeline even though this route lives outside the [locale] tree.
  */
 export default async function EditStatusPage({ params }: Props) {
   const session = await auth.api.getSession({ headers: await headers() });
@@ -27,6 +29,12 @@ export default async function EditStatusPage({ params }: Props) {
   if (!page) notFound();
 
   const allMonitors = await getMonitors();
+  const locale = await getLocale();
+  const messages = await getMessages({ locale });
 
-  return <StatusPageEditor page={page} allMonitors={allMonitors} />;
+  return (
+    <NextIntlClientProvider locale={locale} messages={messages}>
+      <StatusPageEditor page={page} allMonitors={allMonitors} />
+    </NextIntlClientProvider>
+  );
 }

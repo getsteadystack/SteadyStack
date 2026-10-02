@@ -88,47 +88,48 @@ export function StatusPageMonitorRow({
   const displayUptime = barType === "manual" ? manualUptime : uptime;
 
   return (
-    <div className="group border border-primary/10 bg-card/40 hover:bg-card/60 rounded-sm p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 hover:border-primary/30 transition-all relative overflow-hidden">
-      {/* Hover Decor */}
-      <div className="absolute left-0 top-0 bottom-0 w-0.5 bg-primary/0 group-hover:bg-primary transition-colors"></div>
-
+    <div className="group border border-border bg-card hover:bg-card/80 rounded-2xl p-5 sm:p-6 shadow-xs hover:border-border/80 transition-all">
       <div className="flex flex-col gap-4 w-full">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div className="flex items-center gap-3">
-            <h3 className="font-bold text-lg text-foreground group-hover:text-primary transition-colors flex items-center gap-2">
+            <h3 className="font-semibold text-base text-foreground flex items-center gap-2">
               {item.displayName || monitor.name}
               {isConnected && (
                 <span className="relative flex h-2 w-2 ml-1" title="Live Socket Connected">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                 </span>
               )}
             </h3>
             <div
-              className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wide border ${
+              className={`px-2.5 py-0.5 rounded-full text-xs font-mono font-medium border ${
                 activeStatus === "UP"
-                  ? "bg-primary/10 text-primary border-primary/20"
-                  : "bg-red-500/10 text-red-500 border-red-500/20"
+                  ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20"
+                  : "bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/20"
               }`}
             >
               {activeStatus === "UP" ? tStatus("monitor_operational") : tStatus("monitor_outage")}
             </div>
           </div>
-          <div className="text-right flex items-center gap-4">
+          <div className="flex items-center gap-4 self-end sm:self-auto">
             {visibleLatency && latestEvent && latestEvent.latency && (
-              <div className="flex items-center gap-1 text-[10px] text-muted-foreground font-mono">
-                <Zap className="size-3" /> {latestEvent.latency}ms
+              <div className="flex items-center gap-1 text-xs text-muted-foreground font-mono">
+                <Zap className="size-3 text-amber-500" /> {latestEvent.latency}ms
               </div>
             )}
             {cardType === "duration"
               ? visibleUptime &&
                 (activeStatus === "UP" ? (
-                  <span className="text-primary text-sm font-bold">{displayUptime}%</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 text-sm font-mono font-bold">
+                    {displayUptime}%
+                  </span>
                 ) : (
-                  <span className="text-red-500 text-sm font-bold">{tCommon("down")}</span>
+                  <span className="text-rose-600 dark:text-rose-400 text-sm font-mono font-bold">
+                    {tCommon("down")}
+                  </span>
                 ))
               : visibleCheckCounts && (
-                  <span className="text-primary text-sm font-bold">
+                  <span className="text-foreground text-sm font-mono font-bold">
                     {barType === "manual" ? "60 days" : `${totalCount} checks`}
                   </span>
                 )}
@@ -139,7 +140,7 @@ export function StatusPageMonitorRow({
         <div className="flex items-center gap-1 h-8 w-full">
           {barType === "manual"
             ? manualDays.map((d: any, i) => {
-                let bgClass = "bg-primary"; // Default is green
+                let bgClass = "bg-emerald-500 dark:bg-emerald-400";
                 let title = `${d.dateStr} - Operational`;
 
                 if (d.override) {
@@ -149,37 +150,34 @@ export function StatusPageMonitorRow({
 
                   if (status === "MAINTENANCE") bgClass = "bg-amber-500";
                   else if (status === "DEGRADED" || status === "PARTIAL_OUTAGE")
-                    bgClass = "bg-yellow-500";
-                  else if (status === "MAJOR_OUTAGE" || status === "DOWN") bgClass = "bg-red-500";
-                  else if (status === "PAUSED") bgClass = "bg-gray-500";
+                    bgClass = "bg-amber-500";
+                  else if (status === "MAJOR_OUTAGE" || status === "DOWN") bgClass = "bg-rose-500";
+                  else if (status === "PAUSED") bgClass = "bg-muted-foreground/30";
                 }
 
                 return (
                   <div
                     key={i}
-                    className={`flex-1 h-full rounded-full transition-all hover:opacity-80 ${bgClass}`}
+                    className={`flex-1 h-full rounded-sm transition-all hover:scale-y-110 ${bgClass}`}
                     title={title}
                   />
                 );
               })
             : [...Array(60)].map((_, i) => {
-                // Map history. events[0] is latest.
-                // visual: left (oldest) -> right (newest)
-                // So index 0 (left) should be event[59]
                 const eventIndex = 59 - i;
                 const evt = history[eventIndex];
 
-                let bgClass = "bg-primary/20"; // No data default
+                let bgClass = "bg-muted-foreground/15"; // No data default
                 if (evt) {
                   if (evt.status === "MAINTENANCE") bgClass = "bg-amber-500";
-                  else if (evt.status === "UP") bgClass = "bg-primary";
-                  else bgClass = "bg-red-500";
+                  else if (evt.status === "UP") bgClass = "bg-emerald-500 dark:bg-emerald-400";
+                  else bgClass = "bg-rose-500";
                 }
 
                 return (
                   <div
                     key={i}
-                    className={`flex-1 h-full rounded-full transition-all hover:opacity-80 ${bgClass}`}
+                    className={`flex-1 h-full rounded-sm transition-all hover:scale-y-110 ${bgClass}`}
                     title={
                       evt
                         ? `${new Date(evt.timestamp).toLocaleString()} - ${evt.status}`
@@ -190,7 +188,7 @@ export function StatusPageMonitorRow({
               })}
         </div>
 
-        <div className="flex justify-between text-[10px] text-primary/40 uppercase tracking-widest font-mono">
+        <div className="flex justify-between text-[11px] text-muted-foreground font-mono">
           <span>{barType === "manual" ? "60 days ago" : tCommon("checks_ago")}</span>
           <span>{tCommon("now")}</span>
         </div>

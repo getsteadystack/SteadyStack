@@ -6,187 +6,78 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Light Mode (Crisp, modern, high-contrast clean aesthetic) */
-  --background: #fafafa;
-  --foreground: #09090b;
+  /* Light Mode (Warm Paper / Editorial Twin.so Aesthetic matching Landing Page) */
+  --background: #fbfbf9;
+  --foreground: #23211a;
   --card: #ffffff;
-  --card-foreground: #09090b;
+  --card-foreground: #23211a;
   --popover: #ffffff;
-  --popover-foreground: #09090b;
-  --primary: #09090b;
-  --primary-foreground: #fafafa;
-  --secondary: #f4f4f5;
-  --secondary-foreground: #18181b;
-  --muted: #f4f4f5;
-  --muted-foreground: #71717a;
-  --accent: #f4f4f5;
-  --accent-foreground: #18181b;
-  --destructive: #ef4444;
-  --border: #e4e4e7;
-  --input: #e4e4e7;
-  --ring: #18181b;
-  --radius: 0.75rem;
+  --popover-foreground: #23211a;
+  --primary: #23211a;
+  --primary-foreground: #ffffff;
+  --secondary: #f4f3ee;
+  --secondary-foreground: #23211a;
+  --muted: #f4f3ee;
+  --muted-foreground: #5c5c5c;
+  --accent: #f4f3ee;
+  --accent-foreground: #23211a;
+  --destructive: #dc2626;
+  --border: #e8e6df;
+  --input: #e8e6df;
+  --ring: #23211a;
+  --radius: 0.875rem;
 
-  --sidebar: #fafafa;
-  --sidebar-foreground: #09090b;
-  --sidebar-primary: #09090b;
-  --sidebar-primary-foreground: #fafafa;
-  --sidebar-accent: #f4f4f5;
-  --sidebar-accent-foreground: #18181b;
-  --sidebar-border: #e4e4e7;
-  --sidebar-ring: #18181b;
+  --sidebar: #faf8f5;
+  --sidebar-foreground: #23211a;
+  --sidebar-primary: #23211a;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: #eae7df;
+  --sidebar-accent-foreground: #23211a;
+  --sidebar-border: #e8e6df;
+  --sidebar-ring: #23211a;
 }
 
 .dark {
-  /* Modern Obsidian Dark (Main Default Theme - Deep, Sleek, High Contrast) */
-  --background: #09090b;
-  --foreground: #f4f4f5;
-  --card: #121215;
-  --card-foreground: #f4f4f5;
-  --popover: #121215;
-  --popover-foreground: #f4f4f5;
+  /* Warm Espresso Dark (Warm Charcoal & Cream Editorial Dark Mode) */
+  --background: #181715;
+  --foreground: #f7f6f2;
+  --card: #22201c;
+  --card-foreground: #f7f6f2;
+  --popover: #22201c;
+  --popover-foreground: #f7f6f2;
 
-  /* High-Contrast Crisp Monochrome Primary */
-  --primary: #fafafa;
-  --primary-foreground: #09090b;
+  /* Warm Yellow & Charcoal Primary */
+  --primary: #ffd439;
+  --primary-foreground: #23211a;
 
-  --secondary: #1c1c21;
-  --secondary-foreground: #f4f4f5;
+  --secondary: #2b2823;
+  --secondary-foreground: #f7f6f2;
 
-  --muted: #18181b;
-  --muted-foreground: #a1a1aa;
+  --muted: #2b2823;
+  --muted-foreground: #a39e93;
 
-  --accent: #1c1c21;
-  --accent-foreground: #fafafa;
-
-  --destructive: #ef4444;
-  --border: #27272a;
-  --input: #27272a;
-  --ring: #d4d4d8;
-
-  --sidebar: #09090b;
-  --sidebar-foreground: #f4f4f5;
-  --sidebar-primary: #fafafa;
-  --sidebar-primary-foreground: #09090b;
-  --sidebar-accent: #18181b;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #27272a;
-  --sidebar-ring: #d4d4d8;
-}
-
-.matrix {
-  /* Midnight Slate (Sophisticated Deep Slate with Electric Blue Accent) */
-  --background: #0b0f19;
-  --foreground: #f1f5f9;
-  --card: #111827;
-  --card-foreground: #f1f5f9;
-  --popover: #111827;
-  --popover-foreground: #f1f5f9;
-
-  /* Modern Precision Blue Accent */
-  --primary: #38bdf8;
-  --primary-foreground: #0b0f19;
-
-  --secondary: #1e293b;
-  --secondary-foreground: #f1f5f9;
-
-  --muted: #172033;
-  --muted-foreground: #94a3b8;
-
-  --accent: #1e293b;
-  --accent-foreground: #f8fafc;
-
-  --destructive: #f87171;
-  --border: #1e293b;
-  --input: #1e293b;
-  --ring: #38bdf8;
-
-  --sidebar: #0b0f19;
-  --sidebar-foreground: #f1f5f9;
-  --sidebar-primary: #38bdf8;
-  --sidebar-primary-foreground: #0b0f19;
-  --sidebar-accent: #1e293b;
-  --sidebar-accent-foreground: #f1f5f9;
-  --sidebar-border: #1e293b;
-  --sidebar-ring: #38bdf8;
-}
-
-.cyberpunk {
-  /* Carbon Amber (Deep Graphite with Warm Ember Accent) */
-  --background: #0d0d0f;
-  --foreground: #f4f4f5;
-  --card: #151518;
-  --card-foreground: #f4f4f5;
-  --popover: #151518;
-  --popover-foreground: #f4f4f5;
-
-  /* Warm Ember Accent */
-  --primary: #f97316;
-  --primary-foreground: #ffffff;
-
-  --secondary: #222228;
-  --secondary-foreground: #f4f4f5;
-
-  --muted: #1a1a1f;
-  --muted-foreground: #a1a1aa;
-
-  --accent: #222228;
-  --accent-foreground: #f4f4f5;
+  --accent: #2b2823;
+  --accent-foreground: #ffd439;
 
   --destructive: #ef4444;
-  --border: #26262d;
-  --input: #26262d;
-  --ring: #f97316;
+  --border: #33302a;
+  --input: #33302a;
+  --ring: #ffd439;
 
-  --sidebar: #0d0d0f;
-  --sidebar-foreground: #f4f4f5;
-  --sidebar-primary: #f97316;
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: #1a1a1f;
-  --sidebar-accent-foreground: #f4f4f5;
-  --sidebar-border: #26262d;
-  --sidebar-ring: #f97316;
-}
-
-.blade {
-  /* Nordic Emerald (Deep Charcoal with Subtle Emerald Accent) */
-  --background: #090c0a;
-  --foreground: #f2f4f3;
-  --card: #111613;
-  --card-foreground: #f2f4f3;
-  --popover: #111613;
-  --popover-foreground: #f2f4f3;
-
-  /* Clean Modern Emerald */
-  --primary: #10b981;
-  --primary-foreground: #090c0a;
-
-  --secondary: #19221d;
-  --secondary-foreground: #f2f4f3;
-
-  --muted: #141c17;
-  --muted-foreground: #8a9e91;
-
-  --accent: #19221d;
-  --accent-foreground: #f2f4f3;
-
-  --destructive: #ef4444;
-  --border: #1e2b24;
-  --input: #1e2b24;
-  --ring: #10b981;
-
-  --sidebar: #090c0a;
-  --sidebar-foreground: #f2f4f3;
-  --sidebar-primary: #10b981;
-  --sidebar-primary-foreground: #090c0a;
-  --sidebar-accent: #141c17;
-  --sidebar-accent-foreground: #f2f4f3;
-  --sidebar-border: #1e2b24;
-  --sidebar-ring: #10b981;
+  --sidebar: #181715;
+  --sidebar-foreground: #f7f6f2;
+  --sidebar-primary: #ffd439;
+  --sidebar-primary-foreground: #23211a;
+  --sidebar-accent: #2b2823;
+  --sidebar-accent-foreground: #f7f6f2;
+  --sidebar-border: #33302a;
+  --sidebar-ring: #ffd439;
 }
 @theme inline {
-  --font-sans: var(--font-geist-sans), sans-serif;
+  --font-sans:
+    var(--font-geist-sans), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: var(--font-geist-mono), monospace;
+  --font-serif: var(--font-serif), Newsreader, Georgia, "Times New Roman", serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);

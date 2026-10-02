@@ -134,21 +134,21 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
           href="/dashboard/monitors"
           className={cn(
             buttonVariants({ variant: "ghost", size: "sm" }),
-            "text-muted-foreground hover:text-foreground font-mono text-[10px] uppercase tracking-widest p-0 h-auto hover:bg-transparent",
+            "text-muted-foreground hover:text-foreground font-mono text-xs uppercase tracking-wider p-0 h-auto hover:bg-transparent",
           )}
         >
-          <ChevronLeft className="size-4 mr-1 text-primary" />
+          <ChevronLeft className="size-4 mr-1 text-muted-foreground" />
           Back to Monitors
         </Link>
 
         <div className="flex items-center gap-2">
           {isConnected && (
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
               </span>
-              <span className="text-[10px] uppercase font-bold text-emerald-500 tracking-wider">
+              <span className="text-[10px] uppercase font-bold text-emerald-600 tracking-wider">
                 Live
               </span>
             </div>
@@ -160,9 +160,9 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
               <Button
                 variant="outline"
                 size="sm"
-                className="min-h-[44px] md:h-8 px-4 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary font-mono text-[10px] uppercase tracking-wider"
+                className="h-8 px-3.5 border-border bg-card text-foreground hover:bg-accent font-mono text-xs uppercase tracking-wider rounded-xl"
               >
-                <Download className="size-3 mr-2" />
+                <Download className="size-3 mr-1.5" />
                 Export
               </Button>
             }
@@ -170,21 +170,26 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
 
           <GlobalDiagnosticsModal url={initialMonitor.url} monitorName={initialMonitor.name} />
 
-          {(monitor?.type === "HTTP" || monitor?.type === "HTTPS" || String(monitor?.url || "").startsWith("http")) && (
-            <RedirectInspectorModal monitorId={initialMonitor.id} monitorName={initialMonitor.name} />
+          {(monitor?.type === "HTTP" ||
+            monitor?.type === "HTTPS" ||
+            String(monitor?.url || "").startsWith("http")) && (
+            <RedirectInspectorModal
+              monitorId={initialMonitor.id}
+              monitorName={initialMonitor.name}
+            />
           )}
 
           <Button
-            variant="outline"
+            variant="default"
             size="sm"
             disabled={isLoading}
             onClick={handleRunCheck}
-            className="min-h-[44px] md:h-8 px-4 border-primary/20 bg-primary/5 text-primary hover:bg-primary/10 hover:text-primary font-mono text-[10px] uppercase tracking-wider"
+            className="h-8 px-4 bg-foreground text-background hover:bg-foreground/90 font-mono text-xs uppercase tracking-wider rounded-xl cursor-pointer"
           >
             {isLoading ? (
-              <Loader2 className="size-3 mr-2 animate-spin" />
+              <Loader2 className="size-3 mr-1.5 animate-spin" />
             ) : (
-              <Play className="size-3 mr-2" />
+              <Play className="size-3 mr-1.5" />
             )}
             Run Check
           </Button>
@@ -195,11 +200,31 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
 
       <Tabs defaultValue="overview" className="w-full">
         <div className="flex items-center justify-between gap-4 overflow-x-auto pb-2 md:pb-0">
-          <TabsList className="bg-zinc-950/50 border border-zinc-900">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="reports">SLA & Reports</TabsTrigger>
-            <TabsTrigger value="incidents">Incidents</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsList className="bg-muted/60 border border-border p-1 rounded-xl">
+            <TabsTrigger
+              value="overview"
+              className="rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs font-mono text-xs"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="reports"
+              className="rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs font-mono text-xs"
+            >
+              SLA & Reports
+            </TabsTrigger>
+            <TabsTrigger
+              value="incidents"
+              className="rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs font-mono text-xs"
+            >
+              Incidents
+            </TabsTrigger>
+            <TabsTrigger
+              value="settings"
+              className="rounded-lg data-[state=active]:bg-card data-[state=active]:text-foreground data-[state=active]:shadow-xs font-mono text-xs"
+            >
+              Settings
+            </TabsTrigger>
           </TabsList>
         </div>
 
@@ -221,7 +246,7 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
 
           <div className="mt-8">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-medium">Recent Activity</h3>
+              <h3 className="text-base font-serif font-medium text-foreground">Recent Activity</h3>
             </div>
             <IncidentHistory monitor={monitor} />
           </div>
@@ -242,12 +267,14 @@ export function MonitorDetailView({ initialMonitor }: { initialMonitor: any }) {
           value="settings"
           className="mt-6 animate-in fade-in slide-in-from-bottom-2 duration-300"
         >
-          <div className="flex flex-col items-center justify-center p-12 border border-zinc-800 rounded-lg bg-zinc-950/30 border-dashed">
-            <Settings className="size-12 text-zinc-700 mb-4" />
-            <h3 className="text-lg font-medium text-foreground mb-2">Monitor Settings</h3>
-            <p className="text-muted-foreground mb-6 text-center max-w-sm">
-              Configure monitor frequency, alert thresholds, and notifications in the
-              dedicated settings page.
+          <div className="flex flex-col items-center justify-center p-12 border border-border rounded-2xl bg-card border-dashed shadow-xs">
+            <Settings className="size-10 text-muted-foreground mb-4" />
+            <h3 className="text-base font-serif font-medium text-foreground mb-2">
+              Monitor Settings
+            </h3>
+            <p className="text-muted-foreground mb-6 text-center max-w-sm text-xs">
+              Configure monitor frequency, alert thresholds, and notifications in the dedicated
+              settings page.
             </p>
             <Link
               href={`/dashboard/monitors/${monitor.id}/settings`}

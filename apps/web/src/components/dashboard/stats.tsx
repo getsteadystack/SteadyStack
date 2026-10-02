@@ -55,28 +55,32 @@ export const DashboardStats = memo(function DashboardStats({
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-2">
       {stats.map((stat) => (
         <div
           key={stat.name}
-          className="bg-card border border-border rounded-xl p-6 hover:border-primary/20 hover:shadow-[0_8px_30px_rgba(0,0,0,0.02)] transition-all duration-300 relative overflow-hidden group"
+          className="bg-card border border-border rounded-2xl p-6 hover:border-foreground/20 hover:shadow-sm transition-all duration-200 relative overflow-hidden group shadow-xs"
         >
-          <div className="flex items-center justify-between mb-4">
-            <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-muted-foreground text-xs font-mono font-medium uppercase tracking-wider">
               {stat.name}
             </p>
-            <div className="p-2 bg-accent rounded-lg border border-border/50 group-hover:border-primary/10 transition-colors">
+            <div className="p-2 bg-muted rounded-xl border border-border group-hover:border-foreground/20 transition-colors">
               <stat.icon className={`size-4 ${stat.iconColor}`} />
             </div>
           </div>
-          <p className="text-2xl font-extrabold text-foreground tracking-tight">{stat.value}</p>
-          <p
-            className={`text-[10px] font-bold uppercase tracking-wider mt-2 flex items-center gap-1.5 ${stat.changeColor}`}
-          >
-            {stat.trend === "up" && <TrendingUp className="size-3.5" />}
-            {stat.trend === "down" && <TrendingDown className="size-3.5" />}
-            {stat.change}
+          <p className="text-3xl font-serif font-semibold text-foreground tracking-tight">
+            {stat.value}
           </p>
+          <div className="mt-3 flex items-center gap-1.5">
+            <span
+              className={`inline-flex items-center gap-1 text-[11px] font-mono font-semibold px-2 py-0.5 rounded-full border border-border/80 bg-muted/60 ${stat.changeColor}`}
+            >
+              {stat.trend === "up" && <TrendingUp className="size-3" />}
+              {stat.trend === "down" && <TrendingDown className="size-3" />}
+              {stat.change}
+            </span>
+          </div>
         </div>
       ))}
     </div>

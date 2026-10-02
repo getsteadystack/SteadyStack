@@ -10,7 +10,6 @@ import {
   Bell,
   Settings,
   TriangleAlert,
-  Globe,
   Blocks,
   Layers,
   PanelLeftClose,
@@ -18,15 +17,16 @@ import {
   Zap,
   Award,
   FileCheck2,
+  Users,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { usePathname } from "next/navigation";
 
 const navigation = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Clients", href: "/dashboard/clients", icon: Users },
   { name: "Monitors", href: "/dashboard/monitors", icon: Monitor },
   { name: "Templates", href: "/dashboard/templates", icon: Layers },
-  { name: "Status Pages", href: "/dashboard/pages", icon: Globe },
   { name: "SLA Reports", href: "/dashboard/reports", icon: FileCheck2 },
   { name: "Integrations", href: "/dashboard/integrations", icon: Blocks },
   { name: "Incidents", href: "/dashboard/incidents", icon: TriangleAlert },
@@ -70,7 +70,14 @@ export function Sidebar() {
   }, []);
 
   const currentTier = telemetry?.tier || "INITIATE";
-  const displayTier = currentTier === "INITIATE" ? "FREE_DEV" : currentTier;
+  const displayTier =
+    currentTier === "INITIATE"
+      ? "FREE"
+      : currentTier === "NETRUNNER"
+        ? "AGENCY"
+        : currentTier === "CONSTRUCT"
+          ? "AGENCY_PRO"
+          : currentTier;
 
   // Tier color styling
   const tierColorClass =
@@ -82,14 +89,27 @@ export function Sidebar() {
           ? "text-amber-500 bg-amber-500/10 border-amber-500/20"
           : "text-primary bg-primary/10 border-primary/20";
 
+  const insertIdx = navigation.findIndex((n) => n.href === "/dashboard/incidents");
+  const navItems = telemetry?.isAdmin
+    ? [
+        ...navigation.slice(0, insertIdx === -1 ? navigation.length : insertIdx + 1),
+        {
+          name: "Design Partners",
+          href: "/dashboard/design-partners",
+          icon: Award,
+        },
+        ...navigation.slice(insertIdx === -1 ? navigation.length : insertIdx + 1),
+      ]
+    : navigation;
+
   return (
     <aside
       className={cn(
-        "hidden md:flex shrink-0 border-r border-border bg-background/40 backdrop-blur-xl flex-col justify-between p-4 h-full relative overflow-hidden font-sans transition-all duration-300 ease-in-out",
+        "hidden md:flex shrink-0 border-r border-border bg-sidebar/80 backdrop-blur-xl flex-col justify-between p-4 h-full relative overflow-hidden font-sans transition-all duration-300 ease-in-out",
         isCollapsed ? "w-20" : "w-64",
       )}
     >
-      <div className="flex flex-col gap-6 relative z-10 px-1 py-2">
+      <div className="flex flex-col gap-6 relative z-10 px-1 py-1 flex-1 min-h-0 overflow-y-auto">
         {/* Logo/Brand & Toggle Button */}
         <div
           className={cn(
@@ -97,32 +117,27 @@ export function Sidebar() {
             isCollapsed ? "justify-center flex-col gap-3" : "justify-between",
           )}
         >
-          <div className="flex items-center gap-3">
-            <div className="relative flex items-center justify-center size-10 rounded-lg bg-primary/10 border border-primary/20 text-primary overflow-hidden group shrink-0">
-              <div className="absolute inset-0 bg-primary/15 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-              <span className="absolute top-1 right-1 flex h-1.5 w-1.5">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-primary"></span>
-              </span>
+          <Link href="/dashboard" className="flex items-center gap-3 group">
+            <div className="relative flex items-center justify-center size-9 rounded-xl bg-[#ffd439] text-[#23211a] font-bold shadow-xs shrink-0 group-hover:scale-105 transition-transform">
               <Activity className="size-5" />
             </div>
 
             {!isCollapsed && (
               <div className="flex flex-col">
-                <span className="font-mono text-sm font-bold tracking-wider text-foreground">
-                  STEADYSTACK
+                <span className="font-serif text-base font-semibold tracking-tight text-foreground">
+                  SteadyStack
                 </span>
-                <span className="font-mono text-[9px] text-muted-foreground tracking-widest uppercase">
-                  ZERO_FP_MESH
+                <span className="font-mono text-[9px] text-muted-foreground tracking-wider uppercase">
+                  Edge Monitoring
                 </span>
               </div>
             )}
-          </div>
+          </Link>
 
           <button
             onClick={toggleCollapse}
             className={cn(
-              "text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-muted/50 rounded-md cursor-pointer",
+              "text-muted-foreground hover:text-foreground transition-colors p-1.5 hover:bg-muted rounded-lg cursor-pointer",
               isCollapsed && "mt-1",
             )}
             title={isCollapsed ? "Expand sidebar" : "Collapse sidebar"}
@@ -138,18 +153,7 @@ export function Sidebar() {
 
         {/* Navigation Items */}
         <nav className="flex flex-col gap-1">
-          {(telemetry?.isAdmin
-            ? [
-                ...navigation.slice(0, 7),
-                {
-                  name: "Design Partners",
-                  href: "/dashboard/design-partners",
-                  icon: Award,
-                },
-                ...navigation.slice(7),
-              ]
-            : navigation
-          ).map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.href;
             const Icon = item.icon;
 
@@ -158,27 +162,23 @@ export function Sidebar() {
                 key={item.name}
                 href={item.href as any}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 text-xs font-mono tracking-wider transition-all duration-200 border rounded-none group cursor-pointer",
+                  "flex items-center gap-3 px-3 py-2.5 text-xs tracking-wide transition-all duration-200 rounded-xl group cursor-pointer",
                   isActive
-                    ? "border-primary/40 bg-primary/10 text-primary font-bold shadow-sm"
-                    : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/40 hover:border-border/60",
-                  isCollapsed ? "justify-center px-0" : "",
+                    ? "bg-primary text-primary-foreground font-semibold shadow-xs"
+                    : "text-muted-foreground hover:text-foreground hover:bg-muted font-medium",
+                  isCollapsed ? "justify-center px-0 py-2.5" : "",
                 )}
                 title={isCollapsed ? item.name : undefined}
               >
                 <Icon
                   className={cn(
-                    "size-4 shrink-0 transition-transform duration-200 group-hover:scale-110",
-                    isActive ? "text-primary" : "text-muted-foreground group-hover:text-foreground",
+                    "size-4 shrink-0 transition-transform duration-200 group-hover:scale-105",
+                    isActive
+                      ? "text-primary-foreground"
+                      : "text-muted-foreground group-hover:text-foreground",
                   )}
                 />
-                {!isCollapsed && (
-                  <>
-                    <span className="transition-transform duration-300 group-hover:translate-x-0.5 truncate">
-                      {item.name}
-                    </span>
-                  </>
-                )}
+                {!isCollapsed && <span className="truncate">{item.name}</span>}
               </Link>
             );
           })}
@@ -188,64 +188,60 @@ export function Sidebar() {
       {/* Bottom Telemetry License Card */}
       <div
         className={cn(
-          "relative z-10 p-3 border border-border/80 bg-card/10 backdrop-blur-md flex flex-col gap-3 shadow-md rounded-none transition-all duration-300",
-          isCollapsed ? "items-center text-center p-2" : "",
+          "relative z-10 p-3.5 border border-border bg-card flex flex-col gap-3 shadow-xs rounded-2xl transition-all duration-300",
+          isCollapsed ? "items-center text-center p-2 rounded-xl" : "",
         )}
       >
         {!isCollapsed ? (
           <>
             <div className="flex flex-col gap-2 font-mono">
-              <div className="flex items-center justify-between border-b border-border/40 pb-1.5">
-                <span className="text-[9px] text-muted-foreground tracking-wider uppercase">
-                  LICENSE TIER
+              <div className="flex items-center justify-between border-b border-border/70 pb-2">
+                <span className="text-[10px] text-muted-foreground tracking-wider uppercase font-semibold">
+                  Plan Tier
                 </span>
                 <div className="flex items-center gap-1.5">
                   {telemetry?.isAdmin && (
-                    <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                    <span className="text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full bg-amber-500/10 text-amber-700 border border-amber-500/20">
                       ADMIN
                     </span>
                   )}
                   {telemetry?.isLifetime && (
-                    <span className="text-[8px] font-mono font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/40">
+                    <span className="text-[9px] font-mono font-bold px-2 py-0.5 rounded-full bg-[#ffd439]/25 text-[#23211a] border border-[#ffd439]">
                       {telemetry.appsumoTier ? `LTD T${telemetry.appsumoTier}` : "LIFETIME"}
                     </span>
                   )}
-                  <span className={`text-[9px] font-bold px-1.5 py-0.5 border ${tierColorClass}`}>
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-muted text-foreground border border-border">
                     {displayTier}
                   </span>
                 </div>
               </div>
-              <div className="flex items-center justify-between text-[9px]">
-                <span className="text-muted-foreground tracking-wider uppercase">EDGE NODES</span>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-muted-foreground uppercase">Edge Quorum</span>
                 <span className="text-foreground font-semibold">
                   {telemetry ? telemetry.edgeNodes : "3 Nodes (2-of-3)"}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-[9px]">
-                <span className="text-muted-foreground tracking-wider uppercase">
-                  CHECK INTERVAL
-                </span>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-muted-foreground uppercase">Check Interval</span>
                 <span className="text-foreground font-semibold">
-                  {telemetry ? telemetry.pingInterval : "3m / 1m Fast"}
+                  {telemetry ? telemetry.pingInterval : "60s Fast"}
                 </span>
               </div>
-              <div className="flex items-center justify-between text-[9px]">
-                <span className="text-muted-foreground tracking-wider uppercase">REGIONS</span>
+              <div className="flex items-center justify-between text-[10px]">
+                <span className="text-muted-foreground uppercase">Regions</span>
                 <span className="text-foreground font-semibold">
-                  {telemetry ? telemetry.regions : "3 Primary Regions"}
+                  {telemetry ? telemetry.regions : "3 Regions"}
                 </span>
               </div>
               {telemetry?.isLifetime && (
-                <div className="flex items-center justify-between text-[9px]">
-                  <span className="text-muted-foreground tracking-wider uppercase">TYPE</span>
-                  <span className="text-emerald-400 font-semibold font-mono">
-                    LIFETIME (NO RENEWAL)
-                  </span>
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="text-muted-foreground uppercase">License</span>
+                  <span className="text-emerald-700 font-semibold font-mono">Active Lifetime</span>
                 </div>
               )}
               {telemetry && telemetry.maxVpcProbes > 0 && (
-                <div className="flex items-center justify-between text-[9px]">
-                  <span className="text-muted-foreground tracking-wider uppercase">VPC AGENTS</span>
+                <div className="flex items-center justify-between text-[10px]">
+                  <span className="text-muted-foreground uppercase">VPC Probes</span>
                   <span className="text-foreground font-semibold">
                     {telemetry.vpcProbeCount} / {telemetry.maxVpcProbes} Active
                   </span>
@@ -254,31 +250,31 @@ export function Sidebar() {
             </div>
 
             {currentTier === "INITIATE" && !telemetry?.isLifetime && (
-              <div className="text-[10px] text-muted-foreground leading-relaxed border-l border-amber-500/50 pl-2 py-0.5">
-                Upgrade to Pro for 7-region quorum & 30s checks.
+              <div className="text-[11px] text-muted-foreground leading-relaxed border-l-2 border-[#ffd439] pl-2.5 py-0.5">
+                Upgrade to Agency for 10 clients, white-label portals & SLA reports.
               </div>
             )}
 
             {telemetry?.isLifetime ? (
               currentTier === "CONSTRUCT" || telemetry.appsumoTier === 3 ? (
-                <div className="w-full bg-emerald-500/10 text-emerald-400 text-[10px] font-mono font-bold uppercase tracking-wider py-2 flex items-center justify-center gap-1.5 border border-emerald-500/30">
-                  <span>✓ LIFETIME_ACTIVE</span>
+                <div className="w-full bg-emerald-50 text-emerald-700 text-[10px] font-mono font-bold uppercase tracking-wider py-2 flex items-center justify-center gap-1.5 rounded-xl border border-emerald-200">
+                  <span>✓ Lifetime Unlocked</span>
                 </div>
               ) : (
                 <Link
                   href={"/dashboard/settings?tab=billing" as any}
-                  className="w-full bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold uppercase tracking-wider transition-all duration-300 py-2 flex items-center justify-center gap-1.5 cursor-pointer rounded-none border border-emerald-400 shadow-sm"
+                  className="w-full bg-[#ffd439] hover:bg-[#f5cb2f] text-[#23211a] text-xs font-semibold tracking-wide transition-all duration-200 py-2.5 flex items-center justify-center gap-1.5 cursor-pointer rounded-xl border border-[#e5bd27] shadow-xs"
                 >
-                  <span>&gt; STACK_TIER</span>
+                  <span>Stack Lifetime Tier →</span>
                 </Link>
               )
             ) : (
               currentTier !== "CONSTRUCT" && (
                 <Link
                   href={"/dashboard/settings?tab=billing" as any}
-                  className="w-full bg-foreground text-background text-xs font-bold uppercase tracking-wider hover:bg-primary hover:text-white transition-all duration-300 py-2.5 flex items-center justify-center gap-1.5 cursor-pointer rounded-none border border-foreground/10"
+                  className="w-full bg-primary hover:bg-[#373428] text-primary-foreground text-xs font-semibold tracking-wide transition-all duration-200 py-2.5 flex items-center justify-center gap-1.5 cursor-pointer rounded-xl shadow-xs"
                 >
-                  <span>&gt; UPGRADE_LICENSE</span>
+                  <span>Upgrade Plan →</span>
                 </Link>
               )
             )}
@@ -287,12 +283,12 @@ export function Sidebar() {
           <div className="flex flex-col items-center gap-2">
             <div className="flex flex-col items-center gap-1">
               {telemetry?.isAdmin && (
-                <span className="text-[7px] font-bold px-1 py-0.2 bg-amber-500/20 text-amber-400 border border-amber-500/40">
+                <span className="text-[7px] font-bold px-1.5 py-0.5 rounded bg-amber-500/10 text-amber-700 border border-amber-500/20">
                   ADM
                 </span>
               )}
               <span
-                className={`text-[8px] font-bold px-1 py-0.5 border ${tierColorClass}`}
+                className="text-[8px] font-bold px-1.5 py-0.5 rounded-full bg-muted text-foreground border border-border"
                 title={`License Tier: ${displayTier}${telemetry?.isAdmin ? " (Admin)" : ""}`}
               >
                 {displayTier.slice(0, 4)}
@@ -301,7 +297,7 @@ export function Sidebar() {
             <Link
               href="/dashboard/settings?tab=billing"
               title="Upgrade License"
-              className="p-2 bg-foreground text-background hover:bg-primary hover:text-white transition-all duration-300 rounded-none"
+              className="p-2.5 bg-primary text-primary-foreground hover:bg-[#373428] transition-all duration-200 rounded-xl"
             >
               <Zap className="size-3.5" />
             </Link>

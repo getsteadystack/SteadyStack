@@ -134,7 +134,11 @@ export async function GET(request: NextRequest, props: LatencyHeatmapParams) {
           targetRegions.forEach((reg, idx) => {
             const key = `${reg}:${d.getTime()}`;
             if (!eventGroups.has(key)) {
-              eventGroups.set(key, { latencies: [], timestamp: d, region: reg });
+              eventGroups.set(key, {
+                latencies: [],
+                timestamp: d,
+                region: reg,
+              });
             }
             const adjustedLatency =
               ev.region === "global" && targetRegions.length > 1

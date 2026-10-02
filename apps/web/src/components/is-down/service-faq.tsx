@@ -39,16 +39,16 @@ export function ServiceFaq({ service }: ServiceFaqProps) {
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card/40 p-6 md:p-8 space-y-6">
+    <div className="rounded-2xl border border-[#e8e6df] bg-white p-6 sm:p-8 space-y-6 shadow-xs font-sans">
       <div className="flex items-center gap-3">
-        <div className="p-2 rounded-xl bg-primary/10 text-primary">
+        <div className="p-2.5 rounded-xl bg-[#ffd439]/20 border border-[#ffd439]/40 text-[#23211a]">
           <HelpCircle className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="text-xl font-bold text-foreground">
+          <h3 className="text-xl sm:text-2xl font-serif font-medium text-[#23211a]">
             Frequently Asked Questions: {service.name} Availability & Monitoring
           </h3>
-          <p className="text-sm text-muted-foreground">
+          <p className="text-xs sm:text-sm text-[#5c5c5c] font-sans">
             Everything you need to know about tracking {service.name} outages and SLA reliability.
           </p>
         </div>
@@ -60,23 +60,23 @@ export function ServiceFaq({ service }: ServiceFaqProps) {
           return (
             <div
               key={idx}
-              className="rounded-xl border border-border/70 bg-background/60 overflow-hidden transition-colors"
+              className="rounded-xl border border-[#e8e6df] bg-[#fbfbf9] overflow-hidden transition-colors"
             >
               <button
                 type="button"
                 onClick={() => toggle(idx)}
-                className="flex w-full items-center justify-between p-4 sm:p-5 text-left text-sm sm:text-base font-semibold text-foreground hover:bg-muted/30 transition-colors"
+                className="flex w-full items-center justify-between p-4 sm:p-5 text-left text-sm sm:text-base font-serif font-medium text-[#23211a] hover:bg-[#f5f3ec] transition-colors"
               >
                 <span>{faq.question}</span>
                 <ChevronDown
-                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200 ${
-                    isOpen ? "rotate-180 text-primary" : ""
+                  className={`h-4 w-4 shrink-0 text-[#868279] transition-transform duration-200 ${
+                    isOpen ? "rotate-180 text-[#23211a]" : ""
                   }`}
                 />
               </button>
 
               {isOpen && (
-                <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0 text-xs sm:text-sm text-muted-foreground leading-relaxed border-t border-border/40">
+                <div className="px-4 pb-4 sm:px-5 sm:pb-5 pt-0 text-xs sm:text-sm text-[#5c5c5c] font-sans leading-relaxed border-t border-[#e8e6df] bg-white/60">
                   {faq.answer}
                 </div>
               )}

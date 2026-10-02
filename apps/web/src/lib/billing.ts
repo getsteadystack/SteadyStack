@@ -1,11 +1,15 @@
 export type PlanTier = "INITIATE" | "NETRUNNER" | "CONSTRUCT";
 
 export interface PlanLimits {
+  maxClients: number;
   maxMonitors: number;
   minIntervalSeconds: number;
   maxAlertChannels: number;
   maxStatusPages: number;
   customDomainAllowed: boolean;
+  whiteLabelAllowed: boolean;
+  monthlyReportsAllowed: boolean;
+  prioritySupport: boolean;
   usageMetered: boolean;
   priorityProbes: boolean;
   maxSeats: number;
@@ -22,7 +26,7 @@ export interface PlanDetails {
   badge?: string;
   description: string;
   monthlyPrice: number;
-  annualPriceMonthly: number; // Monthly equivalent when billed annually ($180/yr = $15/mo, $780/yr = $65/mo)
+  annualPriceMonthly: number; // Monthly equivalent when billed annually ($348/yr = $29/mo, $948/yr = $79/mo)
   stripePriceIdMonthly?: string;
   stripePriceIdAnnual?: string;
   limits: PlanLimits;
@@ -32,16 +36,20 @@ export interface PlanDetails {
 export const PLANS: Record<PlanTier, PlanDetails> = {
   INITIATE: {
     id: "INITIATE",
-    name: "The Initiate",
-    description: "Perfect for indie developers, side projects & commercial use.",
+    name: "Free",
+    description: "Essential multi-client uptime monitoring with SteadyStack status badge.",
     monthlyPrice: 0,
     annualPriceMonthly: 0,
     limits: {
+      maxClients: 2,
       maxMonitors: 50,
       minIntervalSeconds: 60,
       maxAlertChannels: 3,
-      maxStatusPages: 1,
+      maxStatusPages: 2,
       customDomainAllowed: false,
+      whiteLabelAllowed: false,
+      monthlyReportsAllowed: false,
+      prioritySupport: false,
       usageMetered: false,
       priorityProbes: false,
       maxSeats: 1,
@@ -50,63 +58,70 @@ export const PLANS: Record<PlanTier, PlanDetails> = {
       manualCheckWindowSeconds: 300,
     },
     features: [
-      "50 Active Monitors (3m standard, 1m for first 10)",
-      "3-region 2-of-3 quorum consensus",
-      "Commercial use permitted in writing",
-      "Email & Discord alert dispatches",
-      "1 Public Status page",
-      "3 Days log & telemetry retention",
+      "1–2 Client Workspaces",
+      "50 Active Monitors (60s check intervals)",
+      "3-Region Quorum Verification",
+      "Public Status Pages (SteadyStack badge)",
+      "Email & Discord Alert Dispatches",
+      "3 Days Log Retention",
     ],
   },
   NETRUNNER: {
     id: "NETRUNNER",
-    name: "The Netrunner",
-    badge: "THE SLEEP PLAN",
+    name: "Agency",
     description:
-      "Solo devs who value their sleep with 4-of-7 multi-region verification & quorum alerts.",
-    monthlyPrice: 19,
-    annualPriceMonthly: 15,
+      "Manage up to 10 clients with 100% white-label status portals, custom domains & automated monthly reports.",
+    monthlyPrice: 39,
+    annualPriceMonthly: 29,
     stripePriceIdMonthly:
       process.env.STRIPE_NETRUNNER_MONTHLY_PRICE_ID || "price_netrunner_monthly",
     stripePriceIdAnnual: process.env.STRIPE_NETRUNNER_ANNUAL_PRICE_ID || "price_netrunner_annual",
     limits: {
+      maxClients: 10,
       maxMonitors: 250,
       minIntervalSeconds: 30,
       maxAlertChannels: 25,
-      maxStatusPages: 15,
+      maxStatusPages: 10,
       customDomainAllowed: true,
+      whiteLabelAllowed: true,
+      monthlyReportsAllowed: true,
+      prioritySupport: false,
       usageMetered: true,
       priorityProbes: true,
-      maxSeats: 1,
-      multiSeatAllowed: false,
+      maxSeats: 3,
+      multiSeatAllowed: true,
       maxManualChecksPerWindow: 10,
       manualCheckWindowSeconds: 300,
     },
     features: [
-      "250 Active Monitors",
-      "30-second Heartbeat checks",
-      "4-of-7 multi-region quorum verification",
-      "Anomalous latency indicators",
-      "SSL & Port monitoring",
-      "15 White-label Status pages",
-      "45 Days logs & PDF SLA reports",
+      "Up to 10 Client Accounts",
+      "100% White-Label Status Pages (No platform badge)",
+      "Custom Domains with Automated SSL",
+      "Automated Monthly PDF Reports & SLA Sign-Offs",
+      "250 Active Monitors (30s intervals)",
+      "45 Days Telemetry & Retention",
     ],
   },
   CONSTRUCT: {
     id: "CONSTRUCT",
-    name: "The Construct",
-    description: "Enterprise reliability, HFT checks, SAML & Workspaces for professional teams.",
-    monthlyPrice: 79,
-    annualPriceMonthly: 65,
+    name: "Agency Pro",
+    description:
+      "For scaling agencies needing unlimited client accounts, high-frequency heartbeats, and dedicated priority support.",
+    monthlyPrice: 99,
+    annualPriceMonthly: 79,
     stripePriceIdMonthly:
       process.env.STRIPE_CONSTRUCT_MONTHLY_PRICE_ID || "price_construct_monthly",
     stripePriceIdAnnual: process.env.STRIPE_CONSTRUCT_ANNUAL_PRICE_ID || "price_construct_annual",
     limits: {
+      maxClients: 999999,
       maxMonitors: 1500,
       minIntervalSeconds: 10,
       maxAlertChannels: 250,
-      maxStatusPages: 75,
+      maxStatusPages: 100,
       customDomainAllowed: true,
+      whiteLabelAllowed: true,
+      monthlyReportsAllowed: true,
+      prioritySupport: true,
       usageMetered: true,
       priorityProbes: true,
       maxSeats: 25,
@@ -115,14 +130,13 @@ export const PLANS: Record<PlanTier, PlanDetails> = {
       manualCheckWindowSeconds: 300,
     },
     features: [
-      "1,500 Active Monitors",
-      "10-second HFT Heartbeat checks",
-      "Full Global Pulse coverage (7 regions)",
-      "Multi-Seat Team Workspaces & RBAC",
-      "SSO, SAML & Workspaces",
-      "PagerDuty, Slack & custom webhooks",
-      "75 Private status portals",
-      "1 Year log retention & 99.99% SLA",
+      "Unlimited Client Accounts",
+      "100% White-Label Everything (Pages, Reports & Alerts)",
+      "Custom Domains & Status Portals",
+      "Automated Monthly PDF Reports & SLA Sign-Offs",
+      "1,500 Active Monitors (10s HFT checks)",
+      "Dedicated Priority Agency Support",
+      "1 Year Log Retention & 99.99% SLA",
     ],
   },
 };
@@ -301,7 +315,7 @@ export function getPlanLimits(tier: PlanTier, tierVersion?: string | null): Plan
 }
 
 export interface UsageWarning {
-  resource: "monitors" | "alertChannels" | "statusPages";
+  resource: "clients" | "monitors" | "alertChannels" | "statusPages";
   label: string;
   used: number;
   limit: number;
@@ -309,6 +323,8 @@ export interface UsageWarning {
 }
 
 export interface UsageSummary {
+  clientsUsed: number;
+  clientsLimit: number;
   monitorsUsed: number;
   monitorsLimit: number;
   alertChannelsUsed: number;

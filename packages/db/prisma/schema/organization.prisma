@@ -12,6 +12,7 @@ model Organization {
   auditLogs   AuditLog[]
   monitors    Monitor[]
   apiKeys     ApiKey[]
+  clients     Client[]
 
   @@map("organization")
 }

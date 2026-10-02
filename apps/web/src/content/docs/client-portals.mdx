@@ -1,0 +1,83 @@
+---
+title: "White-Label Client Portals"
+description: "Deploy custom-branded client status portals with custom CNAME domains, custom color palettes, and client access control."
+section: "Agency & Client Management"
+order: 4
+badge: "White-Label"
+lastUpdated: "2026-10-02"
+---
+
+SteadyStack allows agencies and enterprise platforms to deliver custom-branded **White-Label Client Portals** for every client account. Rather than directing clients to a generic third-party status page, your clients view their uptime telemetry on your agency's domain with your brand identity.
+
+---
+
+## Key Capabilities
+
+- **Custom Subdomains & Apex Domains**: Host on `status.clientbrand.com` or `client.youragency.com` with automated TLS certificate provisioning.
+- **Custom Themes & Color Palette**: Match your client's exact brand book with custom background, text, operational, and outage accent colors.
+- **Client-Scoped Component Visibility**: Group monitors into logical services (e.g., "Web Storefront", "Payment Webhook", "Search Cluster", "Customer Portal").
+- **Incident Communication**: Publish real-time incident status notices with Markdown updates (Investigating, Identified, Monitoring, Resolved).
+- **Automated Subscriber Alerts**: Allow client stakeholders to subscribe to email or webhook updates during scheduled maintenance windows.
+
+---
+
+## 1. Domain Configuration
+
+To bind a custom domain to a status portal:
+
+1. In the Status Page Settings, enter your domain (e.g. `status.acmecorp.com`).
+2. Add a `CNAME` record in your DNS provider pointing to `cname.steadystack.dev`:
+   ```dns
+   status.acmecorp.com.   300   IN   CNAME   cname.steadystack.dev.
+   ```
+3. SteadyStack's Cloudflare edge automatically negotiates and issues an SSL/TLS certificate via Let's Encrypt / ZeroSSL within minutes.
+
+---
+
+## 2. Setting Up Access Controls
+
+Choose the right security posture for your client's status portal:
+
+| Access Mode            | Use Case                                     | Security Level                                 |
+| :--------------------- | :------------------------------------------- | :--------------------------------------------- |
+| **Public**             | Public SaaS, consumer e-commerce, open APIs  | Open to internet, optional Google indexing     |
+| **Password Protected** | B2B enterprise clients, staging environments | Secured with a shared client passcode          |
+| **Revocable Token**    | Private stakeholder review                   | Accessible via token query string `?token=...` |
+
+---
+
+## 3. Customizing Brand Assets
+
+Under **Branding & Header**:
+
+- **Logo URL**: High-resolution SVG or PNG logo.
+- **Favicon URL**: 32x32px or SVG icon for browser tabs.
+- **Homepage Link**: Custom URL when the client clicks the portal logo.
+- **Support Action**: Link to your agency's support ticketing portal or `mailto:support@youragency.com`.
+- **Custom Footer Links**: Add links to client SLAs, Privacy Policies, or maintenance schedules.
+
+---
+
+## 4. Terraform Configuration Example
+
+```hcl
+resource "steadystack_status_page" "acme_portal" {
+  name        = "Acme Corp System Status"
+  slug        = "acme-corp"
+  domain      = "status.acmecorp.com"
+  theme       = "loops-light"
+  is_public   = true
+
+  monitor_ids = [
+    steadystack_monitor.acme_frontend.id,
+    steadystack_monitor.acme_api.id,
+    steadystack_monitor.acme_checkout.id,
+  ]
+
+  branding {
+    logo_url     = "https://assets.acmecorp.com/logo.svg"
+    favicon_url  = "https://assets.acmecorp.com/favicon.ico"
+    homepage_url = "https://acmecorp.com"
+  }
+}
+```

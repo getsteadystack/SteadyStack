@@ -24,17 +24,29 @@ export const LOCALES: LocaleInfo[] = [
   { code: "es", label: "Spanish", nativeLabel: "Español", dir: "ltr" },
   { code: "fr", label: "French", nativeLabel: "Français", dir: "ltr" },
   { code: "de", label: "German", nativeLabel: "Deutsch", dir: "ltr" },
-  { code: "pt-BR", label: "Portuguese (Brazil)", nativeLabel: "Português (Brasil)", dir: "ltr" },
+  {
+    code: "pt-BR",
+    label: "Portuguese (Brazil)",
+    nativeLabel: "Português (Brasil)",
+    dir: "ltr",
+  },
   { code: "ja", label: "Japanese", nativeLabel: "日本語", dir: "ltr" },
   { code: "ko", label: "Korean", nativeLabel: "한국어", dir: "ltr" },
-  { code: "zh-CN", label: "Chinese (Simplified)", nativeLabel: "简体中文", dir: "ltr" },
+  {
+    code: "zh-CN",
+    label: "Chinese (Simplified)",
+    nativeLabel: "简体中文",
+    dir: "ltr",
+  },
   { code: "ar", label: "Arabic", nativeLabel: "العربية", dir: "rtl" },
 ];
 
 export const DEFAULT_LOCALE = "en";
 
 /** RTL locales — used to decide <html dir="rtl"> and logical-property fixes. */
-export const RTL_LOCALES: readonly string[] = LOCALES.filter((l) => l.dir === "rtl").map((l) => l.code);
+export const RTL_LOCALES: readonly string[] = LOCALES.filter((l) => l.dir === "rtl").map(
+  (l) => l.code,
+);
 
 export function isRtlLocale(locale: string): boolean {
   return RTL_LOCALES.includes(locale);

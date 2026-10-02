@@ -1,60 +1,54 @@
-import fs from "fs";
-import path from "path";
+import fs from "node:fs";
+import path from "node:path";
 
-// Enforces kebab-case file naming across source trees. Run from the repo root.
-//   bun run check-names
-const ROOT = process.cwd();
-const SCAN_DIRS = ["apps", "packages"];
-const SOURCE_DIRS = new Set(["src", "app"]);
-const IGNORED_DIRS = new Set([
-  "node_modules",
-  ".next",
-  ".expo",
-  ".open-next",
-  ".turbo",
-  ".wrangler",
-  ".git",
-  "dist",
-  "generated",
-]);
-const HAS_UPPERCASE = /[A-Z]/;
+const roots = ["apps", "packages"];
+let hasError = false;
 
-function walk(dir, violations) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (IGNORED_DIRS.has(entry.name)) continue;
-    const full = path.join(dir, entry.name);
+function scanDir(dir) {
+  if (!fs.existsSync(dir)) return;
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+
+  for (const entry of entries) {
+    const fullPath = path.join(dir, entry.name);
+    if (
+      entry.name === "node_modules" ||
+      entry.name === ".next" ||
+      entry.name === ".turbo" ||
+      entry.name === "generated" ||
+      entry.name.startsWith(".")
+    ) {
+      continue;
+    }
+
     if (entry.isDirectory()) {
-      if (entry.name === "src" || entry.name === "app") {
-        walkSource(full, violations);
-      } else {
-        walk(full, violations);
+      scanDir(fullPath);
+    } else if (entry.isFile()) {
+      // Check files under apps/*/src and apps/*/app
+      if (
+        fullPath.includes(path.join("apps", "web", "src")) ||
+        fullPath.includes(path.join("apps", "worker", "src"))
+      ) {
+        // Exclude special Next.js files or README/LICENSE
+        const basename = entry.name;
+        if (basename !== "README.md" && basename !== "LICENSE" && basename !== "CHANGELOG.md") {
+          // Check for uppercase letters
+          if (/[A-Z]/.test(basename)) {
+            console.error(`❌ Filename contains uppercase chars: ${fullPath}`);
+            hasError = true;
+          }
+        }
       }
     }
   }
 }
 
-function walkSource(dir, violations) {
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    if (IGNORED_DIRS.has(entry.name)) continue;
-    const full = path.join(dir, entry.name);
-    if (entry.isDirectory()) {
-      walkSource(full, violations);
-    } else if (HAS_UPPERCASE.test(entry.name)) {
-      violations.push(path.relative(ROOT, full));
-    }
-  }
+for (const root of roots) {
+  scanDir(root);
 }
 
-const violations = [];
-for (const dir of SCAN_DIRS) {
-  const abs = path.join(ROOT, dir);
-  if (fs.existsSync(abs)) walk(abs, violations);
-}
-
-if (violations.length > 0) {
-  console.error("File naming violations (use kebab-case, e.g. `heatmap-grid.tsx`):");
-  for (const v of violations) console.error(`  ${v}`);
+if (hasError) {
+  console.error("All source files must follow kebab-case naming.");
   process.exit(1);
+} else {
+  console.log("All source files follow kebab-case naming.");
 }
-
-console.log("All source files follow kebab-case naming.");

@@ -1,214 +1,156 @@
-"use client";
-
-import { Fragment } from "react";
 import Link from "next/link";
-import { Check, X, Sparkles, ArrowRight, ShieldCheck, ExternalLink } from "lucide-react";
-import { competitors, featureComparisons } from "./comparison-data";
+import { Check, X, ShieldCheck, ArrowRight } from "lucide-react";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 export default function ComparisonTable() {
-  const steadystack = competitors.find((c) => c.id === "steadystack")!;
-  const otherCompetitors = competitors.filter((c) => c.id !== "steadystack");
-
-  const renderValue = (val: string | boolean, isSteadyStack = false) => {
-    if (typeof val === "boolean") {
-      return val ? (
-        <div className="inline-flex items-center justify-center size-6 rounded-full bg-primary/10 border border-primary/30 text-primary">
-          <Check className="size-3.5 stroke-[3]" />
-        </div>
-      ) : (
-        <div className="inline-flex items-center justify-center size-6 rounded-full bg-muted/60 border border-border text-muted-foreground/60">
-          <X className="size-3.5" />
-        </div>
-      );
-    }
-
-    return (
-      <span
-        className={`text-xs font-mono font-semibold ${
-          isSteadyStack
-            ? "text-primary font-bold px-2.5 py-1 rounded-md bg-primary/10 border border-primary/20"
-            : "text-muted-foreground"
-        }`}
-      >
-        {val}
-      </span>
-    );
-  };
+  const summaryRows = [
+    {
+      feature: "Outage Verification",
+      description: "How failures are validated before waking up your on-call engineers",
+      steadystack: "Multi-region quorum (2-of-3 free, 4-of-7 paid)",
+      steadystackHighlight: "Zero false alarms",
+      legacy: "Single-region check (pages on transit blips)",
+      steadystackCheck: true,
+      legacyCheck: false,
+    },
+    {
+      feature: "Free Check Frequency",
+      description: "Interval between synthetic health checks on the free tier",
+      steadystack: "1 min to 3 min checks",
+      steadystackHighlight: "400% faster detection",
+      legacy: "5 min standard checks (misses short outages)",
+      steadystackCheck: true,
+      legacyCheck: false,
+    },
+    {
+      feature: "Free Plan Capacity",
+      description: "Number of monitored endpoints with full commercial use rights",
+      steadystack: "50 endpoints · Commercial ToS guaranteed",
+      steadystackHighlight: "50 monitors included",
+      legacy: "10–50 monitors with upsell paywalls",
+      steadystackCheck: true,
+      legacyCheck: false,
+    },
+    {
+      feature: "Public Status Pages",
+      description: "Public status portal with live per-region telemetry & incident history",
+      steadystack: "Hosted page free · Custom domain on Pro",
+      steadystackHighlight: "Hosted page free",
+      legacy: "Paid add-on ($7–$25+/mo)",
+      steadystackCheck: true,
+      legacyCheck: false,
+    },
+  ];
 
   return (
     <section className="py-24 bg-background relative overflow-hidden border-b border-border">
-      {/* Soft Glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[400px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
+      {/* Background glow */}
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[350px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 relative z-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 relative z-10">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
+        <div className="text-center max-w-2xl mx-auto mb-14">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-[11px] font-mono font-bold uppercase tracking-wider mb-4">
             <ShieldCheck className="size-3.5" />
-            Competitive Analysis
+            At A Glance
           </div>
           <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground mb-4">
-            Why Engineering Teams Choose <span className="text-primary">SteadyStack</span>
+            How SteadyStack <span className="text-primary">Compares</span>
           </h2>
           <p className="text-muted-foreground text-sm sm:text-base leading-relaxed font-sans">
-            Compare SteadyStack head-to-head against legacy uptime monitoring tools. Our core
-            difference is the confirmation rule: four of seven independent global regions must agree
-            before you are paged. Faster check intervals, broader edge coverage, and native
-            synthetic testing are included - but the quorum model is what eliminates false positives
-            at the source.
+            Built from the ground up to eliminate false alarms and give engineering teams faster,
+            more reliable edge monitoring without paying for basic features.
           </p>
         </div>
 
-        {/* Comparison Table Container */}
-        <div className="border border-border bg-card/80 backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden">
-          <div className="overflow-x-auto scrollbar-thin scrollbar-thumb-border">
-            <table className="w-full text-left border-collapse min-w-[700px]">
-              {/* Header Row */}
+        {/* Summary Table Container */}
+        <div className="border border-border bg-card/80 backdrop-blur-xl rounded-2xl shadow-xl overflow-hidden mb-8">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse min-w-[620px]">
+              {/* Header */}
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  <th className="p-5 text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground w-1/3">
-                    Monitoring Capabilities
+                  <th className="p-5 text-xs font-mono font-bold uppercase tracking-wider text-muted-foreground w-2/5">
+                    Feature
                   </th>
-
-                  {/* SteadyStack Column Header */}
-                  <th className="p-5 w-1/6 bg-primary/5 border-x border-primary/20 relative">
-                    <div className="flex flex-col items-center text-center gap-1.5">
+                  <th className="p-5 w-3/10 bg-primary/5 border-x border-primary/20 text-center">
+                    <div className="flex flex-col items-center gap-1">
                       <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/30">
-                        {steadystack.badge}
+                        Recommended
                       </span>
                       <span className="text-base font-extrabold text-foreground font-mono">
-                        {steadystack.name}
+                        SteadyStack
                       </span>
-                      <Link
-                        href="/signup"
-                        className={cn(
-                          buttonVariants({ size: "sm" }),
-                          "h-7 px-3 text-[10px] font-mono font-bold bg-primary text-primary-foreground hover:opacity-90 uppercase tracking-wider mt-1 w-full",
-                        )}
-                      >
-                        Try Free <ArrowRight className="size-3 ml-1" />
-                      </Link>
                     </div>
                   </th>
-
-                  {/* Competitor Columns Headers */}
-                  {otherCompetitors.map((comp) => (
-                    <th key={comp.id} className="p-5 w-1/6 text-center">
-                      <div className="flex flex-col items-center text-center gap-1">
-                        <a
-                          href={comp.pricingUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-sm font-bold text-foreground/80 font-mono hover:text-primary transition-colors hover:underline decoration-primary underline-offset-4"
-                          title={`Verify ${comp.name} pricing & plan details`}
-                        >
-                          {comp.name}
-                          <ExternalLink className="size-3 text-muted-foreground/70" />
-                        </a>
-                        <span className="text-[10px] text-muted-foreground font-sans line-clamp-2 font-normal max-w-[140px]">
-                          {comp.description}
-                        </span>
-                      </div>
-                    </th>
-                  ))}
+                  <th className="p-5 w-3/10 text-center">
+                    <div className="flex flex-col items-center gap-1">
+                      <span className="text-[10px] font-mono font-bold uppercase px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
+                        Industry Standard
+                      </span>
+                      <span className="text-sm font-bold text-foreground font-mono">
+                        Traditional Monitors
+                      </span>
+                    </div>
+                  </th>
                 </tr>
               </thead>
 
-              {/* Table Body */}
+              {/* Body */}
               <tbody className="divide-y divide-border/40 font-sans text-xs">
-                {featureComparisons.map((feature, idx) => {
-                  const isNewCategory =
-                    idx === 0 || featureComparisons[idx - 1]?.category !== feature.category;
+                {summaryRows.map((row, idx) => (
+                  <tr key={idx} className="hover:bg-muted/30 transition-colors group">
+                    {/* Feature Info */}
+                    <td className="p-5">
+                      <div className="font-semibold text-foreground text-sm font-sans">
+                        {row.feature}
+                      </div>
+                      <div className="text-[11px] text-muted-foreground font-normal mt-0.5">
+                        {row.description}
+                      </div>
+                    </td>
 
-                  return (
-                    <Fragment key={idx}>
-                      {isNewCategory && (
-                        <tr className="bg-muted/60 border-y border-border/80">
-                          <td
-                            colSpan={5}
-                            className="px-5 py-2.5 text-[11px] font-mono font-bold uppercase tracking-wider text-primary"
-                          >
-                            // {feature.category}
-                          </td>
-                        </tr>
-                      )}
-                      <tr className="hover:bg-muted/40 transition-colors group">
-                        {/* Feature Name & Description */}
-                        <td className="p-4 sm:p-5">
-                          <div className="font-semibold text-foreground text-sm font-sans flex items-center gap-2">
-                            {feature.name}
-                            {feature.name.includes("AI") && (
-                              <Sparkles className="size-3.5 text-primary animate-pulse" />
-                            )}
-                          </div>
-                          {feature.description && (
-                            <div className="text-[11px] text-muted-foreground font-normal mt-0.5">
-                              {feature.description}
-                            </div>
-                          )}
-                        </td>
+                    {/* SteadyStack Column */}
+                    <td className="p-5 text-center bg-primary/5 border-x border-primary/15 group-hover:bg-primary/10 transition-colors">
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="inline-flex items-center gap-1.5 text-xs font-mono font-bold text-primary">
+                          <Check className="size-4 stroke-[2.5]" />
+                          <span>{row.steadystackHighlight}</span>
+                        </div>
+                        <span className="text-[11px] text-muted-foreground">{row.steadystack}</span>
+                      </div>
+                    </td>
 
-                        {/* SteadyStack Value Cell */}
-                        <td className="p-4 sm:p-5 text-center bg-primary/5 border-x border-primary/15 group-hover:bg-primary/10 transition-colors">
-                          {renderValue(feature.steadystack, true)}
-                        </td>
-
-                        {/* UptimeRobot Cell */}
-                        <td className="p-4 sm:p-5 text-center">
-                          {renderValue(feature.uptimerobot)}
-                        </td>
-
-                        {/* Better Uptime Cell */}
-                        <td className="p-4 sm:p-5 text-center">
-                          {renderValue(feature.betteruptime)}
-                        </td>
-
-                        {/* Checkly Cell */}
-                        <td className="p-4 sm:p-5 text-center">{renderValue(feature.checkly)}</td>
-                      </tr>
-                    </Fragment>
-                  );
-                })}
+                    {/* Legacy Column */}
+                    <td className="p-5 text-center">
+                      <div className="flex flex-col items-center gap-1.5">
+                        <div className="inline-flex items-center gap-1.5 text-xs font-mono text-muted-foreground">
+                          <X className="size-3.5 text-muted-foreground/60" />
+                          <span>{row.legacy}</span>
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
 
-          {/* Footnotes Section */}
-          <div className="p-5 sm:p-6 bg-muted/20 border-t border-border/60 space-y-4 text-xs font-sans text-muted-foreground leading-relaxed">
-            <p>
-              <strong className="text-foreground font-mono font-bold uppercase text-[11px] mr-1.5">
-                Note 1:
-              </strong>
-              Being straight with you: Checkly runs 22 locations to our 7, and Better Uptime&apos;s
-              3-of-4 quorum is a genuinely good design that solves the same problem we do. We think
-              4-of-7 across published, health-monitored regions is better — and unlike anyone else
-              here, we publish enough detail for you to verify it yourself. Pingdom runs 100+
-              locations and still gets false-positive complaints, which is rather the point: the
-              confirmation rule matters more than the count.
-            </p>
-            <p className="pt-2 border-t border-border/40 text-[11px] font-mono text-muted-foreground/80">
-              <strong className="text-foreground">Note 2:</strong> Last verified August 2026 against
-              vendor pricing pages and public documentation. Found something out of date? Tell us
-              and we&apos;ll fix it.
-            </p>
-          </div>
-
-          {/* Table Footer Banner */}
-          <div className="p-4 sm:p-6 bg-muted/30 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="text-xs text-muted-foreground font-mono">
-              ⚡ Free monitoring for up to 50 endpoints (3m standard, 1m for first 10) with 3-region
-              quorum consensus. No credit card required.
-            </div>
+          {/* Footer Callout */}
+          <div className="p-4 sm:p-5 bg-muted/30 border-t border-border flex flex-col sm:flex-row items-center justify-between gap-4">
+            <span className="text-xs text-muted-foreground font-mono">
+              ⚡ Need deep technical specs, probe network breakdown, or full 20+ feature parity
+              matrix?
+            </span>
             <Link
-              href="/signup"
+              href="/comparison"
               className={cn(
-                buttonVariants({ variant: "outline" }),
-                "h-8 px-4 text-xs font-mono font-bold border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 uppercase tracking-wider",
+                buttonVariants({ variant: "outline", size: "sm" }),
+                "h-8 px-4 text-xs font-mono font-bold border-primary/30 bg-primary/10 text-primary hover:bg-primary/20 uppercase tracking-wider shrink-0",
               )}
             >
-              Start free — 50 monitors &rarr;
+              View Full Comparison Matrix <ArrowRight className="size-3.5 ml-1.5" />
             </Link>
           </div>
         </div>

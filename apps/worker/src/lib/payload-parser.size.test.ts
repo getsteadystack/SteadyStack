@@ -11,7 +11,9 @@ describe("validateBodySize", () => {
   test("passes when bodySize is null (no threshold violated upstream)", () => {
     const expectations = JSON.stringify({ max_body_size_bytes: 1000 });
     expect(validateBodySize(null, expectations)).toEqual({ success: true });
-    expect(validateBodySize(undefined, expectations)).toEqual({ success: true });
+    expect(validateBodySize(undefined, expectations)).toEqual({
+      success: true,
+    });
   });
 
   test("flags bodies over max_body_size_bytes", () => {
@@ -45,14 +47,19 @@ describe("validateBodySize", () => {
   });
 
   test("both thresholds applied together", () => {
-    const expectations = JSON.stringify({ min_body_size_bytes: 100, max_body_size_bytes: 200 });
+    const expectations = JSON.stringify({
+      min_body_size_bytes: 100,
+      max_body_size_bytes: 200,
+    });
     expect(validateBodySize(150, expectations)).toEqual({ success: true });
     expect(validateBodySize(50, expectations).success).toBe(false);
     expect(validateBodySize(500, expectations).success).toBe(false);
   });
 
   test("ignores malformed expectation JSON without crashing", () => {
-    expect(validateBodySize(5000, "{ invalid json }")).toEqual({ success: true });
+    expect(validateBodySize(5000, "{ invalid json }")).toEqual({
+      success: true,
+    });
   });
 
   test("ignores non-numeric or non-positive thresholds", () => {
@@ -70,7 +77,9 @@ describe("validateBodySize", () => {
       max_body_size_bytes: 10_000_000,
       body_contains: "hello",
     });
-    expect(validatePayload("hello world", 200, expectations)).toEqual({ success: true });
+    expect(validatePayload("hello world", 200, expectations)).toEqual({
+      success: true,
+    });
     expect(validatePayload("goodbye world", 200, expectations).success).toBe(false);
   });
 });

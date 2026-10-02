@@ -23,8 +23,45 @@ export const DOCS_NAVIGATION: NavSection[] = [
   {
     title: "Getting Started",
     items: [
-      { title: "Introduction", slug: "introduction", href: "/docs/introduction" },
-      { title: "Quickstart", slug: "quickstart", href: "/docs/quickstart", badge: "5 min" },
+      {
+        title: "Introduction",
+        slug: "introduction",
+        href: "/docs/introduction",
+      },
+      {
+        title: "Quickstart Guide",
+        slug: "quickstart",
+        href: "/docs/quickstart",
+        badge: "5 min",
+      },
+      {
+        title: "Agency Onboarding",
+        slug: "agency-onboarding",
+        href: "/docs/agency-onboarding",
+        badge: "Agency",
+      },
+    ],
+  },
+  {
+    title: "Agency & Client Portals",
+    items: [
+      {
+        title: "White-Label Client Portals",
+        slug: "client-portals",
+        href: "/docs/client-portals",
+        badge: "Brand",
+      },
+      {
+        title: "Automated Monthly SLA Reports",
+        slug: "automated-sla-reports",
+        href: "/docs/automated-sla-reports",
+        badge: "PDF",
+      },
+      {
+        title: "Multi-Tenant Fleet Management",
+        slug: "multi-tenant-management",
+        href: "/docs/multi-tenant-management",
+      },
     ],
   },
   {
@@ -53,7 +90,7 @@ export const DOCS_NAVIGATION: NavSection[] = [
         title: "Network Architecture",
         slug: "network-architecture",
         href: "/docs/network-architecture",
-        badge: "Network",
+        badge: "Edge",
       },
     ],
   },
@@ -67,7 +104,11 @@ export const DOCS_NAVIGATION: NavSection[] = [
         href: "/docs/alert-channels",
         badge: "Setup",
       },
-      { title: "Integrations", slug: "integrations", href: "/docs/integrations" },
+      {
+        title: "Integrations",
+        slug: "integrations",
+        href: "/docs/integrations",
+      },
       {
         title: "Incident Runbooks",
         slug: "incident-runbooks",
@@ -79,18 +120,49 @@ export const DOCS_NAVIGATION: NavSection[] = [
   {
     title: "Status Pages & Reporting",
     items: [
-      { title: "Hosted Status Pages", slug: "status-pages", href: "/docs/status-pages" },
+      {
+        title: "Hosted Status Pages",
+        slug: "status-pages",
+        href: "/docs/status-pages",
+      },
       {
         title: "Customizing Status Pages",
         slug: "status-page-customization",
         href: "/docs/status-page-customization",
       },
-      { title: "Status Badges & Widgets", slug: "status-badges", href: "/docs/status-badges" },
+      {
+        title: "Status Badges & Widgets",
+        slug: "status-badges",
+        href: "/docs/status-badges",
+      },
       {
         title: "SLA & Audit Reports",
         slug: "sla-reports",
         href: "/docs/sla-reports",
         badge: "SOC2",
+      },
+    ],
+  },
+  {
+    title: "Free Tools & Diagnostics",
+    items: [
+      {
+        title: "Global Latency & TTFB",
+        slug: "global-latency-explorer",
+        href: "/docs/global-latency-explorer",
+        badge: "50+ POPs",
+      },
+      {
+        title: "DNS Sentinel & Watchdog",
+        slug: "dns-sentinel-guide",
+        href: "/docs/dns-sentinel-guide",
+        badge: "DNS",
+      },
+      {
+        title: "SSL / TLS Certificate Inspector",
+        slug: "ssl-checker-guide",
+        href: "/docs/ssl-checker-guide",
+        badge: "TLS",
       },
     ],
   },
@@ -115,7 +187,12 @@ export const DOCS_NAVIGATION: NavSection[] = [
         href: "/docs/monitoring-as-code",
         badge: "GitOps",
       },
-      { title: "Terraform / OpenTofu", slug: "terraform", href: "/docs/terraform", badge: "IaC" },
+      {
+        title: "Terraform / OpenTofu",
+        slug: "terraform",
+        href: "/docs/terraform",
+        badge: "IaC",
+      },
       {
         title: "GitHub Actions Gates",
         slug: "github-actions",
@@ -129,7 +206,11 @@ export const DOCS_NAVIGATION: NavSection[] = [
         href: "/docs/cli-reference",
         badge: "CLI",
       },
-      { title: "Self-Hosting", slug: "self-hosting", href: "/docs/self-hosting" },
+      {
+        title: "Self-Hosting",
+        slug: "self-hosting",
+        href: "/docs/self-hosting",
+      },
       {
         title: "Deploying Private Probes",
         slug: "probe-deployment",
@@ -147,7 +228,12 @@ export const DOCS_NAVIGATION: NavSection[] = [
         href: "/docs/api-reference",
         badge: "API",
       },
-      { title: "Webhook Signatures", slug: "webhooks", href: "/docs/webhooks", badge: "HMAC" },
+      {
+        title: "Webhook Signatures",
+        slug: "webhooks",
+        href: "/docs/webhooks",
+        badge: "HMAC",
+      },
       {
         title: "Prometheus & Grafana",
         slug: "prometheus-grafana",
