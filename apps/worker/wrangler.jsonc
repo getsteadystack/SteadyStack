@@ -24,6 +24,14 @@
   },
   // Local dev config: connect to real remote bindings instead of local simulation
   // This prevents "proxy request failed" errors when crons fire in wrangler dev
+  //
+  // NOTE: local wrangler dev requires DB_USE_PG_DRIVER=true in .dev.vars.
+  // The Neon serverless driver's WebSocket tunnel crashes inside the local
+  // workerd build (floods of "internal error; reference = ..." plus Prisma
+  // "No database host or connection string" errors); the standard pg driver
+  // works. Production ignores the flag and uses the Neon driver.
+  // Remaining "internal error" bursts on cron ticks are the known wrangler
+  // bug with https subrequests in local dev (workers-sdk#9356) — noise only.
   "dev": {
     "local_protocol": "http",
     "upstream_protocol": "https",

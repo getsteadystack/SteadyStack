@@ -1,5 +1,6 @@
 "use client";
 
+import { useFormatters } from "@/lib/format";
 import { Wrench, Clock, CheckCircle, AlertCircle, Calendar } from "lucide-react";
 
 interface MaintenanceWindow {
@@ -28,14 +29,18 @@ function getMaintenanceStatus(startAt: string, endAt: string): MaintenanceStatus
   return "completed";
 }
 
-function formatDateTime(dateString: string) {
+function formatDateTime(dateString: string, locale: string) {
   const date = new Date(dateString);
-  return date.toLocaleString("en-US", {
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
+  try {
+    return date.toLocaleString(locale, {
+      month: "short",
+      day: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  } catch {
+    return date.toISOString();
+  }
 }
 
 function getTimeUntil(dateString: string): string {
@@ -81,6 +86,9 @@ function getDuration(startAt: string, endAt: string): string {
 }
 
 export function MaintenanceTimeline({ maintenanceWindows }: MaintenanceTimelineProps) {
+  const f = useFormatters();
+  const format = (d: string) => formatDateTime(d, f.locale);
+
   if (maintenanceWindows.length === 0) {
     return (
       <div className="rounded-sm border border-primary/20 bg-card/40 p-6 backdrop-blur-sm">
@@ -153,7 +161,7 @@ export function MaintenanceTimeline({ maintenanceWindows }: MaintenanceTimelineP
                         {getTimeRemaining(window.endAt)}
                       </div>
                       <div className="text-[10px] text-muted-foreground/60 font-mono mt-1">
-                        Ends {formatDateTime(window.endAt)}
+                        Ends {format(window.endAt)}
                       </div>
                     </div>
                   </div>
@@ -198,9 +206,9 @@ export function MaintenanceTimeline({ maintenanceWindows }: MaintenanceTimelineP
                       </div>
                     </div>
                     <div className="flex items-center gap-4 mt-2 text-[10px] text-muted-foreground font-mono">
-                      <span>{formatDateTime(window.startAt)}</span>
+                      <span>{format(window.startAt)}</span>
                       <span className="text-primary/40">→</span>
-                      <span>{formatDateTime(window.endAt)}</span>
+                      <span>{format(window.endAt)}</span>
                     </div>
                   </div>
                 </div>
@@ -228,7 +236,7 @@ export function MaintenanceTimeline({ maintenanceWindows }: MaintenanceTimelineP
                     <CheckCircle className="size-3 text-green-500/50" />
                     <span className="text-xs">{window.monitor.name}</span>
                   </div>
-                  <span className="text-[10px] font-mono">{formatDateTime(window.endAt)}</span>
+                  <span className="text-[10px] font-mono">{format(window.endAt)}</span>
                 </div>
               ))}
             </div>

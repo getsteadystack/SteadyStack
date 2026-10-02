@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { authClient } from "@/lib/auth-client";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { cn } from "@/lib/utils";
 import { useTheme } from "next-themes";
 
@@ -69,6 +69,53 @@ export default function LandingHeader() {
   const { data: session } = authClient.useSession();
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const checkBanner = () => {
+      let offset = 0;
+      // 1. Check documentElement style.paddingTop set by embed script
+      const pt = document.documentElement.style.paddingTop;
+      if (pt) {
+        const match = pt.match(/(\d+)px/);
+        if (match && match[1]) {
+          offset = Number.parseInt(match[1], 10);
+        }
+      }
+
+      // 2. Direct DOM inspection for top-fixed banner
+      if (!offset) {
+        const bannerEl = document.querySelector<HTMLElement>(
+          'div[style*="position:fixed"][style*="top:0"], div[style*="position: fixed"][style*="top: 0"]'
+        );
+        if (bannerEl && bannerEl.offsetHeight > 0) {
+          offset = bannerEl.offsetHeight;
+        }
+      }
+
+      if (headerRef.current) {
+        if (offset > 0) {
+          headerRef.current.style.top = `${offset + 14}px`;
+          headerRef.current.style.transition = "top 0.2s ease-out";
+        } else {
+          headerRef.current.style.top = "";
+        }
+      }
+    };
+
+    checkBanner();
+
+    const observer = new MutationObserver(checkBanner);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["style"] });
+    observer.observe(document.body, { childList: true, subtree: false });
+
+    const interval = setInterval(checkBanner, 500);
+
+    return () => {
+      observer.disconnect();
+      clearInterval(interval);
+    };
+  }, []);
 
   const productLinks = [
     {
@@ -143,7 +190,10 @@ export default function LandingHeader() {
   ];
 
   return (
-    <header className="fixed top-5 left-0 right-0 z-50 flex justify-center px-4 w-full">
+    <header
+      ref={headerRef}
+      className="fixed top-5 left-0 right-0 z-50 flex justify-center px-4 w-full"
+    >
       <div className="flex items-center justify-between px-5 sm:px-6 h-14 bg-background/80 backdrop-blur-xl border border-border shadow-[0_8px_32px_rgba(0,0,0,0.06)] dark:shadow-[0_8px_32px_rgba(0,0,0,0.4)] rounded-2xl w-full max-w-4xl transition-all duration-300">
         {/* Brand Logo */}
         <Link href="/" className="flex items-center gap-2.5 group">

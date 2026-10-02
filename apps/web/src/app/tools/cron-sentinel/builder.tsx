@@ -177,9 +177,9 @@ export function CronSentinel() {
           </Card>
 
           <Card className="border-primary/20 bg-linear-to-br from-primary/10 to-transparent p-6 text-center space-y-4">
-            <h3 className="font-mono text-sm uppercase font-bold italic tracking-tighter">
+            <h2 className="font-mono text-sm uppercase font-bold italic tracking-tighter">
               Ready to Deploy Schedule?
-            </h3>
+            </h2>
             <Button
               className="w-full h-11 uppercase font-mono font-bold tracking-tighter group"
               onClick={() => {

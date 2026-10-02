@@ -228,7 +228,6 @@ export async function assertMonitorLimits(
     type?: string;
     interval?: number;
     checkRegionsCount?: number;
-    dynamicThresholding?: boolean;
     isNew?: boolean;
   },
 ): Promise<{ allowed: boolean; error?: string }> {
@@ -254,6 +253,17 @@ export async function assertMonitorLimits(
     return { allowed: false, error: getFeatureError("browser_monitors") };
   }
 
+  if (
+    (params.type === "GRPC" ||
+      params.type === "SMTP" ||
+      params.type === "FTP" ||
+      params.type === "ICMP" ||
+      params.type === "MAIL") &&
+    !isFeatureEnabled(plan, "protocol_monitors")
+  ) {
+    return { allowed: false, error: getFeatureError("protocol_monitors") };
+  }
+
   if (params.type === "SEQUENCE" && !isFeatureEnabled(plan, "sequence_monitors")) {
     return { allowed: false, error: getFeatureError("sequence_monitors") };
   }
@@ -267,10 +277,6 @@ export async function assertMonitorLimits(
 
   if ((params.checkRegionsCount ?? 0) > 1 && !isFeatureEnabled(plan, "multi_region")) {
     return { allowed: false, error: getFeatureError("multi_region") };
-  }
-
-  if (params.dynamicThresholding && !isFeatureEnabled(plan, "dynamic_thresholding")) {
-    return { allowed: false, error: getFeatureError("dynamic_thresholding") };
   }
 
   return { allowed: true };

@@ -1,0 +1,121 @@
+---
+title: "SLA Calculation Methodology"
+description: "How SteadyStack computes SLA ratios, uptime percentages, and what counts as downtime — exactly."
+lastUpdated: "2026-09-16"
+section: "Workspace & Governance"
+order: 13
+---
+
+# SLA Calculation Methodology
+
+This page is the normative definition of how SLA numbers in SteadyStack are
+produced. If a number on screen seems wrong, this is the spec it is measured
+against.
+
+## The definition
+
+For a monitor and a reporting window:
+
+```
+SLA ratio = successful checks ÷ total checks
+```
+
+The ratio is computed from the **check stream** — every check actually executed
+— not from incident records. Why this definition and not "incident downtime,"
+see [ADR-004](https://github.com/steadystack/steadystack/blob/master/docs/adr/004-check-based-sla-ratio.md);
+in short: SLA must not move when alerting rules, thresholds, or incident
+housekeeping change. What happened happened, and the check stream is the record.
+
+Both sides of the fraction are produced the same way:
+
+- `totalChecks` — every check recorded for the monitor in the window,
+- `successfulChecks` — every check that met the monitor's success criteria
+  (the [quorum verdict](/docs/probes), not any single provider's opinion).
+
+<Check>
+Because both sides come from the same stream, a check that fails contributes to
+the denominator even when a *different* provider's check succeeded — the quorum
+verdict is what counts, per check.
+</Check>
+
+## Data pipeline: from checks to report
+
+Uptime checks run at each monitor's interval (down to 30 seconds). Storing and
+querying every raw check for a month of 30-second monitoring would mean reading
+~86,000 rows per monitor per report — so the raw stream is compacted once per
+day:
+
+1. **Daily downsampling** (`apps/worker/src/downsampling-cron.ts`): once per
+   UTC day, each monitor's checks for that day are aggregated into one
+   **`DailyMonitorSummary`** row — `totalChecks`, `successfulChecks`, and
+   latency aggregates. Writes are idempotent (`upsert`), so a re-run cannot
+   double-count.
+2. **Live merge for today**: the current UTC day has no summary yet, so report
+   generation computes today's counts live from the check/event stream and
+   merges them with the stored daily rows. Yesterday and earlier are pure
+   aggregates.
+
+Consequence: an SLA number for a window that includes *today* can drift a few
+seconds behind real time; a closed window (yesterday or earlier) never changes.
+
+## What counts as "successful"
+
+A check is successful when the monitor's success criteria pass. For HTTP
+monitors that means: transport succeeded, response assertions passed (status
+code, headers, body matchers, latency threshold — whatever is configured), and
+for quorum probing, the configured majority of providers reached the same
+verdict. Timeouts, connection failures, TLS errors, and assertion failures all
+count as unsuccessful checks.
+
+**Maintenance windows are not subtracted from stored counts.** The daily
+summary records what the monitor actually observed. If you place a maintenance
+window in the window, the report view excludes the affected checks at
+*presentation time* — the stored daily numbers remain a faithful record of
+what happened. (See ADR-004.)
+
+**Missed checks are invisible.** If no check ran (worker outage, crash between
+claim and execution), it contributes to neither side of the fraction. SLA is
+reported over checks *taken*; it is not a wall-clock guarantee that a check
+existed every N seconds. If you suspect a gap, compare the check count before
+and after the suspect period — a dip in `totalChecks` is the fingerprint of a
+missed interval.
+
+## Rounding and display
+
+- The ratio is stored as a raw fraction and **rounded only for display** —
+  never pre-rounded then averaged.
+- Dashboards show three decimals by default (`99.982%`), which matches
+  sub-minute precision for a month-long window at typical intervals.
+- SLA reports show two decimals, consistent with common contractual formatting
+  (`99.98%`). The underlying value is the same; only presentation differs.
+- Averaging daily ratios into a monthly number is **not** done by averaging
+  percentages. The report sums the daily `successfulChecks` and `totalChecks`
+  and divides once. Averaging percentages would over-weight short or sparse
+  days.
+
+## Where to see SLA numbers
+
+- **Monitor detail view** — current ratio and per-period history.
+- **SLA Reports** (`/dashboard/reports/sla`) — selectable windows (7/30/90
+  days), per-monitor table, exportable.
+- **REST API** — `GET /api/v1/monitors` returns each monitor's uptime ratio;
+  see the [API reference](/docs/api-reference) for the exact shape.
+
+## Frequently questioned answers
+
+**"SLA shows 100% but we saw an outage."** — Most often one of: the window is
+still open and today's data is live-merged (refresh later); the outage was
+resolved by a retry *within* the same check cycle; or the check stream has no
+successful/unsuccessful split you expect because the monitor's success
+criteria changed mid-window. Check the check count for the window — a
+dip in `totalChecks` means a gap, not a perfect day.
+
+**"Does a maintenance window lower my SLA?"** — Not in stored data, and not in
+the report view either: checks inside the window are excluded from the
+presentation-layer fraction. It does, however, show in raw check history.
+
+**"Why doesn't my SLA match my pager?"** — Incidents measure *detection*;
+SLA measures *availability*. A slow 2-minute blip that your alerting threshold
+ignored still failed its checks and lowers the ratio. Conversely, an alert
+that fired on a monitor with good checks (threshold flapping) doesn't touch
+SLA at all.

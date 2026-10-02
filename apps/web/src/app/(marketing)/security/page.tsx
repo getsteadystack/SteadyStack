@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Security | SteadyStack",
   description:
     "SteadyStack Security — how we protect your monitoring infrastructure, credentials, and data.",
+  alternates: {
+    canonical: "/security",
+  },
   openGraph: {
     title: "Security | SteadyStack",
     description: "How we protect your monitoring infrastructure, credentials, and data.",

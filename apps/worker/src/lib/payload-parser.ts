@@ -5,8 +5,6 @@
  * against complex expectations (regex, JSON paths).
  */
 
-import { RE2JS } from "re2js";
-
 export interface ValidationResult {
   success: boolean;
   errorMessage?: string;
@@ -19,6 +17,45 @@ export interface Expectation {
   body_regex?: string;
   json_path?: Record<string, string>;
   json_assertions?: { path: string; operator: string; value: string }[];
+  /** Alert when the response body exceeds this many bytes. */
+  max_body_size_bytes?: number;
+  /** Alert when the response body falls below this many bytes. */
+  min_body_size_bytes?: number;
+}
+
+/**
+ * Body size thresholds are enforced in checkHttpUniversal against the exact
+ * received byte count (bodySizeBytes), so validation here receives a null
+ * bodySize when the size check passed. A non-null value means the size
+ * threshold was violated.
+ */
+export function validateBodySize(
+  bodySizeBytes: number | null | undefined,
+  expectationsStr: string | null | undefined,
+): ValidationResult {
+  if (bodySizeBytes == null || !expectationsStr) {
+    return { success: true };
+  }
+  try {
+    const expectations: Expectation = JSON.parse(expectationsStr);
+    const max = expectations.max_body_size_bytes;
+    if (typeof max === "number" && max > 0 && bodySizeBytes > max) {
+      return {
+        success: false,
+        errorMessage: `BODY_TOO_LARGE: ${bodySizeBytes} bytes exceeds threshold of ${max} bytes`,
+      };
+    }
+    const min = expectations.min_body_size_bytes;
+    if (typeof min === "number" && min >= 0 && bodySizeBytes < min) {
+      return {
+        success: false,
+        errorMessage: `BODY_TOO_SMALL: ${bodySizeBytes} bytes is below threshold of ${min} bytes`,
+      };
+    }
+    return { success: true };
+  } catch {
+    return { success: true };
+  }
 }
 
 /**
@@ -60,9 +97,8 @@ export function validatePayload(
     // 3. Regex Matcher
     if (expectations.body_regex) {
       try {
-        const regex = RE2JS.compile(expectations.body_regex);
-        const matcher = regex.matcher(body);
-        if (!matcher.find()) {
+        const regex = new RegExp(expectations.body_regex);
+        if (!regex.test(body)) {
           return { success: false, errorMessage: "REGEX_MISMATCH" };
         }
       } catch (e) {

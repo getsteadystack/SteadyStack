@@ -1,6 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { useFormatters } from "@/lib/format";
 
 interface IncidentTimelineProps {
   events: any[];
@@ -13,6 +14,7 @@ export function IncidentTimeline({
   userTimezone = "UTC",
   userTimeFormat = "HH:mm",
 }: IncidentTimelineProps) {
+  const f = useFormatters();
   if (!events || events.length === 0) return null;
 
   return (
@@ -50,14 +52,9 @@ export function IncidentTimeline({
                   {event.type.replace("_", " ")}
                 </span>
                 <span className="text-xs font-mono text-muted-foreground/60">
-                  {new Date(event.createdAt).toLocaleString("en-US", {
-                    timeZone: userTimezone,
-                    month: "short",
-                    day: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    second: "2-digit",
-                    hour12: userTimeFormat === "hh:mm a",
+                  {f.formatDate(event.createdAt, {
+                    style: "datetime",
+                    // Preserve per-user overrides; fall back to active locale.
                   })}
                 </span>
               </div>

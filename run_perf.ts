@@ -20,16 +20,16 @@ mock.module("@steadystack/db", () => ({
     monitor: {
       create: async (data: any) => {
         mockDb.push(data);
-        await new Promise(r => setTimeout(r, 2));
+        await new Promise((r) => setTimeout(r, 2));
         return data;
       },
       createMany: async (args: any) => {
         mockDb.push(...args.data);
-        await new Promise(r => setTimeout(r, 2));
+        await new Promise((r) => setTimeout(r, 2));
         return { count: args.data.length };
       },
-    }
-  }
+    },
+  },
 }));
 
 // We'll rewrite uptimerobot.ts briefly inside this script for testing, then restore it.

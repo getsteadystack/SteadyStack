@@ -80,11 +80,18 @@ export async function getMonitorLatencyHistory(
 
   const result: LatencyDataPoint[] = [];
   for (const [timestamp, lats] of groups.entries()) {
-    const avg = lats.reduce((a, b) => a + b, 0) / lats.length;
-    const min = Math.min(...lats);
-    const max = Math.max(...lats);
-    const sorted = [...lats].sort((a, b) => a - b);
-    const p95 = sorted[Math.floor(sorted.length * 0.95)] || avg;
+    const len = lats.length;
+    lats.sort((a, b) => a - b);
+
+    let sum = 0;
+    for (let i = 0; i < len; i++) {
+      sum += lats[i] as number;
+    }
+
+    const avg = sum / len;
+    const min = lats[0] as number;
+    const max = lats[len - 1] as number;
+    const p95 = lats[Math.floor(len * 0.95)] ?? avg;
 
     result.push({
       timestamp,

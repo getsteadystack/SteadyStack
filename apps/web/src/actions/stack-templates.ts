@@ -64,7 +64,22 @@ export async function applyTemplate(
 
   const allowedTypes: Record<string, string[]> = {
     INITIATE: ["HTTP", "SSL", "DNS", "HEARTBEAT"],
-    NETRUNNER: ["HTTP", "PING", "PORT", "SEQUENCE", "SSL", "DNS", "HEARTBEAT", "MCP", "DATABASE"],
+    NETRUNNER: [
+      "HTTP",
+      "PING",
+      "PORT",
+      "SEQUENCE",
+      "SSL",
+      "DNS",
+      "HEARTBEAT",
+      "MCP",
+      "DATABASE",
+      "GRPC",
+      "SMTP",
+      "FTP",
+      "ICMP",
+      "MAIL",
+    ],
     CONSTRUCT: [
       "HTTP",
       "PING",
@@ -79,6 +94,11 @@ export async function applyTemplate(
       "WEBSOCKET",
       "DATABASE",
       "BGP",
+      "GRPC",
+      "SMTP",
+      "FTP",
+      "ICMP",
+      "MAIL",
     ],
   };
 
@@ -110,7 +130,6 @@ export async function applyTemplate(
         type: preset.type,
         url,
         interval,
-        timeout: preset.timeout ?? 10,
         method: preset.method ?? "GET",
         expectation: preset.expectation ?? undefined,
         body: preset.body ?? undefined,
@@ -137,7 +156,6 @@ export async function applyTemplate(
           type: monitorData.type as MonitorType,
           url: monitorData.url as string,
           interval: monitorData.interval as number,
-          timeout: monitorData.timeout as number,
           method: (monitorData.method as string) ?? "GET",
           headers: monitorData.headers as string | undefined,
           body: monitorData.body as string | undefined,

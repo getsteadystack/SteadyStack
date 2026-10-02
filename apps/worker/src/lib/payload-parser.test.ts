@@ -37,4 +37,15 @@ describe("Payload Parser", () => {
     // Execution time should be small, < 1 second
     expect(duration).toBeLessThan(1000);
   });
+
+  it("should return INVALID_REGEX error for malformed regex", () => {
+    const expectations = JSON.stringify({
+      body_regex: "[unclosed",
+    });
+
+    const result = validatePayload("some body", 200, expectations);
+
+    expect(result.success).toBe(false);
+    expect(result.errorMessage).toBe("INVALID_REGEX");
+  });
 });

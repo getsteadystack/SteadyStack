@@ -29,8 +29,6 @@ app.post("/v2/webhooks", (req, res) => {
     parent_license_key,
   } = req.body;
 
-  // if (event === 'migrate') return res.json({ success: false });
-
   res.json({
     event,
     success: true,

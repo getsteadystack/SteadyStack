@@ -1,0 +1,197 @@
+---
+title: "Alert Channels"
+description: "Step-by-step setup for every notification channel: email, Slack, Discord, PagerDuty, Opsgenie, Telegram, SMS, and custom webhooks."
+section: "Alerting & Incidents"
+order: 6.5
+badge: "Setup"
+lastUpdated: "2026-09-16"
+---
+
+Alert channels are the delivery targets of [alert rules](/docs/alert-rules). You
+create channels once, then attach them to rules on any monitor. Most channel
+setups take under two minutes, and every channel supports a **Send Test**
+button that fires a real test notification and immediately cleans it up (no
+phantom PagerDuty incidents left open).
+
+> **Dispatch support today:** EMAIL, SLACK, DISCORD, PAGERDUTY and OPSGENIE
+> channels are delivered by the live check pipeline. TELEGRAM, SMS and generic
+> WEBHOOK channels can be created and attached to rules, but dispatch for
+> these three types is not yet wired into the check pipeline — plan your
+> paging path accordingly.
+
+All channels are created under **Dashboard → Alerts → Notification Channels**.
+Types marked "plan-gated" require a paid plan (checked server-side at creation).
+
+## Email
+
+The zero-config channel — also the default. If a monitor has **no alert rules
+at all**, its owner's account email receives status-change alerts
+automatically. Add an Email channel to notify additional addresses.
+
+1. Click **Add Channel → Email**.
+2. Name it (e.g. `oncall-mail`).
+3. Enter the recipient address.
+4. Save, then **Send Test**.
+
+Config shape:
+
+```json
+{ "email": "ops@acme.com" }
+```
+
+## Slack
+
+Two setup paths:
+
+**Option A — OAuth (recommended):** Dashboard → Integrations → **Connect
+Slack**. SteadyStack asks for workspace authorization, you pick a channel, and
+the channel is created for you. The config carries the team, channel, and
+access token.
+
+**Option B — Incoming Webhook:**
+
+1. In Slack: **Apps → Incoming Webhooks → Add** to your workspace, choose the
+   target channel, and copy the `https://hooks.slack.com/services/…` URL.
+2. In SteadyStack: **Add Channel → Slack**, name it, paste the webhook URL.
+3. Save, then **Send Test** — you'll get a rich card with monitor, quorum
+   breakdown, latency, and runbook link.
+
+Config shape:
+
+```json
+{ "webhookUrl": "https://hooks.slack.com/services/T000/B000/xxxx" }
+```
+
+## Discord
+
+1. In Discord: Server Settings → **Integrations → Webhooks** → New Webhook,
+   choose the channel, **Copy Webhook URL**.
+2. In SteadyStack: **Add Channel → Discord**, name it, paste the URL.
+3. Save, then **Send Test** — a rich embed with the failure region and HTTP
+   status.
+
+Config shape:
+
+```json
+{ "webhookUrl": "https://discord.com/api/webhooks/…" }
+```
+
+There is also a one-click **Discord OAuth** flow under Integrations that
+creates the channel and webhook for you.
+
+## PagerDuty (plan-gated)
+
+Uses the PagerDuty **Events API v2** with proper deduplication: a quorum-confirmed
+downgrade triggers a PagerDuty incident, and recovery auto-resolves it.
+
+1. In PagerDuty: **Services → Service Directory → New Service**.
+2. Integrations: choose **Events API v2**, copy the **Integration/Routing Key**
+   (32 characters).
+3. In SteadyStack: **Add Channel → PagerDuty**, name it, paste the routing key.
+4. Save, then **Send Test**. SteadyStack triggers a test incident and
+   immediately resolves it via the same dedup key — confirm it appears and
+   closes in PagerDuty.
+
+Config shape:
+
+```json
+{ "routingKey": "R0XXXXXXXXXXXXXXXXXXXXXXXXXXXX" }
+```
+
+## Opsgenie (plan-gated)
+
+Uses the Opsgenie **Alert API** with alias deduplication, so repeated alerts
+for the same incident update rather than duplicate, and recovery closes the
+alert.
+
+1. In Opsgenie: **Settings → Integrations → Add → API** integration.
+2. Copy the **API Key**. If your account is hosted in the EU instance, note it
+   — the endpoint differs.
+3. In SteadyStack: **Add Channel → Opsgenie**, name it, paste the key, and
+   pick the region (`us` or `eu`).
+4. Save, then **Send Test** — a P3 test alert is created and closed
+   immediately.
+
+Config shape:
+
+```json
+{ "apiKey": "GenieKey-xxxx", "region": "us" }
+```
+
+## Telegram
+
+*Can be created today; dispatch wiring into the check pipeline is on the
+roadmap (see the note at the top).*
+
+1. In Telegram: start a chat with **@BotFather** → `/newbot` → copy the bot
+   token.
+2. Get your chat ID: message the bot once, then open
+   `https://api.telegram.org/bot<TOKEN>/getUpdates` and read `chat.id`.
+3. In SteadyStack: **Add Channel → Telegram**, paste the bot token and chat ID.
+
+Config shape:
+
+```json
+{ "botToken": "123456:ABC-DEF…", "chatId": "123456789" }
+```
+
+## SMS
+
+*Can be created today; dispatch wiring into the check pipeline is on the
+roadmap.* Available in the onboarding wizard and channel form for plan-gated
+accounts.
+
+## Webhook
+
+*Can be created today; dispatch wiring into the check pipeline is on the
+roadmap. For signed machine-to-machine notifications that work today, use a
+Discord/Slack-compatible endpoint or the [public API](/docs/api-reference).*
+
+The intended contract: each delivery includes an
+`X-SteadyStack-Signature` header (HMAC-SHA256 of the raw body, keyed by your
+channel's secret) so receivers can verify authenticity — same contract as the
+[webhook payload docs](/docs/webhooks).
+
+## Wiring channels to monitors
+
+Channels do nothing until an alert rule attaches them:
+
+1. **Dashboard → Alerts → Alert Rules → New Rule.**
+2. Pick the monitor and a trigger: `STATUS_CHANGE` (down/recovery), `LATENCY`
+   (threshold in ms, `GT`/`LT`), `SSL_EXPIRY`, `DNS_WATCHDOG`, or
+   `DOMAIN_EXPIRY`.
+3. Select one or more channels.
+4. Save — the rule is live from the next check.
+
+Or declaratively via the [REST API](/docs/api-reference):
+
+```bash
+curl -X POST "https://app.steadystack.dev/api/v1/alert-rules" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "monitorId": "cm0monitor0001abcd",
+    "trigger": "STATUS_CHANGE",
+    "targetStatus": "DOWN",
+    "channelIds": ["cm0chan0001abcd"]
+  }'
+```
+
+<Check>
+**Routing advice:** use Slack/Discord for single-region degradation notices and
+reserve PagerDuty/SMS for quorum-confirmed global outages. This maps alert
+urgency to how many independent regions agreed the service is down.
+</Check>
+
+## Troubleshooting
+
+- **Test works, real alerts don't** — the channel isn't attached to a rule on
+  that monitor, or the rule is disabled. Check Dashboard → Alerts → Alert Rules.
+- **`403` when creating PagerDuty/webhook channels** — plan gate
+  (`pagerduty_integration` / `custom_webhooks_pagerduty` feature flags).
+- **Slack test never arrives** — webhook URLs are workspace- and
+  channel-bound; if the Slack app was removed or the channel deleted, the URL
+  silently dies. Re-create the webhook.
+- **Duplicate PagerDuty incidents** — two channels pointing at the same
+  service's routing key. PagerDuty dedups by `dedup_key` per routing key, so
+  remove the duplicate channel.

@@ -10,6 +10,15 @@ const ALTERNATIVES_MAP: Record<string, string> = {
   freshping: "freshping-alternative",
 };
 
+const ALTERNATIVE_DESCRIPTIONS: Record<string, string> = {
+  freshping:
+    "Looking for a Freshping alternative? Migrate to SteadyStack for 50 free monitors, 1-minute checks, multi-region quorum, and zero hidden fees.",
+};
+
+const ALTERNATIVE_TITLES: Record<string, string> = {
+  freshping: "Top Free Freshping Alternatives in 2026",
+};
+
 export function generateStaticParams() {
   return [{ slug: "freshping" }];
 }
@@ -24,11 +33,15 @@ export async function generateMetadata({
   const post = await getPostBySlug(targetSlug);
   if (!post) return {};
 
-  const { title, description, date, tags } = post.meta;
+  const { date, tags } = post.meta;
+  const title = ALTERNATIVE_TITLES[slug] || `Top ${slug} Alternatives | SteadyStack`;
+  const description =
+    ALTERNATIVE_DESCRIPTIONS[slug] ||
+    `Compare top alternatives to ${slug} and learn how to migrate your monitors to SteadyStack with zero downtime.`;
   const url = `https://steadystack.dev/alternatives/${slug}`;
 
   return {
-    title: `${title} | SteadyStack`,
+    title,
     description,
     keywords: tags,
     alternates: { canonical: url },
@@ -60,7 +73,10 @@ export default async function AlternativeSlugPage({
 
   if (!post) notFound();
 
-  const { title, description, date, category, readTime, author, tags } = post.meta;
+  const { title, date, category, readTime, author, tags } = post.meta;
+  const description =
+    ALTERNATIVE_DESCRIPTIONS[slug] ||
+    `Compare top alternatives to ${slug} and learn how to migrate your monitors to SteadyStack with zero downtime.`;
   const tocItems = extractHeadings(post.content);
 
   const jsonLd = {

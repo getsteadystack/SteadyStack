@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import prisma from "@steadystack/db";
 import { verifyApiKey, unauthorized } from "../../../_lib/auth";
+import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 
 const MAX_REQUEST_BODY_SIZE = 1_048_576;
 
@@ -118,7 +119,7 @@ export async function POST(req: NextRequest, { params }: Ctx) {
       body: ["POST", "PUT", "PATCH"].includes(monitor.method || "GET")
         ? (monitor.body ?? undefined)
         : undefined,
-      signal: AbortSignal.timeout((monitor.timeout || 10) * 1000),
+      signal: AbortSignal.timeout(DEFAULT_CHECK_TIMEOUT_SECONDS * 1000),
     });
 
     await response.text();

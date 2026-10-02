@@ -7,7 +7,9 @@
     "maintenance": "En maintenance",
     "issue_detected": "Problèmes système détectés",
     "system_integrity_100": "Intégrité du système 100%",
-    "critical_failures": "Défaillances critiques détectées"
+    "critical_failures": "Défaillances critiques détectées",
+    "monitor_operational": "Opérationnel",
+    "monitor_outage": "En panne"
   },
   "headings": {
     "status": "Statut",
@@ -31,6 +33,21 @@
     "back_to_home": "Retour à l'accueil",
     "powered_by": "Propulsé par SteadyStack",
     "no_monitors": "Aucun moniteur actif configuré.",
-    "system_status": "État du système"
+    "system_status": "État du système",
+    "checks_ago": "Il y a 60 vérifications",
+    "now": "Maintenant",
+    "down": "Hors service"
+  },
+  "subscribe": {
+    "title": "S'abonner aux mises à jour",
+    "email_tab": "Notifications par e-mail",
+    "feed_tab": "Flux RSS / Atom",
+    "email_label": "Adresse e-mail",
+    "email_placeholder": "vous@exemple.com",
+    "monitors_label": "S'abonner aux moniteurs",
+    "info_text": "Vous recevrez des notifications uniquement pour les incidents majeurs et les maintenances planifiées. Nous ne partageons jamais votre e-mail.",
+    "subscribing": "Abonnement en cours...",
+    "button": "S'abonner",
+    "feed_info": "Abonnez-vous aux mises à jour de statut avec votre lecteur RSS préféré. Choisissez entre les flux d'incidents uniquement ou tous les événements."
   }
 }

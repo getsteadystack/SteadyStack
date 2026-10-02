@@ -8,6 +8,12 @@ import { toast } from "@/components/ui/sonner";
 export const queryClient = new QueryClient({
   queryCache: new QueryCache({
     onError: (error, query) => {
+      // While offline the 5s dashboard poll fails constantly; the service worker
+      // registration already shows a single persistent offline toast, so don't
+      // stack network-error toasts on top of it.
+      if (typeof navigator !== "undefined" && !navigator.onLine) {
+        return;
+      }
       toast.error(error.message, {
         action: {
           label: "retry",

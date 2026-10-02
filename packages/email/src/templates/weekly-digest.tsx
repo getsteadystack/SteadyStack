@@ -6,14 +6,12 @@ import {
   Container,
   Section,
   Text,
-  Link,
   EmailHeader,
   EmailFooter,
   PrimaryButton,
 } from "../primitives";
 import { emailTheme } from "../styles/theme";
 import type { WeeklyDigestData } from "../index";
-import * as React from "react";
 
 export function WeeklyDigest({ data }: { data: WeeklyDigestData }) {
   const isFlawless = data.totalIncidents === 0;

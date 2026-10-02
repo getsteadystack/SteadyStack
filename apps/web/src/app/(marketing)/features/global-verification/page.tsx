@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Multi-Region Global Verification | SteadyStack Features",
   description:
     "Multi-region quorum consensus checking. Avoid alert fatigue by cross-referencing outages using multiple global vantage nodes before triggering alarms.",
+  alternates: {
+    canonical: "/features/global-verification",
+  },
   openGraph: {
     title: "Multi-Region Global Verification | SteadyStack",
     description:

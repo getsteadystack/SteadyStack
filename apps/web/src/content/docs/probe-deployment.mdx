@@ -1,0 +1,186 @@
+---
+title: "Deploying Private Probes"
+description: "Run SteadyStack probe agents inside your VPC with Docker Compose or the Kubernetes Helm chart — exact env vars, values, and examples."
+section: "IaC & Developer Tools"
+order: 19.5
+badge: "Self-host"
+lastUpdated: "2026-09-16"
+---
+
+Private probes are on-premise agents that poll the SteadyStack worker for
+check jobs and execute them from **inside your network** — private VPC
+endpoints, internal admin panels, and databases that public edge probes can
+never reach. The probe speaks only *outbound* HTTPS to the worker; no inbound
+ports required.
+
+This page covers deploying the probe agent itself. For hosting the whole
+SteadyStack platform, see [Self-Hosting](/docs/self-hosting).
+
+## How it works
+
+1. The probe authenticates to your worker with a shared bearer token
+   (`STEADYSTACK_PROBE_TOKEN`).
+2. It polls for jobs (`/api/probes/poll`, up to `maxJobs` per poll), runs
+   checks with the configured concurrency, and reports results in batch.
+3. Every `PROBE_HEARTBEAT_INTERVAL` seconds it sends a heartbeat so the
+   platform knows the probe is alive (shown in the dashboard's probe registry).
+4. Encrypted monitor config (custom headers, mTLS material) is decrypted
+   locally with `ENCRYPTION_SECRET` — secrets never leave your infra in
+   plaintext.
+
+Check types supported by the probe agent: HTTP, PORT (TCP), gRPC health, SMTP,
+FTP, ICMP ping, and mail retrieval.
+
+## Probe environment variables
+
+| Variable | Required | Default | Purpose |
+| :------- | :------: | :------ | :------ |
+| `STEADYSTACK_API_URL` | ✅ | — | Base URL of your SteadyStack worker |
+| `STEADYSTACK_PROBE_TOKEN` | ✅ | — | Shared secret, sent as `Authorization: Bearer` |
+| `PROBE_REGION` | — | `private` | Region label shown for results from this probe |
+| `PROBE_POLL_INTERVAL` | — | `15` | Seconds between job polls |
+| `PROBE_HEARTBEAT_INTERVAL` | — | `30` | Seconds between heartbeats |
+| `PROBE_CONCURRENCY` | — | `5` | Max checks run in parallel |
+| `ENCRYPTION_SECRET` | — | unset | Required only if monitors use encrypted headers/mTLS |
+
+---
+
+## Option 1 — Docker (single container)
+
+```bash
+docker run -d \
+  --name steadystack-probe \
+  --restart unless-stopped \
+  -e STEADYSTACK_API_URL="https://worker.yourdomain.com" \
+  -e STEADYSTACK_PROBE_TOKEN="prb_live_xxxxxxxxxxxxxxxx" \
+  -e PROBE_REGION="vpc-us-east" \
+  -e PROBE_CONCURRENCY="10" \
+  ghcr.io/getsteadystack/steadystack-probe:latest
+```
+
+The image is a minimal non-root Node runtime (multi-stage build, no source or
+node_modules inside, runs as user `probe`).
+
+To build it yourself from a repo checkout (workspace root as build context):
+
+```bash
+docker build -f apps/probe/Dockerfile -t steadystack-probe .
+```
+
+## Option 2 — Docker Compose
+
+The repo's `docker-compose.yml` ships a commented `probe` service. Uncomment
+it, or add this to your own compose file:
+
+```yaml
+services:
+  probe:
+    build:
+      context: .
+      dockerfile: apps/probe/Dockerfile
+    container_name: steadystack-probe
+    restart: unless-stopped
+    environment:
+      STEADYSTACK_API_URL: "http://host.docker.internal:8787"  # local Miniflare worker
+      STEADYSTACK_PROBE_TOKEN: "local-dev-probe-secret"
+      PROBE_REGION: "local"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+```
+
+Against the production compose stack (`docker-compose.prod.yml`), the probe
+service is already defined and reads its env from `.env.production` — set
+`STEADYSTACK_API_URL`, `STEADYSTACK_PROBE_TOKEN` (matching the web app's
+`probeSecret`), and optionally `PROBE_REGION` there.
+
+## Option 3 — Kubernetes (Helm)
+
+The `helm/steadystack` chart deploys the probe as a separate `Deployment`,
+disabled by default. The chart is batteries-included (optional bundled
+PostgreSQL, ingress, HPA, PDB, ServiceMonitor) — for probe-only installs
+against the hosted platform, disable everything except the probe.
+
+`values-probe.yaml`:
+
+```yaml
+web:
+  enabled: false
+ingress:
+  enabled: false
+postgresql:
+  enabled: false
+
+probe:
+  enabled: true
+  replicaCount: 2
+  image:
+    repository: ghcr.io/getsteadystack/steadystack-probe
+    tag: "latest" # pin a version in production
+  config:
+    apiUrl: "https://worker.yourdomain.com"
+    region: "k8s-cluster"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 256Mi
+
+secrets:
+  probeSecret: "prb_live_xxxxxxxxxxxxxxxx" # becomes STEADYSTACK_PROBE_TOKEN
+```
+
+Install:
+
+```bash
+helm dependency update helm/steadystack
+helm install steadystack-probe helm/steadystack \
+  --namespace monitoring --create-namespace \
+  --values values-probe.yaml
+```
+
+What the chart gives the probe:
+
+- **Non-root containers** (`runAsNonRoot`, all capabilities dropped, read-only
+  root filesystem with an `emptyDir` at `/tmp`).
+- **Secret checksum annotation** — pods roll automatically when the secret
+  changes.
+- `STEADYSTACK_PROBE_TOKEN` is pulled from the chart-managed Secret, not
+  inlined in the Deployment spec. For production, prefer ExternalSecrets/Vault
+  and leave `secrets.probeSecret` empty.
+
+<Check>
+Scale probes horizontally (`replicaCount` > 1 or an HPA) — jobs are claimed
+per-poll, so multiple probes share the load without duplicating checks.
+</Check>
+
+## Verifying the deployment
+
+1. **Heartbeat check** — probe logs show `[Heartbeat] Sent at <timestamp>`
+   every 30 s; failures print the fetch error.
+2. **Job pickup** — logs show polls every 15 s; a probe with nothing to do
+   polls empty, which is expected until a monitor targets its region.
+3. **Dashboard** — the probe appears in the probe registry under its
+   `PROBE_REGION` label once its first heartbeat lands.
+
+## Targeting private endpoints
+
+Monitors can use any URL the probe can resolve — internal DNS names and
+private IPs included. Because the *public* edge probes would flag private
+targets as unreachable, give monitors that only a private probe can reach:
+
+- a longer `interval` (the private probe polls on its own cadence), and
+- a dedicated `PROBE_REGION` label so you can distinguish private-probe
+  results from edge results in the dashboard and
+  [API](/docs/api-reference).
+
+## Troubleshooting
+
+| Symptom | Likely cause |
+| :------ | :----------- |
+| `Invalid probe environment variables: …` at startup | Missing `STEADYSTACK_PROBE_TOKEN` or malformed `STEADYSTACK_API_URL` (must include scheme) |
+| Heartbeats fail with fetch errors | Worker URL unreachable from inside the network — check egress/firewall; the probe only needs outbound HTTPS |
+| Jobs never arrive | Token mismatch with the worker's `probeSecret`, or no monitors target this probe's region |
+| Encrypted headers fail to decrypt | `ENCRYPTION_SECRET` differs from the platform's value — must match exactly |
+| 401 from `/api/probes/poll` | Rotate the token in both places (Helm: update `secrets.probeSecret`, pods roll automatically) |

@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Live Latency Grid Monitoring | SteadyStack Features",
   description:
     "Track performance dynamically. Run high-frequency checks from global edge centers and inspect payload structures with our Live Latency Grid sentinel.",
+  alternates: {
+    canonical: "/features/latency-grid",
+  },
   openGraph: {
     title: "Live Latency Grid Monitoring | SteadyStack",
     description:

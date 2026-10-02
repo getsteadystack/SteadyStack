@@ -1,0 +1,53 @@
+{
+  "status": {
+    "operational": "Todos os sistemas operacionais",
+    "major_outage": "Interrupção grave",
+    "partial_outage": "Interrupção parcial",
+    "degraded_performance": "Desempenho degradado",
+    "maintenance": "Em manutenção",
+    "issue_detected": "Problemas detectados",
+    "system_integrity_100": "Integridade do sistema 100%",
+    "critical_failures": "Falhas críticas detectadas",
+    "monitor_operational": "Operacional",
+    "monitor_outage": "Fora do ar"
+  },
+  "headings": {
+    "status": "Status",
+    "events": "Eventos",
+    "monitors": "Monitores",
+    "past_incidents": "Incidentes anteriores",
+    "current_status": "Status atual",
+    "subscribe": "Assine as atualizações",
+    "uptime": "Tempo de atividade",
+    "system_modules": "Módulos do sistema",
+    "real_time_status": "Status em tempo real"
+  },
+  "actions": {
+    "subscribe": "Assinar",
+    "get_updates": "Receber atualizações",
+    "view_incident": "Ver incidente"
+  },
+  "common": {
+    "loading": "Carregando...",
+    "error": "Algo deu errado",
+    "back_to_home": "Voltar para o início",
+    "powered_by": "Desenvolvido por SteadyStack",
+    "no_monitors": "Nenhum monitor ativo configurado.",
+    "system_status": "Status do sistema",
+    "checks_ago": "Há 60 verificações",
+    "now": "Agora",
+    "down": "Fora do ar"
+  },
+  "subscribe": {
+    "title": "Assine as atualizações",
+    "email_tab": "Notificações por e-mail",
+    "feed_tab": "Feeds RSS / Atom",
+    "email_label": "Endereço de e-mail",
+    "email_placeholder": "voce@exemplo.com",
+    "monitors_label": "Assinar monitores",
+    "info_text": "Você receberá notificações apenas de incidentes graves e manutenções programadas. Nunca compartilhamos seu e-mail.",
+    "subscribing": "Assinando...",
+    "button": "Assinar",
+    "feed_info": "Assine as atualizações de status com seu leitor RSS favorito. Escolha entre feeds somente de incidentes ou de todos os eventos."
+  }
+}

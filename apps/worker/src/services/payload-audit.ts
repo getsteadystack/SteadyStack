@@ -1,3 +1,5 @@
+import { RE2JS } from "re2js";
+
 export async function auditPayload(targetUrl: string, pattern: string) {
   try {
     const response = await fetch(targetUrl, {
@@ -24,21 +26,22 @@ export async function auditPayload(targetUrl: string, pattern: string) {
 
     if (pattern) {
       try {
-        const regex = new RegExp(pattern, "gim");
-        let match;
-        while ((match = regex.exec(truncatedBody)) !== null) {
+        const regex = RE2JS.compile(pattern, RE2JS.CASE_INSENSITIVE | RE2JS.MULTILINE);
+        const matcher = regex.matcher(truncatedBody);
+        while (matcher.find()) {
+          const index = matcher.start();
+          const length = matcher.end() - index;
           matches.push({
-            index: match.index,
-            length: match[0].length,
+            index,
+            length,
           });
-          // Avoid infinite loops for zero-width matches
-          if (match.index === regex.lastIndex) regex.lastIndex++;
           // Limit total matches for performance
           if (matches.length > 500) break;
         }
         success = matches.length > 0;
-      } catch (err: any) {
-        errorMessage = `INVALID_REGEX: ${err.message}`;
+      } catch (err: unknown) {
+        const error = err instanceof Error ? err : new Error(String(err));
+        errorMessage = `INVALID_REGEX: ${error.message}`;
       }
     }
 
@@ -53,7 +56,8 @@ export async function auditPayload(targetUrl: string, pattern: string) {
       errorMessage,
       headers: Object.fromEntries(response.headers.entries()),
     };
-  } catch (error: any) {
-    throw new Error(`Failed to extract payload: ${error.message}`);
+  } catch (error: unknown) {
+    const err = error instanceof Error ? error : new Error(String(error));
+    throw new Error(`Failed to extract payload: ${err.message}`);
   }
 }

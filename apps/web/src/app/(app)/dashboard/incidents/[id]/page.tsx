@@ -11,6 +11,8 @@ import { getUserPreferences } from "@/actions/user";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getPostMortem } from "@/actions/post-mortem";
 import { PostMortemEditor } from "@/components/incidents/post-mortem/post-mortem-editor";
+import { formatDate } from "@/lib/format";
+import { getLocale } from "next-intl/server";
 
 export const dynamic = "force-dynamic";
 
@@ -19,22 +21,13 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
   const incident = await getIncident(id);
   const postMortem = await getPostMortem(id);
   const preferences = await getUserPreferences();
+  const locale = await getLocale();
 
   if (!incident) {
     notFound();
   }
 
-  const formatDate = (date: Date) => {
-    return date.toLocaleString("en-US", {
-      timeZone: preferences.timezone,
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: preferences.timeFormat === "hh:mm a",
-    });
-  };
+  const formatDateTime = (date: Date) => formatDate(date, { locale, style: "datetime" });
 
   return (
     <div className="space-y-6">
@@ -132,13 +125,13 @@ export default async function IncidentDetailPage({ params }: { params: Promise<{
                   </div>
                   <div className="flex justify-between items-center py-2 border-b">
                     <span className="text-muted-foreground">Started</span>
-                    <span className="font-mono">{formatDate(new Date(incident.startedAt))}</span>
+                    <span className="font-mono">{formatDateTime(new Date(incident.startedAt))}</span>
                   </div>
                   {incident.resolvedAt && (
                     <div className="flex justify-between items-center py-2 border-b bg-green-500/5 -mx-2 px-2">
                       <span className="text-muted-foreground">Resolved</span>
                       <span className="font-mono text-green-500">
-                        {formatDate(new Date(incident.resolvedAt))}
+                        {formatDateTime(new Date(incident.resolvedAt))}
                       </span>
                     </div>
                   )}

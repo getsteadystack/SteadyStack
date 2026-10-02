@@ -11,11 +11,14 @@ import {
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "SteadyStack vs Competitors — Better Monitoring, Faster Checks",
+  title: "SteadyStack vs Competitors: Uptime Monitoring Compared",
   description:
-    "See how SteadyStack beats UptimeRobot, Better Uptime, and OpenStatus. 1-minute free checks vs the industry 5-minute standard. Faster detection means less downtime.",
+    "Compare SteadyStack vs UptimeRobot, Better Stack, and OpenStatus. 1-minute free checks and multi-region consensus mean 5x faster outage detection.",
+  alternates: {
+    canonical: "/comparison",
+  },
   openGraph: {
-    title: "SteadyStack vs Competitors — Better Monitoring, Faster Checks",
+    title: "SteadyStack vs Competitors: Uptime Monitoring Compared",
     description:
       "1-minute free checks vs the industry 5-minute standard. 400% faster detection, 5x more checks per day.",
   },

@@ -10,7 +10,6 @@ export interface ParsedKumaMonitor {
   url: string;
   type: string;
   interval: number;
-  timeout: number;
   method: string;
   headers?: Record<string, string>;
   body?: string;
@@ -51,7 +50,6 @@ export function parseKumaExport(
     let url = m.url || "";
     const method = (m.method || "GET").toUpperCase();
     const interval = Math.max(30, Number(m.interval) || 60);
-    const timeout = Math.min(60, Math.max(2, Number(m.timeout) || 10));
     const alertThreshold = Math.max(1, Number(m.maxretries) || 1);
 
     // Map Uptime Kuma types to SteadyStack MonitorType
@@ -157,7 +155,6 @@ export function parseKumaExport(
       url: url || "https://example.com",
       type,
       interval,
-      timeout,
       method,
       headers: headers && Object.keys(headers).length > 0 ? headers : undefined,
       body: m.body || undefined,
@@ -306,7 +303,6 @@ importCmd
             url: m.url,
             type: m.type,
             interval: m.interval,
-            timeout: m.timeout,
             method: m.method,
             headers: m.headers,
             body: m.body,
@@ -322,7 +318,6 @@ importCmd
             url: m.url,
             type: m.type,
             interval: m.interval,
-            timeout: m.timeout,
             method: m.method,
             headers: m.headers,
             body: m.body,

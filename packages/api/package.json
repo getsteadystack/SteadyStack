@@ -6,6 +6,8 @@
     ".": {
       "default": "./src/index.ts"
     },
+    "./context": "./src/context.ts",
+    "./openapi": "./src/openapi.ts",
     "./routers": "./src/routers/index.ts",
     "./routers/index": "./src/routers/index.ts"
   },

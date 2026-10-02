@@ -13,29 +13,29 @@ import {
 } from "../primitives";
 import { emailTheme } from "../styles/theme";
 import type { MonitorAlertData } from "../index";
+import { isRtlEmailLocale, t, formatEmailTimestamp, type EmailLocale } from "../i18n";
 
-export function MonitorAlert({ data }: { data: MonitorAlertData }) {
+export function MonitorAlert({ data, locale = "en" }: { data: MonitorAlertData; locale?: EmailLocale }) {
+  const tr = (key: string, params?: Record<string, string | number>) => t(locale, key, params);
+  const dir = isRtlEmailLocale(locale) ? "rtl" : "ltr";
+
   const isDown = data.status === "DOWN";
   const isDegraded = data.status === "DEGRADED";
   const isSslWarning =
     data.reason?.includes("expires in") || data.reason?.includes("SSL certificate expires");
 
   let statusColor = isDown ? "#ef4444" : isDegraded ? "#f59e0b" : "#10b981";
-  let statusBadgeText = isDown
-    ? "CRITICAL ALERT"
-    : isDegraded
-      ? "REGIONAL DEGRADATION"
-      : "INCIDENT RESOLVED";
+  let statusBadgeText = isDown ? tr("alert.critical") : isDegraded ? tr("alert.degraded") : tr("alert.resolved");
   let statusTitle = isDown
-    ? "Service Outage Detected"
+    ? tr("alert.outageTitle")
     : isDegraded
-      ? "Partial Regional Failure Detected"
-      : "Service Recovered & Operational";
+      ? tr("alert.degradedTitle")
+      : tr("alert.recoveredTitle");
 
   if (isSslWarning) {
     statusColor = "#f59e0b";
-    statusBadgeText = "SSL WARNING";
-    statusTitle = "SSL Certificate Expiring Soon";
+    statusBadgeText = tr("alert.sslWarning");
+    statusTitle = tr("alert.sslTitle");
   }
 
   const baseUrl = (
@@ -48,7 +48,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
   const actionUrl = data.runbookUrl || dashboardUrl;
 
   return (
-    <Html>
+    <Html lang={locale} dir={dir}>
       <Head>
         <title>{statusTitle}</title>
         <style>{`
@@ -78,7 +78,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
           }}
         >
           {/* Header */}
-          <EmailHeader badge={statusBadgeText} badgeColor={statusColor} />
+          <EmailHeader badge={statusBadgeText} badgeColor={statusColor} locale={locale} />
 
           {/* Alert Status Card */}
           <Section style={{ padding: "32px 32px 24px" }}>
@@ -99,8 +99,8 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
                   letterSpacing: "0.5px",
                 }}
               >
-                <span style={{ marginRight: "8px", fontSize: "10px" }}>●</span>
-                {isDown ? "SERVICE DOWN" : isSslWarning ? "EXPIRY NOTICE" : "SERVICE RESTORED"}
+                <span style={{ marginInlineEnd: "8px", fontSize: "10px" }}>●</span>
+                {isDown ? tr("alert.serviceDown") : isSslWarning ? tr("alert.expiryNotice") : tr("alert.serviceRestored")}
               </div>
             </div>
 
@@ -149,7 +149,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
                         width: "35%",
                       }}
                     >
-                      Status Change:
+                      {tr("alert.statusChange")}
                     </td>
                     <td
                       style={{
@@ -170,7 +170,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
                         color: "#a1a1aa",
                       }}
                     >
-                      Timestamp:
+                      {tr("alert.timestamp")}
                     </td>
                     <td
                       style={{
@@ -180,7 +180,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
                         fontFamily: emailTheme.fonts.mono,
                       }}
                     >
-                      {new Date(data.timestamp).toUTCString()}
+                      {formatEmailTimestamp(locale, data.timestamp)}
                     </td>
                   </tr>
 
@@ -193,7 +193,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
                           color: "#a1a1aa",
                         }}
                       >
-                        Total Downtime:
+                        {tr("alert.totalDowntime")}
                       </td>
                       <td
                         style={{
@@ -218,7 +218,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
                           verticalAlign: "top",
                         }}
                       >
-                        Failure Reason:
+                        {tr("alert.failureReason")}
                       </td>
                       <td
                         style={{
@@ -258,7 +258,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
                     color: "#f87171",
                   }}
                 >
-                  Detected from {data.failedRegions.length} Edge Locations:
+                  {tr("alert.detectedFrom", { count: data.failedRegions.length })}
                 </Text>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                   {data.failedRegions.map((region, idx) => (
@@ -274,7 +274,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
                         border: "1px solid rgba(239, 68, 68, 0.3)",
                         padding: "3px 8px",
                         borderRadius: "4px",
-                        marginRight: "6px",
+                        marginInlineEnd: "6px",
                         marginBottom: "4px",
                         textTransform: "uppercase",
                       }}
@@ -288,11 +288,7 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
 
             {/* Action CTA */}
             <PrimaryButton href={actionUrl} variant={isDown ? "danger" : "primary"}>
-              {data.runbookUrl
-                ? "View Incident Runbook"
-                : isDown
-                  ? "Investigate Incident"
-                  : "View Live Telemetry"}
+              {data.runbookUrl ? tr("alert.viewRunbook") : isDown ? tr("alert.investigate") : tr("alert.viewTelemetry")}
             </PrimaryButton>
 
             {data.runbookUrl && (
@@ -304,9 +300,9 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
                   textAlign: "center",
                 }}
               >
-                Or open{" "}
+                {tr("alert.orOpen")}{" "}
                 <Link href={dashboardUrl} style={{ color: "#a1a1aa", textDecoration: "underline" }}>
-                  monitor dashboard
+                  {tr("alert.monitorDashboard")}
                 </Link>
               </Text>
             )}
@@ -314,7 +310,8 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
 
           {/* Footer */}
           <EmailFooter
-            customMessage="This is an automated alert generated by the SteadyStack edge consensus engine."
+            locale={locale}
+            customMessage={tr("alert.autoMessage")}
             unsubscribeUrl={`${baseUrl}/dashboard/settings?tab=notifications`}
           />
         </Container>
@@ -323,6 +320,9 @@ export function MonitorAlert({ data }: { data: MonitorAlertData }) {
   );
 }
 
-export async function renderMonitorAlert(data: MonitorAlertData): Promise<string> {
-  return await render(<MonitorAlert data={data} />);
+export async function renderMonitorAlert(
+  data: MonitorAlertData,
+  locale: EmailLocale = "en",
+): Promise<string> {
+  return await render(<MonitorAlert data={data} locale={locale} />);
 }

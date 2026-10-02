@@ -24,6 +24,11 @@ enum MonitorType {
   WEBSOCKET
   DATABASE
   BGP
+  GRPC
+  SMTP
+  FTP
+  ICMP
+  MAIL
 }
 
 enum MonitorStatus {
@@ -77,6 +82,7 @@ model Monitor {
   expectation          String? // JSON structure for response validation
   script               String? // JSON array of declarative steps for BROWSER monitors
   heartbeatToken       String? @unique // Unique token for heartbeat webhook URL
+  clientCert           String? // Encrypted PEM bundle (cert+key) for mTLS HTTP monitors
 
   @@index([userId])
   @@index([organizationId])

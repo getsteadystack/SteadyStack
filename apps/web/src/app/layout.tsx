@@ -1,10 +1,15 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 
 import { Geist, Geist_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/react";
+import { getLocale } from "next-intl/server";
+import { isRtlLocale } from "@/i18n/locales";
 
 import "../index.css";
 import Providers from "@/components/providers";
+import { ServiceWorkerRegistration } from "@/components/service-worker-registration";
+import { CookieConsent } from "@/components/landing/cookie-consent";
 
 export const dynamic = "force-dynamic";
 
@@ -23,15 +28,12 @@ const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://steadystack.dev";
 export const metadata: Metadata = {
   metadataBase: new URL(BASE_URL),
   title: {
-    default: "SteadyStack — Know the second your stack breaks",
+    default: "SteadyStack - Uptime Monitoring With Zero False Positives",
     template: "%s",
   },
   description:
-    "Know the second your stack breaks. Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification, live latency tracking, and zero false positives — free for commercial use.",
+    "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included. No credit card needed.",
   applicationName: "SteadyStack",
-  alternates: {
-    canonical: "/",
-  },
   keywords: [
     "website monitoring",
     "uptime tracker",
@@ -54,29 +56,34 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: BASE_URL,
     siteName: "SteadyStack",
-    title: "SteadyStack — Know the second your stack breaks",
+    title: "SteadyStack - Uptime Monitoring With Zero False Positives",
     description:
-      "Know the second your stack breaks. Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification, live latency tracking, and zero false positives — free for commercial use.",
+      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included. No credit card needed.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "SteadyStack — Know the second your stack breaks",
+        alt: "SteadyStack - Uptime Monitoring With Zero False Positives",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "SteadyStack — Know the second your stack breaks",
+    title: "SteadyStack - Uptime Monitoring With Zero False Positives",
     description:
-      "Know the second your stack breaks. Edge-native synthetic uptime monitoring that confirms failures across global regions before alerting. Multi-region edge quorum verification, live latency tracking, and zero false positives — free for commercial use.",
+      "Multi-region uptime monitoring that confirms failures across 7 global regions before alerting you. Free for 50 endpoints, commercial use included. No credit card needed.",
     creator: "@steadystack",
     images: ["/og-image.png"],
   },
   icons: {
-    icon: [{ url: "/favicon.ico" }, { url: "/icon.svg", type: "image/svg+xml" }],
-    apple: [{ url: "/apple-touch-icon.png" }],
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: ["/favicon.ico"],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
   },
   manifest: "/site.webmanifest",
   robots: {
@@ -135,13 +142,17 @@ const jsonLd = {
 /**
  * Renders the root layout of the application with children components.
  */
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Locale-aware <html> attributes: lang for SEO/AT, dir for RTL locales (ar).
+  const locale = await getLocale();
+  const dir = isRtlLocale(locale) ? "rtl" : "ltr";
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} dir={dir} suppressHydrationWarning>
       <body
         suppressHydrationWarning
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -151,6 +162,12 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
         <Providers>{children}</Providers>
+        <ServiceWorkerRegistration />
+        <CookieConsent />
+        <Script
+          src="https://html-to-friendly.lovable.app/api/public/embed.js?site=0b067356-8f4d-461a-addc-ccb8540505b1"
+          strategy="afterInteractive"
+        />
         {process.env.NODE_ENV === "production" && <Analytics />}
       </body>
     </html>

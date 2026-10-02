@@ -1,5 +1,6 @@
 import { getPrisma } from "@steadystack/db";
 import type { ExecutionContext, MessageBatch } from "@cloudflare/workers-types";
+import { isHolidayModeActive } from "@steadystack/core";
 import {
   sendMonitorAlert,
   sendStatusUpdate,
@@ -66,6 +67,7 @@ export default {
         user: {
           select: {
             email: true,
+            holidayModeUntil: true,
           },
         },
       },
@@ -147,6 +149,18 @@ export default {
 
           if (!monitor) {
             console.error(`[Notification] Monitor ${notification.monitorId} not found`);
+            msg.ack();
+            return;
+          }
+
+          // --- HOLIDAY MODE: account-wide alert suspension ---
+          // Monitoring and incident recording continue; every outbound
+          // notification (owner alerts and status-page subscriber updates)
+          // is dropped until the owner's holiday deadline passes.
+          if (isHolidayModeActive((monitor as any).user?.holidayModeUntil)) {
+            console.log(
+              `[Notification] Holiday mode active — suppressing ${notification.type} for ${notification.monitorName}`,
+            );
             msg.ack();
             return;
           }

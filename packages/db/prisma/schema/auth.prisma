@@ -7,8 +7,10 @@ model User {
   timezone             String?               @default("UTC")
   dateFormat           String?               @default("MM/DD/YYYY")
   timeFormat           String?               @default("HH:mm")
+  locale               String?               @default("en")
   tier                 String                @default("INITIATE")
   onboardingCompleted  Boolean               @default(false)
+  holidayModeUntil     DateTime?
   createdAt            DateTime              @default(now())
   updatedAt            DateTime              @updatedAt
   sessions             Session[]

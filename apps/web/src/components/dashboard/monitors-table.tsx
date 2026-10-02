@@ -2,7 +2,7 @@
 
 import { Filter, ArrowUpDown, BarChart2, Edit2 } from "lucide-react";
 import Link from "next/link";
-import { useState, useMemo } from "react";
+import { memo, useCallback, useMemo, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -28,8 +28,10 @@ type FilterStatus = "UP" | "DOWN" | "PAUSED" | "MAINTENANCE";
 
 /**
  * Renders a visual representation of uptime status as a bar.
+ * Memoized: within a single row all 20 bars often share the same status value,
+ * so unchanged bars skip re-rendering when a row updates.
  */
-function UptimeBar({ status }: { status: number }) {
+const UptimeBar = memo(function UptimeBar({ status }: { status: number }) {
   let colorClass = "bg-emerald-500"; // Green
   if (status === 0) colorClass = "bg-red-500"; // Red
   if (status === -1) colorClass = "bg-muted"; // Grey (Theme aware)
@@ -40,7 +42,7 @@ function UptimeBar({ status }: { status: number }) {
     return <div className="h-4.5 w-1 bg-emerald-500 rounded-full opacity-50"></div>;
 
   return <div className={`h-4.5 w-1 rounded-full ${colorClass} ${opacityClass}`}></div>;
-}
+});
 
 /**
  * Converts events into a visual history array for the uptime bar
@@ -102,17 +104,107 @@ interface MonitorsTableProps {
 }
 
 /**
+ * Renders a single monitor row. Memoized so that a 5s poll which only changes
+ * one monitor's data doesn't re-render every row (each row runs getHistory /
+ * getUptime / getLastResponse over its events).
+ */
+const MonitorRow = memo(function MonitorRow({ site }: { site: MonitorWithEvents }) {
+  const history = useMemo(() => getHistory(site.events), [site.events]);
+  const uptime = useMemo(() => getUptime(site.events), [site.events]);
+  const lastResponse = useMemo(() => getLastResponse(site.events), [site.events]);
+
+  return (
+    <tr className="hover:bg-accent/30 transition-colors group">
+      <td className="px-6 py-5">
+        <div className="flex flex-col">
+          <span className="text-xs font-bold text-foreground">{site.name}</span>
+          <a
+            href={site.url}
+            target="_blank"
+            rel="noreferrer"
+            className="text-[11px] text-muted-foreground hover:text-foreground hover:underline transition-colors mt-0.5"
+          >
+            {site.url}
+          </a>
+        </div>
+      </td>
+      <td className="px-6 py-5">
+        {site.status === "UP" && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/10">
+            <span className="size-1 bg-emerald-500 rounded-full animate-pulse"></span>
+            Up
+          </span>
+        )}
+        {site.status === "DOWN" && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-500 rounded-full border border-red-500/10">
+            <span className="size-1 bg-red-500 rounded-full animate-pulse"></span>
+            Down
+          </span>
+        )}
+        {site.status === "PAUSED" && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-gray-500/10 text-gray-400 rounded-full border border-gray-500/10">
+            <span className="size-1 bg-gray-400 rounded-full"></span>
+            Paused
+          </span>
+        )}
+        {site.status === "MAINTENANCE" && (
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 rounded-full border border-amber-500/10">
+            <span className="size-1 bg-amber-500 rounded-full"></span>
+            Maint.
+          </span>
+        )}
+      </td>
+      <td className="px-6 py-5">
+        <div className="flex items-center gap-3">
+          <div className="flex gap-0.5">
+            {history.map((val, i) => (
+              <UptimeBar key={i} status={val} />
+            ))}
+          </div>
+          <span className="text-xs font-bold text-foreground tracking-tight">{uptime}%</span>
+        </div>
+      </td>
+      <td className="px-6 py-5">
+        <span
+          className={`text-xs font-bold ${
+            site.status === "DOWN" ? "text-red-500" : "text-muted-foreground"
+          }`}
+        >
+          {lastResponse}
+        </span>
+      </td>
+      <td className="px-6 py-5 text-right">
+        <div className="flex items-center justify-end gap-3 text-muted-foreground">
+          <Link
+            href={`/dashboard/monitors/${site.id}`}
+            className="hover:text-foreground transition-colors p-1"
+          >
+            <BarChart2 className="size-4" />
+          </Link>
+          <Link
+            href={`/dashboard/monitors/${site.id}/settings`}
+            className="hover:text-foreground transition-colors p-1"
+          >
+            <Edit2 className="size-4" />
+          </Link>
+        </div>
+      </td>
+    </tr>
+  );
+});
+
+/**
  * Renders a table displaying the status of monitors.
  */
 export function MonitorsTable({ monitors }: MonitorsTableProps) {
   const [sort, setSort] = useState<SortOption>("name");
   const [filterStatuses, setFilterStatuses] = useState<FilterStatus[]>([]);
 
-  const toggleFilter = (status: FilterStatus) => {
+  const toggleFilter = useCallback((status: FilterStatus) => {
     setFilterStatuses((prev) =>
       prev.includes(status) ? prev.filter((s) => s !== status) : [...prev, status],
     );
-  };
+  }, []);
 
   const sortedMonitors = useMemo(() => {
     let filtered = monitors;
@@ -135,7 +227,7 @@ export function MonitorsTable({ monitors }: MonitorsTableProps) {
         );
       }
       if (sort === "uptime") {
-        return parseFloat(getUptime(b.events)) - parseFloat(getUptime(a.events));
+        return Number.parseFloat(getUptime(b.events)) - Number.parseFloat(getUptime(a.events));
       }
       return 0;
     });
@@ -258,84 +350,7 @@ export function MonitorsTable({ monitors }: MonitorsTableProps) {
             </thead>
             <tbody className="divide-y divide-border">
               {sortedMonitors.map((site) => (
-                <tr key={site.id} className="hover:bg-accent/30 transition-colors group">
-                  <td className="px-6 py-5">
-                    <div className="flex flex-col">
-                      <span className="text-xs font-bold text-foreground">{site.name}</span>
-                      <a
-                        href={site.url}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="text-[11px] text-muted-foreground hover:text-foreground hover:underline transition-colors mt-0.5"
-                      >
-                        {site.url}
-                      </a>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    {site.status === "UP" && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-500/10 text-emerald-500 rounded-full border border-emerald-500/10">
-                        <span className="size-1 bg-emerald-500 rounded-full animate-pulse"></span>
-                        Up
-                      </span>
-                    )}
-                    {site.status === "DOWN" && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-red-500/10 text-red-500 rounded-full border border-red-500/10">
-                        <span className="size-1 bg-red-500 rounded-full animate-pulse"></span>
-                        Down
-                      </span>
-                    )}
-                    {site.status === "PAUSED" && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-gray-500/10 text-gray-400 rounded-full border border-gray-500/10">
-                        <span className="size-1 bg-gray-400 rounded-full"></span>
-                        Paused
-                      </span>
-                    )}
-                    {site.status === "MAINTENANCE" && (
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-amber-500/10 text-amber-500 rounded-full border border-amber-500/10">
-                        <span className="size-1 bg-amber-500 rounded-full"></span>
-                        Maint.
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <div className="flex gap-0.5">
-                        {getHistory(site.events).map((val, i) => (
-                          <UptimeBar key={i} status={val} />
-                        ))}
-                      </div>
-                      <span className="text-xs font-bold text-foreground tracking-tight">
-                        {getUptime(site.events)}%
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-6 py-5">
-                    <span
-                      className={`text-xs font-bold ${
-                        site.status === "DOWN" ? "text-red-500" : "text-muted-foreground"
-                      }`}
-                    >
-                      {getLastResponse(site.events)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-5 text-right">
-                    <div className="flex items-center justify-end gap-3 text-muted-foreground">
-                      <Link
-                        href={`/dashboard/monitors/${site.id}`}
-                        className="hover:text-foreground transition-colors p-1"
-                      >
-                        <BarChart2 className="size-4" />
-                      </Link>
-                      <Link
-                        href={`/dashboard/monitors/${site.id}/settings`}
-                        className="hover:text-foreground transition-colors p-1"
-                      >
-                        <Edit2 className="size-4" />
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
+                <MonitorRow key={site.id} site={site} />
               ))}
               {sortedMonitors.length === 0 && (
                 <tr>

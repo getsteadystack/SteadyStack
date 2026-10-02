@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Sleep Mode — SteadyStack",
   description:
     "False-positive prevention that lets solo devs sleep through the night. SteadyStack filters out 2-second blips so if we call you, it's real.",
+  alternates: {
+    canonical: "/features/sleep-mode",
+  },
   openGraph: {
     title: "Sleep Mode — SteadyStack",
     description:

@@ -7,7 +7,9 @@
     "maintenance": "Wartungsarbeiten",
     "issue_detected": "Systemprobleme erkannt",
     "system_integrity_100": "Systemintegrität 100%",
-    "critical_failures": "Kritische Fehler erkannt"
+    "critical_failures": "Kritische Fehler erkannt",
+    "monitor_operational": "Funktionsfähig",
+    "monitor_outage": "Ausfall"
   },
   "headings": {
     "status": "Status",
@@ -31,6 +33,21 @@
     "back_to_home": "Zurück zur Startseite",
     "powered_by": "Bereitgestellt von SteadyStack",
     "no_monitors": "Keine aktiven Monitore konfiguriert.",
-    "system_status": "Systemstatus"
+    "system_status": "Systemstatus",
+    "checks_ago": "Vor 60 Prüfungen",
+    "now": "Jetzt",
+    "down": "Ausgefallen"
+  },
+  "subscribe": {
+    "title": "Abonnieren Sie Updates",
+    "email_tab": "E-Mail-Benachrichtigungen",
+    "feed_tab": "RSS-/Atom-Feeds",
+    "email_label": "E-Mail-Adresse",
+    "email_placeholder": "sie@beispiel.de",
+    "monitors_label": "Monitore abonnieren",
+    "info_text": "Sie erhalten Benachrichtigungen nur bei schwerwiegenden Vorfällen und geplanten Wartungsarbeiten. Ihre E-Mail wird niemals weitergegeben.",
+    "subscribing": "Abonnement wird erstellt...",
+    "button": "Abonnieren",
+    "feed_info": "Abonnieren Sie Status-Updates mit Ihrem bevorzugten RSS-Reader. Wählen Sie zwischen Nur-Vorfälle- oder Alle-Ereignisse-Feeds."
   }
 }

@@ -12,6 +12,7 @@ import { ApiKeysForm } from "@/components/settings/api-keys-form";
 import { MigrationForm } from "@/components/settings/migration-form";
 import { PrivacyForm } from "@/components/settings/privacy-form";
 import { BillingForm } from "@/components/settings/billing-form";
+import { HolidayModeForm } from "@/components/settings/holiday-mode-form";
 import { ReferralForm } from "@/components/settings/referral-form";
 import { getUserUsageSummary } from "@/lib/billing-server";
 import { verifyAndApplyCheckoutSession, syncUserSubscriptionFromStripe } from "@/lib/stripe";
@@ -104,6 +105,13 @@ export default async function SettingsPage({
   ];
   const tab = validTabs.includes(cleanTab) ? cleanTab : "general";
   const usageSummary = tab === "billing" ? await getUserUsageSummary(session.user.id) : undefined;
+  const dbUser = await (await import("@steadystack/db")).default.user.findUnique({
+    where: { id: session.user.id },
+    select: { holidayModeUntil: true },
+  });
+  const holidayModeUntil = dbUser?.holidayModeUntil
+    ? dbUser.holidayModeUntil.toISOString()
+    : null;
 
   return (
     <div className="flex flex-col md:flex-row gap-8 max-w-6xl">
@@ -113,6 +121,7 @@ export default async function SettingsPage({
           <>
             <ProfileForm />
             <RegionalForm />
+            <HolidayModeForm initialUntil={holidayModeUntil} />
             <DangerZone />
           </>
         )}

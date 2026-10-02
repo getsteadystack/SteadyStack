@@ -24,12 +24,10 @@ export function getCorsHeaders(env?: Env, request?: Request): Record<string, str
     try {
       const parsed = new URL(reqOrigin);
       if (
-        parsed.hostname === "steadystack.dev" ||
-        parsed.hostname.endsWith(".steadystack.dev") ||
-        parsed.hostname === "localhost" ||
-        parsed.hostname === "127.0.0.1"
+        parsed.protocol === "https:" &&
+        (parsed.hostname === "steadystack.dev" || parsed.hostname.endsWith(".steadystack.dev"))
       ) {
-        origin = reqOrigin;
+        origin = parsed.origin;
       }
     } catch {}
   } else if (typeof process !== "undefined" && process.env.NODE_ENV !== "production") {

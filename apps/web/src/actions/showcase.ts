@@ -1,6 +1,5 @@
-"use server";
-
 import prisma, { MonitorStatus } from "@steadystack/db";
+import { unstable_cache } from "next/cache";
 
 export interface ShowcaseEntry {
   name: string;
@@ -27,65 +26,72 @@ const THEME_COLORS: Record<string, ShowcaseEntry["themeColors"]> = {
  * Returns up to `limit` public status pages that have opted in to showcase display.
  * Pages are ordered by monitor count descending so the richest pages appear first.
  */
-export async function getShowcaseEntries(limit = 18): Promise<ShowcaseEntry[]> {
-  try {
-    const pages = await prisma.statusPage.findMany({
-      where: {
-        isPrivate: false,
-        showInShowcase: true,
-      },
-      orderBy: { createdAt: "desc" },
-      take: limit,
-      select: {
-        slug: true,
-        title: true,
-        description: true,
-        theme: true,
-        monitors: {
-          select: {
-            monitor: {
-              select: { status: true },
+export const getShowcaseEntries = unstable_cache(
+  async (limit = 18): Promise<ShowcaseEntry[]> => {
+    try {
+      const pages = await prisma.statusPage.findMany({
+        where: {
+          isPrivate: false,
+          showInShowcase: true,
+        },
+        orderBy: { createdAt: "desc" },
+        take: limit,
+        select: {
+          slug: true,
+          title: true,
+          description: true,
+          theme: true,
+          monitors: {
+            select: {
+              monitor: {
+                select: { status: true },
+              },
             },
           },
         },
-      },
-    });
+      });
 
-    return pages.map((page) => {
-      const themeValue =
-        (page.theme as any)?.value ?? (typeof page.theme === "string" ? page.theme : "cyberpunk");
-      const colors = THEME_COLORS[themeValue] ?? THEME_COLORS.cyberpunk;
-      const themeName =
-        themeValue === "cyberpunk"
-          ? "Cyberpunk"
-          : themeValue === "midnight"
-            ? "Midnight"
-            : themeValue === "dracula"
-              ? "Dracula"
-              : themeValue === "monochrome"
-                ? "Monochrome"
-                : "Custom";
+      return pages.map((page) => {
+        const themeValue =
+          (page.theme as any)?.value ?? (typeof page.theme === "string" ? page.theme : "cyberpunk");
+        const colors = THEME_COLORS[themeValue] ?? THEME_COLORS.cyberpunk;
+        const themeName =
+          themeValue === "cyberpunk"
+            ? "Cyberpunk"
+            : themeValue === "midnight"
+              ? "Midnight"
+              : themeValue === "dracula"
+                ? "Dracula"
+                : themeValue === "monochrome"
+                  ? "Monochrome"
+                  : "Custom";
 
-      const total = page.monitors.length;
-      const downCount = page.monitors.filter((m) => m.monitor.status === MonitorStatus.DOWN).length;
+        const total = page.monitors.length;
+        const downCount = page.monitors.filter(
+          (m) => m.monitor.status === MonitorStatus.DOWN,
+        ).length;
 
-      // Page status: all down → outage, some down → degraded, none down → operational
-      const status: ShowcaseEntry["preview"]["status"] =
-        total > 0 && downCount === total ? "outage" : downCount > 0 ? "degraded" : "operational";
+        // Page status: all down → outage, some down → degraded, none down → operational
+        const status: ShowcaseEntry["preview"]["status"] =
+          total > 0 && downCount === total ? "outage" : downCount > 0 ? "degraded" : "operational";
 
-      const uptime = status === "operational" ? "100%" : status === "degraded" ? "99.5%" : "98.0%";
+        const uptime =
+          status === "operational" ? "100%" : status === "degraded" ? "99.5%" : "98.0%";
 
-      return {
-        name: page.title,
-        slug: page.slug,
-        tagline: page.description ?? "Powered by SteadyStack",
-        theme: themeName,
-        themeColors: colors,
-        preview: { status, uptime, monitors: total },
-      };
-    });
-  } catch (error) {
-    console.error("Failed to query showcase entries from DB:", error);
-    return [];
-  }
-}
+        return {
+          name: page.title,
+          slug: page.slug,
+          tagline: page.description ?? "Powered by SteadyStack",
+          theme: themeName,
+          themeColors: colors,
+          preview: { status, uptime, monitors: total },
+        };
+      });
+    } catch (error) {
+      console.error("Failed to query showcase entries from DB:", error);
+      return [];
+    }
+  },
+  ["showcase-entries"],
+  { revalidate: 300, tags: ["showcase"] },
+);

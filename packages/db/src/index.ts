@@ -3,6 +3,10 @@ import { PrismaClient } from "./generated/client/index.js";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { Pool } from "pg";
 
+export interface ExtendedPrismaClient extends PrismaClient {
+  $pool?: Pool;
+}
+
 declare global {
   var DATABASE_URL: string | undefined;
   var DATABASE_POOL_URL: string | undefined;
@@ -77,20 +81,20 @@ export function createPrisma(databaseUrl?: string, poolUrlOverride?: string) {
   const client = new PrismaClient({
     adapter,
     log: isDev ? ["query", "error", "warn"] : ["error"],
-  });
-  (client as any).$pool = pool;
+  }) as ExtendedPrismaClient;
+  client.$pool = pool;
   return client;
 }
 
 // Global type for singleton storage
 type PrismaSingleton = {
-  prisma?: PrismaClient | undefined;
-  instances?: Map<string, PrismaClient> | undefined;
+  prisma?: ExtendedPrismaClient | undefined;
+  instances?: Map<string, ExtendedPrismaClient> | undefined;
 };
 
 const g = globalThis as unknown as PrismaSingleton;
 if (!g.instances) {
-  g.instances = new Map<string, PrismaClient>();
+  g.instances = new Map<string, ExtendedPrismaClient>();
 }
 
 function getUrl() {
@@ -111,9 +115,9 @@ export async function resetPrisma(databaseUrl?: string) {
       try {
         await client.$disconnect();
       } catch {}
-      if ((client as any).$pool) {
+      if (client.$pool) {
         try {
-          await (client as any).$pool.end();
+          await client.$pool.end();
         } catch {}
       }
     }
@@ -125,9 +129,9 @@ export async function resetPrisma(databaseUrl?: string) {
     try {
       await oldClient.$disconnect();
     } catch {}
-    if ((oldClient as any).$pool) {
+    if (oldClient.$pool) {
       try {
-        await (oldClient as any).$pool.end();
+        await oldClient.$pool.end();
       } catch {}
     }
   }
@@ -139,7 +143,7 @@ export function getPrisma(databaseUrl?: string, poolUrlOverride?: string) {
   if (cacheKey) {
     const existing = g.instances?.get(cacheKey);
     if (existing) {
-      const pool = (existing as any).$pool;
+      const pool = existing.$pool;
       if (pool && (pool.ended || pool.ending)) {
         g.instances?.delete(cacheKey);
       } else {
@@ -152,7 +156,7 @@ export function getPrisma(databaseUrl?: string, poolUrlOverride?: string) {
   }
 
   if (g.prisma) {
-    const pool = (g.prisma as any).$pool;
+    const pool = g.prisma.$pool;
     if (pool && (pool.ended || pool.ending)) {
       g.prisma = undefined;
     }
@@ -171,7 +175,7 @@ export function getPrisma(databaseUrl?: string, poolUrlOverride?: string) {
 }
 
 // Proxy to allow default import to work like a PrismaClient instance
-const prismaProxy = new Proxy({} as PrismaClient, {
+const prismaProxy = new Proxy({} as ExtendedPrismaClient, {
   get(_target, prop) {
     const client = getPrisma();
     // @ts-ignore

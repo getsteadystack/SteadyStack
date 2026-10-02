@@ -1,41 +1,529 @@
 ---
 title: "REST API Reference"
-description: "Direct programmatic REST API endpoints for monitors, metrics, status pages, and webhooks."
+description: "Direct programmatic REST API endpoints for monitors, alerting, status pages, and instant probes — with request and response examples for every endpoint."
 section: "IaC & Developer Tools"
 order: 12
 badge: "API"
-lastUpdated: "2026-08-22"
+lastUpdated: "2026-09-16"
 ---
 
-SteadyStack provides a high-performance REST API v1 for programmatic access.
+SteadyStack provides a high-performance REST API v1 for programmatic access. Every endpoint below includes a real request and response; if this page and the API ever disagree, file an issue — the examples are generated from the actual route handlers.
 
 ---
 
 ## Authentication
 
-All REST API requests require a Bearer token in the `Authorization` HTTP header. Generate an API Key under **Workspace Settings -> API Keys**.
+All requests require a Bearer token in the `Authorization` header. Generate an API key under **Workspace Settings → API Keys**. Keys are formatted `pg_live_…`, stored hashed (SHA-256), and carry a **scope**: `read` for GETs, `write` for mutations. A read-scope key calling a write endpoint gets `403`.
+
+Keys are scoped to the workspace they were created in and can have an optional expiry. See [Teams & RBAC](/docs/teams-rbac) for key hygiene guidance.
 
 ```bash
-curl -X GET "https://app.steadystack.dev/api/v1/monitors" \
+curl "https://app.steadystack.dev/api/v1/monitors" \
   -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
 ```
+
+### Response envelope
+
+- **Lists** return `{ "data": [...], "count": n }`
+- **Single resources** return `{ "data": {...} }`
+- **Deletes** return `{ "success": true }`
+- **Errors** return `{ "error": "message" }` with an appropriate status code.
+
+### Error codes
+
+| Status | When |
+| :----- | :--- |
+| `400`  | Missing/invalid fields, malformed JSON body |
+| `401`  | Missing header, unknown key, or expired key |
+| `403`  | Key lacks `write` scope, or plan quota/feature limit exceeded |
+| `404`  | Resource does not exist **or belongs to another workspace** (ownership is never leaked) |
+| `409`  | Status-page slug already taken |
 
 ---
 
 ## API Endpoints Overview
 
-| Method   | Endpoint                 | Description                           | Scope   |
-| :------- | :----------------------- | :------------------------------------ | :------ |
-| `GET`    | `/api/v1/monitors`       | List all monitors                     | `read`  |
-| `POST`   | `/api/v1/monitors`       | Create a new monitor                  | `write` |
-| `GET`    | `/api/v1/monitors/:id`   | Fetch monitor details                 | `read`  |
-| `PATCH`  | `/api/v1/monitors/:id`   | Update monitor parameters             | `write` |
-| `DELETE` | `/api/v1/monitors/:id`   | Delete monitor                        | `write` |
-| `GET`    | `/api/v1/alert-channels` | List notification channels            | `read`  |
-| `POST`   | `/api/v1/alert-channels` | Create notification channel           | `write` |
-| `GET`    | `/api/v1/status-pages`   | List hosted status pages              | `read`  |
-| `POST`   | `/api/v1/status-pages`   | Create hosted status page             | `write` |
-| `GET`    | `/api/v1/regions`        | Discover available edge check regions | `read`  |
+| Method   | Endpoint                        | Description                              | Scope   |
+| :------- | :------------------------------ | :--------------------------------------- | :------ |
+| `GET`    | `/api/v1/monitors`              | List monitors (filter by tag, status)    | `read`  |
+| `POST`   | `/api/v1/monitors`              | Create a monitor                         | `write` |
+| `GET`    | `/api/v1/monitors/:id`          | Monitor details incl. alert rules        | `read`  |
+| `PATCH`  | `/api/v1/monitors/:id`          | Update monitor fields                    | `write` |
+| `DELETE` | `/api/v1/monitors/:id`          | Delete monitor                           | `write` |
+| `GET`    | `/api/v1/alert-channels`        | List notification channels               | `read`  |
+| `POST`   | `/api/v1/alert-channels`        | Create notification channel              | `write` |
+| `GET`    | `/api/v1/alert-channels/:id`    | Channel details                          | `read`  |
+| `PATCH`  | `/api/v1/alert-channels/:id`    | Update channel name/config               | `write` |
+| `DELETE` | `/api/v1/alert-channels/:id`    | Delete channel                           | `write` |
+| `GET`    | `/api/v1/alert-rules`           | List alert rules (filter by monitorId)   | `read`  |
+| `POST`   | `/api/v1/alert-rules`           | Create alert rule                        | `write` |
+| `GET`    | `/api/v1/alert-rules/:id`       | Rule details                             | `read`  |
+| `PATCH`  | `/api/v1/alert-rules/:id`       | Update rule / rewire channels            | `write` |
+| `DELETE` | `/api/v1/alert-rules/:id`       | Delete rule                              | `write` |
+| `GET`    | `/api/v1/status-pages`          | List hosted status pages                 | `read`  |
+| `POST`   | `/api/v1/status-pages`          | Create hosted status page                | `write` |
+| `GET`    | `/api/v1/status-pages/:id`      | Status page details incl. monitors       | `read`  |
+| `PATCH`  | `/api/v1/status-pages/:id`      | Update status page                       | `write` |
+| `DELETE` | `/api/v1/status-pages/:id`      | Delete status page                       | `write` |
+| `GET`    | `/api/v1/regions`               | List sovereign probe regions             | `read`  |
+| `POST`   | `/api/v1/probes/instant`        | Run a one-off multi-region probe         | `read`  |
+
+---
+
+## Monitors
+
+### `GET /api/v1/monitors`
+
+Optional query params: `tag` (exact tag match), `status` (`UP`, `DOWN`, `DEGRADED`, `PAUSED`, `MAINTENANCE`).
+
+```bash
+curl "https://app.steadystack.dev/api/v1/monitors?status=DOWN" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK**
+
+```json
+{
+  "data": [
+    {
+      "id": "cm0monitor0001abcd",
+      "name": "Checkout API",
+      "url": "https://api.acme.com/health",
+      "type": "HTTP",
+      "status": "UP",
+      "interval": 60,
+      "timeout": 10,
+      "method": "GET",
+      "headers": { "X-Api-Key": "•••" },
+      "body": null,
+      "expectation": { "statusCode": 200 },
+      "tags": ["production", "payments"],
+      "checkRegions": ["wnam", "weur"],
+      "alertThreshold": 2,
+      "runbookUrl": "https://wiki.acme.com/runbooks/checkout",
+      "lastCheck": "2026-09-16T12:00:41.000Z",
+      "nextCheck": "2026-09-16T12:01:41.000Z",
+      "createdAt": "2026-03-01T09:12:00.000Z",
+      "updatedAt": "2026-09-10T18:32:10.000Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+### `POST /api/v1/monitors`
+
+Defaults: `type=HTTP`, `interval=60` (seconds), `method=GET`, `alertThreshold=1`. Creating a monitor automatically attaches a default alert rule (trigger `STATUS_CHANGE`, target `DOWN`, enabled) — you can rewire it afterwards via `/api/v1/alert-rules`.
+
+```bash
+curl -X POST "https://app.steadystack.dev/api/v1/monitors" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Checkout API",
+    "url": "https://api.acme.com/health",
+    "interval": 30,
+    "expectation": { "statusCode": 200, "maxResponseTime": 2000 },
+    "tags": ["production", "payments"],
+    "checkRegions": ["wnam", "weur", "apac"],
+    "alertThreshold": 2,
+    "runbookUrl": "https://wiki.acme.com/runbooks/checkout"
+  }'
+```
+
+**201 Created** — the full monitor object (same shape as the list response). A `403` means the plan quota or a feature limit was hit (interval too fast for the plan, too many regions, monitor count cap); the `error` message says which.
+
+**400** examples: `{ "error": "name is required" }`, `{ "error": "url is required" }`.
+
+### `GET /api/v1/monitors/:id`
+
+Returns the monitor **including its alert rules and each rule's channels**:
+
+```bash
+curl "https://app.steadystack.dev/api/v1/monitors/cm0monitor0001abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK** (truncated)
+
+```json
+{
+  "data": {
+    "id": "cm0monitor0001abcd",
+    "name": "Checkout API",
+    "alertRules": [
+      {
+        "id": "cm0rule0001abcd",
+        "trigger": "STATUS_CHANGE",
+        "targetStatus": "DOWN",
+        "enabled": true,
+        "channels": [{ "id": "cm0chan0001abcd", "name": "oncall-slack", "type": "SLACK" }]
+      }
+    ]
+  }
+}
+```
+
+### `PATCH /api/v1/monitors/:id`
+
+All fields are optional; only provided fields change. Changing `interval`, `type`, or `checkRegions` re-runs plan limit checks. Note `body` (request payload) and `headers` (object) are distinct fields.
+
+```bash
+curl -X PATCH "https://app.steadystack.dev/api/v1/monitors/cm0monitor0001abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "interval": 300, "alertThreshold": 3 }'
+```
+
+**200 OK** — updated monitor object.
+
+### `DELETE /api/v1/monitors/:id`
+
+```bash
+curl -X DELETE "https://app.steadystack.dev/api/v1/monitors/cm0monitor0001abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK**
+
+```json
+{ "success": true }
+```
+
+Deleting a monitor cascades to its events, alert rules, and status-page placements. This cannot be undone.
+
+---
+
+## Alert Channels
+
+### `GET /api/v1/alert-channels`
+
+```bash
+curl "https://app.steadystack.dev/api/v1/alert-channels" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK**
+
+```json
+{
+  "data": [
+    {
+      "id": "cm0chan0001abcd",
+      "name": "oncall-slack",
+      "type": "SLACK",
+      "config": { "webhookUrl": "https://hooks.slack.com/services/…" },
+      "createdAt": "2026-04-02T11:20:00.000Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+### `POST /api/v1/alert-channels`
+
+`type` must be one of: `EMAIL`, `DISCORD`, `SLACK`, `WEBHOOK`, `TELEGRAM`, `SMS`, `PAGERDUTY`, `OPSGENIE`. The `config` object shape depends on the type — mirror what the dashboard's channel form produces for that type (e.g. `webhookUrl` for SLACK/DISCORD/WEBHOOK, `apiKey`/`chatId` for TELEGRAM).
+
+```bash
+curl -X POST "https://app.steadystack.dev/api/v1/alert-channels" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "oncall-slack",
+    "type": "SLACK",
+    "config": { "webhookUrl": "https://hooks.slack.com/services/T000/B000/xxxx" }
+  }'
+```
+
+**201 Created**
+
+```json
+{
+  "data": {
+    "id": "cm0chan0001abcd",
+    "name": "oncall-slack",
+    "type": "SLACK",
+    "config": { "webhookUrl": "https://hooks.slack.com/services/T000/B000/xxxx" }
+  }
+}
+```
+
+**400** on unknown type: `{ "error": "Invalid type. Supported types: EMAIL, DISCORD, …" }`.
+
+### `PATCH /api/v1/alert-channels/:id`
+
+Updatable fields: `name`, `config` (full object replace).
+
+```bash
+curl -X PATCH "https://app.steadystack.dev/api/v1/alert-channels/cm0chan0001abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "name": "oncall-slack-emea" }'
+```
+
+**200 OK** — updated channel object.
+
+### `DELETE /api/v1/alert-channels/:id`
+
+```bash
+curl -X DELETE "https://app.steadystack.dev/api/v1/alert-channels/cm0chan0001abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK** → `{ "success": true }`. The channel is detached from any alert rules that referenced it.
+
+---
+
+## Alert Rules
+
+Alert rules connect a monitor's trigger condition to channels. Triggers: `STATUS_CHANGE`, `LATENCY`, `SSL_EXPIRY`, `DNS_WATCHDOG`, `DOMAIN_EXPIRY`. `LATENCY` rules use `threshold` + `comparison` (`GT` or `LT`, milliseconds).
+
+### `GET /api/v1/alert-rules`
+
+Optional query param: `monitorId`.
+
+```bash
+curl "https://app.steadystack.dev/api/v1/alert-rules?monitorId=cm0monitor0001abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK**
+
+```json
+{
+  "data": [
+    {
+      "id": "cm0rule0001abcd",
+      "monitorId": "cm0monitor0001abcd",
+      "trigger": "STATUS_CHANGE",
+      "threshold": null,
+      "comparison": null,
+      "targetStatus": "DOWN",
+      "enabled": true,
+      "channels": [{ "id": "cm0chan0001abcd", "name": "oncall-slack", "type": "SLACK" }]
+    }
+  ],
+  "count": 1
+}
+```
+
+### `POST /api/v1/alert-rules`
+
+`monitorId` is required and must belong to you. Every `channelIds` entry must be a channel you own — the request fails with `400` if any is missing or foreign.
+
+```bash
+curl -X POST "https://app.steadystack.dev/api/v1/alert-rules" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "monitorId": "cm0monitor0001abcd",
+    "trigger": "LATENCY",
+    "threshold": 1500,
+    "comparison": "GT",
+    "channelIds": ["cm0chan0001abcd"]
+  }'
+```
+
+**201 Created**
+
+```json
+{
+  "data": {
+    "id": "cm0rule0002abcd",
+    "monitorId": "cm0monitor0001abcd",
+    "trigger": "LATENCY",
+    "threshold": 1500,
+    "comparison": "GT",
+    "targetStatus": null,
+    "enabled": true,
+    "channels": [{ "id": "cm0chan0001abcd", "name": "oncall-slack", "type": "SLACK" }]
+  }
+}
+```
+
+**400** on unknown trigger: `{ "error": "Invalid trigger. Allowed: STATUS_CHANGE, LATENCY, SSL_EXPIRY, DNS_WATCHDOG, DOMAIN_EXPIRY" }`.
+
+### `PATCH /api/v1/alert-rules/:id`
+
+Updatable: `trigger`, `threshold`, `comparison`, `targetStatus`, `enabled`, and `channelIds` (full replacement of the rule's channel set).
+
+```bash
+curl -X PATCH "https://app.steadystack.dev/api/v1/alert-rules/cm0rule0002abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "enabled": false }'
+```
+
+**200 OK** — updated rule with its channels.
+
+### `DELETE /api/v1/alert-rules/:id`
+
+```bash
+curl -X DELETE "https://app.steadystack.dev/api/v1/alert-rules/cm0rule0002abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK** → `{ "success": true }`.
+
+---
+
+## Status Pages
+
+### `GET /api/v1/status-pages`
+
+Returns each page with its monitor placements:
+
+```bash
+curl "https://app.steadystack.dev/api/v1/status-pages" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK**
+
+```json
+{
+  "data": [
+    {
+      "id": "cm0page0001abcd",
+      "slug": "acme",
+      "title": "Acme Status",
+      "description": "Live status for Acme services",
+      "customDomain": null,
+      "isPrivate": false,
+      "historyDays": 90,
+      "showUptime": true,
+      "showResponseTime": true,
+      "monitors": [
+        { "id": "cm0spmon0001abcd", "monitorId": "cm0monitor0001abcd", "displayName": "Checkout API", "sortOrder": 0 }
+      ],
+      "createdAt": "2026-05-11T08:00:00.000Z"
+    }
+  ],
+  "count": 1
+}
+```
+
+### `POST /api/v1/status-pages`
+
+`slug` and `title` are required. The slug is normalized to lowercase, `[^a-z0-9-_]` → `-`; a taken slug returns `409`.
+
+```bash
+curl -X POST "https://app.steadystack.dev/api/v1/status-pages" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "slug": "acme",
+    "title": "Acme Status",
+    "description": "Live status for Acme services",
+    "showUptime": true,
+    "showResponseTime": true,
+    "historyDays": 90
+  }'
+```
+
+**201 Created** — the created page object (as in the list response, without placements until you add monitors).
+
+A `403` indicates a plan limit (page count, custom domain, or password protection on your plan).
+
+### `GET /api/v1/status-pages/:id`
+
+**200 OK** — the page object with `monitors` placements, same shape as the list response entry.
+
+```bash
+curl "https://app.steadystack.dev/api/v1/status-pages/cm0page0001abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+### `PATCH /api/v1/status-pages/:id`
+
+Updatable: `slug` (re-checked for uniqueness → `409`), `title`, `description`, `customDomain`, `isPrivate`, `password`, `theme`, `showUptime`, `showResponseTime`, `historyDays`. Changing custom domain or privacy re-runs plan limit checks.
+
+```bash
+curl -X PATCH "https://app.steadystack.dev/api/v1/status-pages/cm0page0001abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "historyDays": 60, "showResponseTime": false }'
+```
+
+**200 OK** — updated page object.
+
+### `DELETE /api/v1/status-pages/:id`
+
+```bash
+curl -X DELETE "https://app.steadystack.dev/api/v1/status-pages/cm0page0001abcd" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK** → `{ "success": true }`. The public status URL stops updating immediately; monitors are unaffected.
+
+---
+
+## Regions
+
+### `GET /api/v1/regions`
+
+The sovereign probe regions available for `checkRegions` and instant probes.
+
+```bash
+curl "https://app.steadystack.dev/api/v1/regions" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx"
+```
+
+**200 OK**
+
+```json
+{
+  "data": [
+    { "code": "wnam", "name": "North America West", "location": "San Jose, CA, USA", "flag": "🇺🇸" },
+    { "code": "enam", "name": "North America East", "location": "Ashburn, VA, USA", "flag": "🇺🇸" },
+    { "code": "weur", "name": "Western Europe", "location": "Frankfurt, Germany", "flag": "🇩🇪" },
+    { "code": "eeur", "name": "Eastern Europe", "location": "Warsaw, Poland", "flag": "🇵🇱" },
+    { "code": "apac", "name": "Asia Pacific South", "location": "Singapore", "flag": "🇸🇬" },
+    { "code": "apac-ne", "name": "Asia Pacific Northeast", "location": "Tokyo, Japan", "flag": "🇯🇵" },
+    { "code": "apac-se", "name": "Asia Pacific Southeast", "location": "Sydney, Australia", "flag": "🇦🇺" }
+  ],
+  "count": 7
+}
+```
+
+---
+
+## Instant Probes
+
+### `POST /api/v1/probes/instant`
+
+Runs a one-off probe of a URL from multiple regions in parallel and returns a quorum verdict. Defaults: `regions` = `["wnam", "weur", "apac"]`, `method` = `GET`, `expectedStatus` = `[200, 201, 204, 301, 302, 307, 308]`, `timeoutMs` = `8000`.
+
+Targets are SSRF-guarded: http/https only, no credentials in the URL, and private, loopback, and link-local addresses are rejected.
+
+```bash
+curl -X POST "https://app.steadystack.dev/api/v1/probes/instant" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{ "url": "https://api.acme.com/health", "regions": ["wnam", "weur"] }'
+```
+
+**200 OK**
+
+```json
+{
+  "data": {
+    "url": "https://api.acme.com/health",
+    "status": "UP",
+    "overallLatencyMs": 214,
+    "quorumPass": true,
+    "quorumRatio": "2/2",
+    "regions": [
+      { "region": "wnam", "name": "North America West", "flag": "🇺🇸", "status": "UP", "httpCode": 200, "latencyMs": 189, "error": null },
+      { "region": "weur", "name": "Western Europe", "flag": "🇩🇪", "status": "UP", "httpCode": 200, "latencyMs": 239, "error": null }
+    ],
+    "checkedAt": "2026-09-16T12:04:31.000Z"
+  }
+}
+```
+
+An overall status is `UP` when a strict majority of regions report an expected status (`quorumPass: true`); otherwise `DOWN`. Redirect responses are not followed — a redirect target outside `expectedStatus` reports `DOWN` with `Unexpected HTTP 3xx`.
 
 ---
 

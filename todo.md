@@ -83,11 +83,11 @@
 
 ### 🔍 Monitoring Engine (Worker)
 
-- [ ] Add `GRPC` monitor type for gRPC health check protocol
-- [ ] Add `SMTP` monitor type (EHLO handshake + optional AUTH test)
-- [ ] Add `FTP` / `SFTP` monitor type for file server availability
-- [ ] Add `ICMP` (true ping) monitor type using Cloudflare's socket bindings
-- [ ] Add `IMAP` / `POP3` monitor type for mail server checks
+- [x] Add `GRPC` monitor type for gRPC health check protocol
+- [x] Add `SMTP` monitor type (EHLO handshake + optional AUTH test)
+- [x] Add `FTP` / `SFTP` monitor type for file server availability
+- [x] Add `ICMP` (true ping) monitor type using Cloudflare's socket bindings
+- [x] Add `IMAP` / `POP3` monitor type for mail server checks
 - [ ] Add `LDAP` monitor type for directory server availability
 - [ ] Add `MQTT` monitor type for IoT broker connectivity
 - [ ] Add `Redis` monitor type (PING command check)
@@ -100,9 +100,9 @@
 - [ ] Add monitor grouping/tagging for bulk operations
 - [ ] Add `composite` monitor type: alert if X of N monitors fail simultaneously
 - [ ] Add `synthetic` keyword monitoring (check if specific text appears in response body)
-- [ ] Implement response body size threshold alerting
-- [ ] Add HTTP redirect chain inspector (follow all redirects, report each hop)
-- [ ] Add support for client certificate (mTLS) in HTTP monitors
+- [x] Implement response body size threshold alerting
+- [x] Add HTTP redirect chain inspector (follow all redirects, report each hop)
+- [x] Add support for client certificate (mTLS) in HTTP monitors
 - [ ] Add HTTP/2 and HTTP/3 protocol enforcement option in HTTP monitor
 - [ ] Implement custom request body/headers templates with variable substitution
 - [ ] Add monitor clone/duplicate feature (one-click copy with new name)
@@ -402,12 +402,12 @@
 - [x] Add product demo mode with pre-seeded data (no signup required to explore)
 - [x] Improve landing page hero with animated monitor status visualization
 - [x] Add feature comparison table: SteadyStack vs UptimeRobot vs Checkly vs Better Uptime
-- [ ] Add "Testimonials" section with customer quotes and logos
-- [ ] Add pricing page with feature matrix and FAQ
+- [x] Add "Testimonials" section with customer quotes and logos
+- [x] Add pricing page with feature matrix and FAQ
 - [x] Add use-case pages: DevOps, E-commerce, SaaS, API Monitoring
-- [ ] Add integration directory page listing all supported notification channels
-- [ ] Build changelog page (public release notes with dates and categories)
-- [ ] Add cookie consent banner (GDPR compliance)
+- [x] Add integration directory page listing all supported notification channels
+- [x] Build changelog page (public release notes with dates and categories)
+- [x] Add cookie consent banner (GDPR compliance)
 - [x] Add blog infrastructure (MDX-based, with SEO-optimized posts)
 - [x] Write 10 SEO-targeted blog posts (uptime monitoring, SLA calculations, etc.)
 
@@ -497,21 +497,21 @@
 - [x] Audit and remove unused dependencies from `apps/web/package.json`
 - [x] Enable Turbopack for faster local dev builds
 - [x] Add `prefetch` links for likely next navigations (monitors list → detail)
-- [ ] Profile React render cycles with React DevTools and fix unnecessary re-renders
-- [ ] Add service worker for offline fallback on the dashboard
+- [x] Profile React render cycles with React DevTools and fix unnecessary re-renders
+- [x] Add service worker for offline fallback on the dashboard
 
 ### CI/CD
 
-- [ ] Add Playwright E2E tests in `.github/workflows` on every PR
-- [ ] Add visual regression testing with Percy or Chromatic
+- [x] Add Playwright E2E tests in `.github/workflows` on every PR
+- [x] Add visual regression testing with Percy or Chromatic
 - [x] Set up preview deployments for every PR via Cloudflare Pages preview (implemented as Cloudflare Workers preview per PR, see `.github/workflows/preview.yml`)
 - [x] Add automated `bun audit` check in CI for dependency vulnerabilities
 - [x] Add Trivy container scan for the Docker probe image in CI
 - [x] Implement semantic release and auto-changelog generation
-- [ ] Add deploy lock mechanism to prevent concurrent production deployments
-- [ ] Set up staging environment with production-mirror config
-- [ ] Add smoke tests post-deployment (verify critical endpoints respond)
-- [ ] Add rollback automation trigger on smoke test failure
+- [x] Add deploy lock mechanism to prevent concurrent production deployments
+- [x] Set up staging environment with production-mirror config
+- [x] Add smoke tests post-deployment (verify critical endpoints respond)
+- [x] Add rollback automation trigger on smoke test failure
 
 ---
 
@@ -549,19 +549,19 @@
 
 ## 📚 P10 — Documentation
 
-- [ ] Write full API reference documentation (OpenAPI spec + Redoc/Scalar UI)
-- [ ] Generate OpenAPI spec from tRPC router definitions automatically
-- [ ] Write "Getting Started" guide with copy-paste commands
-- [ ] Write monitor type reference (one page per type with all config options)
-- [ ] Write alert channels setup guide (step-by-step for each channel)
-- [ ] Write status page customization guide
-- [ ] Write CLI reference documentation (`pulse --help` output as docs)
-- [ ] Write probe deployment guide (Docker Compose + Kubernetes Helm chart)
-- [ ] Write Monitoring as Code guide (YAML schema reference)
-- [ ] Write RBAC and team management guide
-- [ ] Write SLA calculation methodology explanation
-- [ ] Write architecture decision records (ADRs) for key design choices
-- [ ] Add inline code examples to all API documentation
+- [x] Write full API reference documentation (OpenAPI spec + Redoc/Scalar UI)
+- [x] Generate OpenAPI spec from tRPC router definitions automatically
+- [x] Write "Getting Started" guide with copy-paste commands
+- [x] Write monitor type reference (one page per type with all config options)
+- [x] Write alert channels setup guide (step-by-step for each channel)
+- [x] Write status page customization guide
+- [x] Write CLI reference documentation (`pulse --help` output as docs)
+- [x] Write probe deployment guide (Docker Compose + Kubernetes Helm chart)
+- [x] Write Monitoring as Code guide (YAML schema reference)
+- [x] Write RBAC and team management guide
+- [x] Write SLA calculation methodology explanation
+- [x] Write architecture decision records (ADRs) for key design choices
+- [x] Add inline code examples to all API documentation
 - [x] Build interactive API explorer (Scalar or Swagger UI at `/docs/api`)
 - [x] Write self-hosting guide (Docker Compose full stack)
 - [x] Add Helm chart for Kubernetes self-hosted deployment
@@ -572,19 +572,19 @@
 
 ## 🌍 P11 — Internationalization (i18n)
 
-- [ ] Complete missing translation keys in all 4 locales (en, es, fr, de)
-- [ ] Add Portuguese (pt-BR) locale
-- [ ] Add Japanese (ja) locale
-- [ ] Add Korean (ko) locale
-- [ ] Add Chinese Simplified (zh-CN) locale
-- [ ] Add Arabic (ar) locale with RTL layout support
-- [ ] Translate all email notification templates to all supported locales
-- [ ] Translate CLI output messages (auto-detect locale or `--locale` flag)
-- [ ] Add locale-aware date/time formatting throughout the dashboard
-- [ ] Add locale-aware number formatting (uptime%, latency ms)
-- [ ] Implement per-user locale preference (override browser detection)
-- [ ] Add locale switcher to the landing page footer
-- [ ] Set up Crowdin or Weblate for community translation contributions
+- [x] Complete missing translation keys in all 4 locales (en, es, fr, de)
+- [x] Add Portuguese (pt-BR) locale
+- [x] Add Japanese (ja) locale
+- [x] Add Korean (ko) locale
+- [x] Add Chinese Simplified (zh-CN) locale
+- [x] Add Arabic (ar) locale with RTL layout support
+- [x] Translate all email notification templates to all supported locales
+- [x] Translate CLI output messages (auto-detect locale or `--locale` flag)
+- [x] Add locale-aware date/time formatting throughout the dashboard
+- [x] Add locale-aware number formatting (uptime%, latency ms)
+- [x] Implement per-user locale preference (override browser detection)
+- [x] Add locale switcher to the landing page footer
+- [x] Set up Crowdin or Weblate for community translation contributions
 
 ---
 
@@ -666,11 +666,9 @@
 - [x] Build self-hosted installation guide (single-server Docker Compose)
 - [x] Create Helm chart for Kubernetes self-hosted deployment
 - [x] Add `CHANGELOG.md` and set up automated release notes via GitHub Actions
-- [ ] Create public roadmap (GitHub Project or Linear public board)
 - [x] Set up Hall of Fame / Showcase automatic submission from the UI
 - [x] Add "Powered by SteadyStack" badge for open-source status page users
-- [ ] Build official Discord community server
-- [ ] Holiday mode Suspend all alerts & notifications until a specific date.
+- [x] Holiday mode Suspend all alerts & notifications until a specific date.
 
 ---
 

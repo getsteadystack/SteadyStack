@@ -1,0 +1,53 @@
+{
+  "status": {
+    "operational": "جميع الأنظمة تعمل بشكل طبيعي",
+    "major_outage": "انقطاع كبير",
+    "partial_outage": "انقطاع جزئي",
+    "degraded_performance": "أداء متدهور",
+    "maintenance": "قيد الصيانة",
+    "issue_detected": "تم اكتشاف مشكلات في النظام",
+    "system_integrity_100": "سلامة النظام 100%",
+    "critical_failures": "تم اكتشاف أعطال حرجة",
+    "monitor_operational": "يعمل",
+    "monitor_outage": "متوقف"
+  },
+  "headings": {
+    "status": "الحالة",
+    "events": "الأحداث",
+    "monitors": "المراقبات",
+    "past_incidents": "الحوادث السابقة",
+    "current_status": "الحالة الحالية",
+    "subscribe": "الاشتراك في التحديثات",
+    "uptime": "وقت التشغيل",
+    "system_modules": "وحدات النظام",
+    "real_time_status": "الحالة في الوقت الفعلي"
+  },
+  "actions": {
+    "subscribe": "اشتراك",
+    "get_updates": "الحصول على التحديثات",
+    "view_incident": "عرض الحادث"
+  },
+  "common": {
+    "loading": "جارٍ التحميل...",
+    "error": "حدث خطأ ما",
+    "back_to_home": "العودة إلى الرئيسية",
+    "powered_by": "مدعوم من SteadyStack",
+    "no_monitors": "لا توجد مراقبات نشطة تم تكوينها.",
+    "system_status": "حالة النظام",
+    "checks_ago": "قبل 60 فحصًا",
+    "now": "الآن",
+    "down": "متوقف"
+  },
+  "subscribe": {
+    "title": "الاشتراك في التحديثات",
+    "email_tab": "إشعارات البريد الإلكتروني",
+    "feed_tab": "تغذيات RSS / Atom",
+    "email_label": "البريد الإلكتروني",
+    "email_placeholder": "you@example.com",
+    "monitors_label": "الاشتراك في المراقبات",
+    "info_text": "ستتلقى إشعارات بالحوادث الكبرى والصيانة المجدولة فقط. لن نشارك بريدك الإلكتروني أبدًا.",
+    "subscribing": "جارٍ الاشتراك...",
+    "button": "اشتراك",
+    "feed_info": "اشترك في تحديثات الحالة باستخدام قارئ RSS المفضل لديك. اختر بين تغذيات الحوادث فقط أو جميع الأحداث."
+  }
+}

@@ -1,3 +1,5 @@
+import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
+
 export interface ProbeRegistration {
   id: string;
   name: string;
@@ -16,6 +18,7 @@ export interface ProbeJob {
   body?: string;
   expectation?: string;
   script?: string;
+  clientCert?: string;
 }
 
 export interface ProbeResult {
@@ -133,6 +136,7 @@ export async function pollJobs(
           interval: true,
           nextCheck: true,
           lastCheck: true,
+          clientCert: true,
         },
       },
     },
@@ -151,12 +155,15 @@ export async function pollJobs(
         monitorId: m.id,
         url: m.url,
         type: m.type,
-        timeout: m.timeout || 10,
+        timeout: DEFAULT_CHECK_TIMEOUT_SECONDS,
         method: m.method || "GET",
+        // Headers are stored encrypted (enc:v1:); decryption happens on the
+        // probe via its own ENCRYPTION_SECRET (same platform secret).
         headers: m.headers || undefined,
         body: m.body || undefined,
         expectation: m.expectation || undefined,
         script: m.script || undefined,
+        clientCert: m.clientCert || undefined,
       });
     }
   }
@@ -267,6 +274,7 @@ export async function checkProbeHeartbeats(prisma: any): Promise<ProbeHeartbeatR
 
   const results: ProbeHeartbeatResult[] = [];
   const now = Date.now();
+  const disconnectedProbeIds: string[] = [];
 
   for (const probe of probes) {
     if (!probe.lastHeartbeat) {
@@ -283,16 +291,20 @@ export async function checkProbeHeartbeats(prisma: any): Promise<ProbeHeartbeatR
     const status = secondsSince > maxGap ? "DOWN" : "UP";
 
     if (status === "DOWN") {
-      await prisma.probe.update({
-        where: { id: probe.id },
-        data: { status: "DISCONNECTED" },
-      });
+      disconnectedProbeIds.push(probe.id);
     }
 
     results.push({
       probeId: probe.id,
       status,
       secondsSinceLastHeartbeat: secondsSince,
+    });
+  }
+
+  if (disconnectedProbeIds.length > 0) {
+    await prisma.probe.updateMany({
+      where: { id: { in: disconnectedProbeIds } },
+      data: { status: "DISCONNECTED" },
     });
   }
 

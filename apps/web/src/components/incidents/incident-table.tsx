@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/table";
 import { IncidentStatusBadge } from "./incident-status-badge";
 import { Button } from "@/components/ui/button";
+import { useFormatters } from "@/lib/format";
 
 interface IncidentTableProps {
   incidents: any[];
@@ -23,6 +24,7 @@ export function IncidentTable({
   userTimezone = "UTC",
   userTimeFormat = "HH:mm",
 }: IncidentTableProps) {
+  const f = useFormatters();
   if (incidents.length === 0) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center rounded-md border border-dashed p-8 text-center animate-in fade-in-50">
@@ -55,14 +57,7 @@ export function IncidentTable({
                 <IncidentStatusBadge status={incident.status} />
               </TableCell>
               <TableCell>
-                {new Date(incident.startedAt).toLocaleString("en-US", {
-                  timeZone: userTimezone,
-                  month: "short",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                  hour12: userTimeFormat === "hh:mm a",
-                })}
+                {f.formatDate(incident.startedAt, { style: "datetime" })}
               </TableCell>
               <TableCell className="text-right">
                 <Link href={`/dashboard/incidents/${incident.id}`}>

@@ -263,25 +263,52 @@ Copy the structure from an existing one (e.g., `packages/db/README.md`) and fill
 
 ## Translation Guidelines
 
-SteadyStack status pages support multiple locales via the `i18n` system in `apps/web`.
+SteadyStack supports **9 locales** (`en`, `es`, `fr`, `de`, `pt-BR`, `ja`, `ko`, `zh-CN`, `ar`) across three surfaces:
 
-### Adding a New Locale
+| Surface                   | Source file                              | Notes                                    |
+| ------------------------- | ---------------------------------------- | ---------------------------------------- |
+| Status-page UI            | `apps/web/messages/en.json`              | Nested JSON, 41 keys                     |
+| Email templates           | `packages/email/src/i18n.ts`             | Flat key catalog, `{placeholder}` style  |
+| CLI output                | `apps/cli/src/i18n.ts`                   | Flat key catalog, `{placeholder}` style  |
 
-1. Copy `apps/web/messages/en.json` → `apps/web/messages/<locale>.json`
-2. Translate all values — **do not translate keys**.
-3. Do not use machine translation without human review.
-4. Open a PR with title: `i18n: add <Language> (<locale>) translations`
+### Preferred: Crowdin
 
-### Updating an Existing Locale
+Community translations are managed on **Crowdin** — the recommended path for translators, no git knowledge required:
+
+1. Join the SteadyStack project on Crowdin (linked from the README).
+2. Pick your language and translate strings in context; Crowdin protects `{placeholders}` automatically.
+3. Approved translations are synced into the repo by maintainers via `bunx crowdin download` (config: `crowdin.yml`).
+
+Machine-translation suggestions (TM + MT) are enabled as helpers, but human review is required before strings are approved.
+
+### Manual: via Pull Request
+
+If you prefer working in git directly:
+
+#### Adding a New Locale
+
+1. Add the locale to `apps/web/src/i18n/locales.ts` (code, labels, direction — `rtl` for Arabic/Hebrew/etc.).
+2. Copy `apps/web/messages/en.json` → `apps/web/messages/<locale>.json` and translate all values — **do not translate keys**.
+3. Add matching catalogs to `packages/email/src/i18n.ts` and `apps/cli/src/i18n.ts` (fall back to English for keys you haven't translated yet — partial catalogs are fine).
+4. Do not use machine translation without human review.
+5. Open a PR with title: `i18n: add <Language> (<locale>) translations`
+
+#### Updating an Existing Locale
 
 1. Compare `apps/web/messages/<locale>.json` against `apps/web/messages/en.json` and fill in any keys that are missing.
-2. Open a PR with the updated file.
+2. Mirror the same additions in the email and CLI catalogs.
+3. Open a PR with the updated files.
+
+#### RTL Locales (ar, he, fa, ur)
+
+Arabic renders right-to-left via `<html dir="rtl">`. When adding RTL strings, avoid physical CSS in templates (`margin-left`) — use logical properties (`margin-inline-start`) so layout mirrors correctly.
 
 ### Translation Principles
 
 - Prefer natural phrasing over literal word-for-word translation.
 - Preserve placeholders exactly: `{monitorName}`, `{count}`, etc.
 - Respect plural rules for your locale.
+- Status words like `UP`/`DOWN`/`DEGRADED` are technical tokens in some contexts — translate the label, not status enum values.
 - If a concept doesn't exist in the target language, leave an explanatory note in the PR.
 
 ---

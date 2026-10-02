@@ -67,7 +67,7 @@ function DowntimeTimeline({ scenario }: { scenario: (typeof downtimeScenarios)[0
       <div className="flex flex-col gap-4">
         <div className="flex items-start justify-between">
           <div>
-            <h4 className="text-sm font-bold text-foreground">{scenario.name}</h4>
+            <h3 className="text-sm font-bold text-foreground">{scenario.name}</h3>
             <p className="text-xs text-muted-foreground mt-1 max-w-lg">{scenario.description}</p>
           </div>
         </div>

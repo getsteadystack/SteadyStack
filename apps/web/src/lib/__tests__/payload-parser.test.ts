@@ -67,7 +67,9 @@ describe("validatePayload", () => {
   describe("Regex Matcher", () => {
     it("should return success when body_regex matches", () => {
       const expectations = JSON.stringify({ body_regex: "^hello.*world$" });
-      expect(validatePayload("hello beautiful world", 200, expectations)).toEqual({ success: true });
+      expect(validatePayload("hello beautiful world", 200, expectations)).toEqual({
+        success: true,
+      });
     });
 
     it("should return REGEX_MISMATCH when body_regex does not match", () => {
@@ -162,9 +164,7 @@ describe("validatePayload", () => {
 
     it("should support contains operator", () => {
       const expectations = JSON.stringify({
-        json_assertions: [
-          { path: "status", operator: "contains", value: "act" },
-        ],
+        json_assertions: [{ path: "status", operator: "contains", value: "act" }],
       });
       expect(validatePayload(jsonBody, 200, expectations)).toEqual({ success: true });
     });
@@ -181,9 +181,7 @@ describe("validatePayload", () => {
 
     it("should support not_contains operator", () => {
       const expectations = JSON.stringify({
-        json_assertions: [
-          { path: "status", operator: "not_contains", value: "inactive" },
-        ],
+        json_assertions: [{ path: "status", operator: "not_contains", value: "inactive" }],
       });
       expect(validatePayload(jsonBody, 200, expectations)).toEqual({ success: true });
     });

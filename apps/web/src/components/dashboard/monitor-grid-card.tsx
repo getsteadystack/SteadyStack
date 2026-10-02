@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import Link from "next/link";
 import {
   Wifi,
@@ -22,12 +22,13 @@ import { useHaptic } from "@/hooks/use-haptic";
 interface MonitorGridCardProps {
   monitor: any;
   size: "1x1" | "2x1" | "2x2";
-  onResize: (size: "1x1" | "2x1" | "2x2") => void;
+  /** Shared, identity-stable callback; the card supplies its own monitor id. */
+  onResize: (monitorId: string, size: "1x1" | "2x1" | "2x2") => void;
   isEditMode: boolean;
   dragHandleProps?: any;
 }
 
-export function MonitorGridCard({
+export const MonitorGridCard = memo(function MonitorGridCard({
   monitor,
   size,
   onResize,
@@ -171,7 +172,7 @@ export function MonitorGridCard({
           {/* Resize Controls */}
           {size !== "1x1" && (
             <button
-              onClick={() => onResize("1x1")}
+              onClick={() => onResize(monitor.id, "1x1")}
               className="p-1 text-zinc-500 hover:text-zinc-300 rounded hover:bg-zinc-800"
               title="Resize Standard (1x1)"
             >
@@ -180,7 +181,7 @@ export function MonitorGridCard({
           )}
           {size !== "2x1" && (
             <button
-              onClick={() => onResize("2x1")}
+              onClick={() => onResize(monitor.id, "2x1")}
               className="p-1 text-zinc-500 hover:text-zinc-300 rounded hover:bg-zinc-800"
               title="Resize Wide (2x1)"
             >
@@ -189,7 +190,7 @@ export function MonitorGridCard({
           )}
           {size !== "2x2" && (
             <button
-              onClick={() => onResize("2x2")}
+              onClick={() => onResize(monitor.id, "2x2")}
               className="p-1 text-zinc-500 hover:text-zinc-300 rounded hover:bg-zinc-800"
               title="Resize Large (2x2)"
             >
@@ -406,4 +407,4 @@ export function MonitorGridCard({
       </div>
     </div>
   );
-}
+});

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useCallback, useState, useEffect } from "react";
 import dynamic from "next/dynamic";
 import { DashboardStats, type DashboardStatsData } from "@/components/dashboard/stats";
 import { MonitorsTable } from "@/components/dashboard/monitors-table";
@@ -8,6 +8,7 @@ import { MonitorsGrid } from "@/components/dashboard/monitors-grid";
 import { AIInsights, type MonitorInsight } from "@/components/dashboard/ai-insights";
 import { OnboardingChecklist } from "@/components/dashboard/onboarding-checklist";
 import { UsageLimitBanner } from "@/components/dashboard/usage-limit-banner";
+import { HolidayModeBanner } from "@/components/dashboard/holiday-mode-banner";
 import { useMonitors, useDashboardStats } from "@/hooks/use-monitors";
 import { LayoutGrid, List, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,7 @@ export default function Dashboard({
   onboardingStatus,
   usageSummary,
   userEmail,
+  holidayModeUntil,
   isDemo = false,
 }: {
   monitors: any[];
@@ -42,6 +44,7 @@ export default function Dashboard({
   onboardingStatus: OnboardingStatus;
   usageSummary?: UsageSummary;
   userEmail?: string;
+  holidayModeUntil?: string | null;
   isDemo?: boolean;
 }) {
   const { data: monitors } = useMonitors(initialMonitors, isDemo);
@@ -60,22 +63,23 @@ export default function Dashboard({
     }
   }, []);
 
-  const handleToggleView = (mode: "list" | "grid") => {
+  const handleToggleView = useCallback((mode: "list" | "grid") => {
     setViewMode(mode);
     localStorage.setItem("steadystack_dashboard_view_mode", mode);
-  };
+  }, []);
 
-  const handleToggleGlobe = () => {
+  const handleToggleGlobe = useCallback(() => {
     setShowGlobe((prev) => {
       const next = !prev;
       localStorage.setItem("steadystack_dashboard_show_globe", String(next));
       return next;
     });
-  };
+  }, []);
 
   return (
     <div className="flex flex-col gap-6">
       {!isDemo && <UsageLimitBanner summary={usageSummary} />}
+      {!isDemo && <HolidayModeBanner holidayModeUntil={holidayModeUntil ?? null} />}
       {!isDemo && <OnboardingChecklist status={onboardingStatus} userEmail={userEmail} />}
       {/* <AIInsights insights={initialInsights} /> */}
       <DashboardStats stats={stats} />

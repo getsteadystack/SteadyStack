@@ -282,9 +282,9 @@ export function LatencyGridClient() {
 
       {/* CTA Section */}
       <div className="border border-border/20 bg-card/25 p-8 text-center space-y-6 max-w-xl mx-auto rounded-none">
-        <h3 className="text-xl font-bold text-foreground uppercase italic tracking-wide">
+        <h2 className="text-xl font-bold text-foreground uppercase italic tracking-wide">
           Ready for Global Surveillance?
-        </h3>
+        </h2>
         <p className="text-xs text-muted-foreground leading-relaxed max-w-sm mx-auto">
           Start monitoring your endpoints from all 10 regions instantly. Setup takes less than 2
           minutes.

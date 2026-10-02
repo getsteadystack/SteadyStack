@@ -1,68 +1,183 @@
 ---
-title: "Quickstart"
-description: "Deploy your first synthetic check and notification channel in under 5 minutes."
+title: "Getting Started"
+description: "Copy-paste your way from zero to a monitored endpoint with alerts and a status page — dashboard, CLI, API, or Terraform."
 section: "Getting Started"
 order: 2
 badge: "5 min"
-lastUpdated: "2026-08-22"
+lastUpdated: "2026-09-16"
 ---
 
-Get up and running with SteadyStack surveillance in three simple steps.
+Everything on this page is copy-pasteable and verified against the current
+product. Pick your path: the dashboard, the CLI, the REST API, or Terraform —
+they all converge on the same monitors.
 
----
+## 1. Get access
 
-## Step 1: Create a Synthetic Monitor
+**Dashboard:** sign in at [steadystack.dev](https://steadystack.dev) — the free
+tier includes 50 monitors with 3-minute checks.
 
-In the SteadyStack Dashboard, click **New Monitor** or use the CLI:
+**CLI:** install and authenticate with an API key
+(**Workspace Settings → API Keys**, format `pg_live_…`):
 
 ```bash
-# Using the SteadyStack CLI
-steadystack monitors create \
-  --name "API Production" \
-  --url "https://api.example.com/health" \
-  --interval 30 \
-  --type HTTP
+bun add -g @steadystack/cli   # or: npm install -g @steadystack/cli
+
+pulse auth login --key pg_live_xxxxxxxxxxxxxxxx
+pulse auth status             # verify
 ```
 
-Or declare it with Terraform:
+Self-hosted? Add `--url https://your-instance.example.com` to `auth login`.
+
+## 2. Create your first monitor
+
+**Dashboard:** **Dashboard → Monitors → New Monitor**.
+
+**CLI (declarative — recommended):**
+
+```bash
+cat > steadystack.yaml <<'EOF'
+monitors:
+  - name: marketing-site
+    url: https://example.com
+    interval: 60
+
+  - name: api-health
+    url: https://api.example.com/health
+    interval: 30
+    expectation:
+      statusCode: 200
+      maxResponseTime: 2000
+    tags: [production]
+EOF
+
+pulse monitors apply -f steadystack.yaml
+```
+
+Apply is idempotent — matched by name, so re-running updates instead of
+duplicating. Preview first with `pulse monitors diff -f steadystack.yaml`.
+Full schema: [Monitoring as Code](/docs/monitoring-as-code).
+
+**REST API:**
+
+```bash
+curl -X POST "https://app.steadystack.dev/api/v1/monitors" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "api-health",
+    "url": "https://api.example.com/health",
+    "interval": 30,
+    "expectation": { "statusCode": 200 }
+  }'
+```
+
+**Terraform:**
 
 ```hcl
 resource "steadystack_monitor" "api" {
-  name          = "API Production"
-  url           = "https://api.example.com/health"
-  type          = "HTTP"
-  interval      = 30
+  name     = "api-health"
+  url      = "https://api.example.com/health"
+  type     = "HTTP"
+  interval = 30
   check_regions = ["wnam", "weur", "apac"]
 }
 ```
 
----
+## 3. Watch it check in
 
-## Step 2: Connect a Notification Channel
+```bash
+# Table of all monitors with live status
+pulse monitors list
 
-Add an incident destination channel to dispatch alerts to your team.
+# Details + recent events for one monitor
+pulse monitors get <monitor-id>
 
-SteadyStack natively supports:
+# Force an immediate check (exits 1 if DOWN — CI-friendly smoke test)
+pulse trigger <monitor-id>
 
-- **PagerDuty & Opsgenie** (Automatic incident creation and recovery resolution)
-- **Slack & Discord** (Rich interactive embed cards)
-- **Telegram & SMS** (Instant mobile push notifications)
-- **Webhooks** (Raw JSON payloads for custom incident workflows)
-
----
-
-## Step 3: Publish a Branded Status Page
-
-Expose real-time uptime metrics to your users with automated TLS on your custom domain:
-
-```hcl
-resource "steadystack_status_page" "company" {
-  slug          = "company-status"
-  title         = "Company Cloud Status"
-  custom_domain = "status.company.com"
-  show_uptime   = true
-  history_days  = 90
-}
+# Stream events like tail -f
+pulse logs tail <monitor-id>
 ```
 
-Point a `CNAME` record for `status.company.com` to `cname.steadystack.dev` and SteadyStack will automatically issue and renew a Cloudflare SSL certificate.
+A monitor is **UP** only when a quorum of regions agrees — see
+[Quorum Consensus](/docs/quorum-consensus) for why this eliminates
+false-positive 3 AM pages.
+
+## 4. Add an alert channel
+
+**Dashboard:** **Alerts → Notification Channels → Add Channel** (Slack, Discord,
+PagerDuty, Opsgenie, Email — each with a **Send Test** button), then
+**Alerts → Alert Rules → New Rule** to attach it to a monitor with a trigger
+(`STATUS_CHANGE`, `LATENCY`, `SSL_EXPIRY`, `DNS_WATCHDOG`, `DOMAIN_EXPIRY`).
+
+Step-by-step for every channel type: [Alert Channels Setup](/docs/alert-channels).
+
+**REST API:**
+
+```bash
+# 1. Create a Slack channel
+curl -X POST "https://app.steadystack.dev/api/v1/alert-channels" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "oncall-slack",
+    "type": "SLACK",
+    "config": { "webhookUrl": "https://hooks.slack.com/services/T000/B000/xxxx" }
+  }'
+
+# 2. Wire it to the monitor
+curl -X POST "https://app.steadystack.dev/api/v1/alert-rules" \
+  -H "Authorization: Bearer pg_live_xxxxxxxxxxxxxxxx" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "monitorId": "<monitor-id>",
+    "trigger": "STATUS_CHANGE",
+    "targetStatus": "DOWN",
+    "channelIds": ["<channel-id>"]
+  }'
+```
+
+<Check>
+No alert rules on a monitor? Status changes still email the workspace owner —
+you're never silently unmonitored.
+</Check>
+
+## 5. Publish a status page
+
+**Dashboard:** **Status Pages → New Page**, pick a slug, add monitors. Full
+customization (themes, custom domain, password protection):
+[Customizing Status Pages](/docs/status-page-customization).
+
+For a custom domain, add a CNAME record pointing at `cname.vercel-dns.com`
+(the dashboard's domain settings show the exact record) — TLS is issued
+automatically.
+
+## 6. Wire a CI/CD gate
+
+Block deployments until production is verified healthy:
+
+```yaml
+# GitHub Actions
+- name: Deploy
+  run: ./deploy.sh
+
+- name: Wait for production to be healthy
+  run: pulse wait "$MONITOR_ID" --timeout 300
+  env:
+    MONITOR_ID: ${{ vars.PROD_HEALTH_MONITOR_ID }}
+```
+
+`wait` exits 1 on timeout, failing the job. A dedicated health-endpoint
+monitor plus this step catches broken deploys before your users do — see
+[GitHub Actions Gates](/docs/github-actions).
+
+## What's next
+
+| Goal | Doc |
+| :--- | :-- |
+| Assert on response bodies, JSON paths, latency | [Response Assertions](/docs/response-assertions) |
+| All CLI commands and flags | [CLI Reference](/docs/cli-reference) |
+| Monitor internal/VPC endpoints | [Deploying Private Probes](/docs/probe-deployment) |
+| Understand the SLA number | [SLA Calculation Methodology](/docs/sla-methodology) |
+| Invite your team with roles | [Teams & RBAC](/docs/teams-rbac) |
+| Full API | [REST API Reference](/docs/api-reference) · [Interactive explorer](/docs/api) |

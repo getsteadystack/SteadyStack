@@ -214,7 +214,6 @@ export default {
               id: true,
               url: true,
               interval: true,
-              timeout: true,
               status: true,
               name: true,
               type: true,

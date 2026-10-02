@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
 import { Globe, MapPin, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -46,6 +46,16 @@ export function GlobeVisualization({ monitors }: GlobeVisualizationProps) {
   // Keep a ref to push check events dynamically to the Three.js loop
   const eventQueueRef = useRef<{ region: string; status: string; latency: number }[]>([]);
 
+  // Fresh monitors array arrives on every 5s poll; keep it in a ref so socket
+  // lifetimes aren't tied to poll object identity.
+  const monitorsRef = useRef(monitors);
+  useEffect(() => {
+    monitorsRef.current = monitors;
+  }, [monitors]);
+
+  // Only re-open sockets when the set of monitors (by id) actually changes.
+  const monitorIds = useMemo(() => monitors.map((m) => m.id).join(","), [monitors]);
+
   const dataRegionCode = (region: string) => {
     const r = region.toLowerCase();
     if (r.includes("eu") || r.includes("frankfurt")) return "EU";
@@ -56,7 +66,9 @@ export function GlobeVisualization({ monitors }: GlobeVisualizationProps) {
     return "US-East"; // Fallback
   };
 
-  // Push incoming websocket events or fallback live telemetry to the queue
+  // Push incoming websocket events or fallback live telemetry to the queue.
+  // Depends on the monitor id set — NOT the monitors array — so the 5s poll
+  // doesn't tear down and recreate every WebSocket twice a minute.
   useEffect(() => {
     if (!isOpen) return;
 
@@ -64,9 +76,10 @@ export function GlobeVisualization({ monitors }: GlobeVisualizationProps) {
     const sockets: WebSocket[] = [];
 
     // Fallback/interactive live telemetry stream generator
+    const currentMonitors = monitorsRef.current;
     const activeMonitorsList =
-      monitors.length > 0
-        ? monitors
+      currentMonitors.length > 0
+        ? currentMonitors
         : [
             { id: "mon_edge_1", name: "Primary Edge API" },
             { id: "mon_auth_1", name: "Auth Gateway" },
@@ -104,7 +117,8 @@ export function GlobeVisualization({ monitors }: GlobeVisualizationProps) {
     }, 2000);
 
     async function initWebSockets() {
-      if (monitors.length === 0) return;
+      const socketMonitors = monitorsRef.current;
+      if (socketMonitors.length === 0) return;
       const token = await getSessionToken();
       if (!active) return;
 
@@ -119,7 +133,7 @@ export function GlobeVisualization({ monitors }: GlobeVisualizationProps) {
         wsBaseUrl = `${protocol}${wsBaseUrl}`;
       }
 
-      monitors.forEach((monitor: any) => {
+      socketMonitors.forEach((monitor: any) => {
         try {
           const urlObj = new URL(`${wsBaseUrl}/ws/monitors/${monitor.id}`);
           if (token) {
@@ -163,7 +177,7 @@ export function GlobeVisualization({ monitors }: GlobeVisualizationProps) {
         ws.close();
       });
     };
-  }, [isOpen, monitors]);
+  }, [isOpen, monitorIds]);
 
   useEffect(() => {
     if (!isOpen || !containerRef.current) return;

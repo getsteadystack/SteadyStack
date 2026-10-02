@@ -8,10 +8,10 @@ mock.module("@steadystack/auth", () => ({
   auth: {
     api: {
       getSession: async () => ({
-        user: { id: "test-user-id" }
-      })
-    }
-  }
+        user: { id: "test-user-id" },
+      }),
+    },
+  },
 }));
 
 // We need to mock prisma
@@ -21,18 +21,24 @@ mock.module("@steadystack/db", () => {
     default: {
       monitor: {
         findMany: async () => [],
-        update: async (data: any) => { ops++; return { id: "updated-1", name: data.data.name }; },
-        create: async (data: any) => { ops++; return { id: "created-1", name: data.data.name }; },
+        update: async (data: any) => {
+          ops++;
+          return { id: "updated-1", name: data.data.name };
+        },
+        create: async (data: any) => {
+          ops++;
+          return { id: "created-1", name: data.data.name };
+        },
         findUnique: async () => null,
       },
       user: {
-        findUnique: async () => ({ tier: "PRO" })
+        findUnique: async () => ({ tier: "PRO" }),
       },
       $transaction: async (queries: any[]) => {
         return Promise.all(queries);
-      }
-    }
-  }
+      },
+    },
+  };
 });
 
 import { POST } from "./route";
@@ -45,20 +51,20 @@ test("benchmark import", async () => {
     monitors: Array.from({ length: 49 }, (_, i) => ({
       name: `monitor-${i}`,
       url: `https://example.com/${i}`,
-      type: "HTTP"
-    }))
+      type: "HTTP",
+    })),
   };
 
   const req = new NextRequest("http://localhost/api/workspace/import?format=steadystack", {
     method: "POST",
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload),
   });
 
   const start = performance.now();
   const res = await POST(req);
   const end = performance.now();
 
-  const json = await res.json() as any;
+  const json = (await res.json()) as any;
   console.log(`Time taken: ${end - start}ms, Ops: ${ops}`);
   expect(json.success).toBe(true);
 });

@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   title: "Terms of Service | SteadyStack",
   description:
     "SteadyStack Terms of Service — the terms governing your use of our uptime monitoring service.",
+  alternates: {
+    canonical: "/terms",
+  },
   openGraph: {
     title: "Terms of Service | SteadyStack",
     description: "The terms governing your use of SteadyStack.",

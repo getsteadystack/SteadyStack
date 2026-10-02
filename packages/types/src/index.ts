@@ -15,7 +15,12 @@ export type MonitorType =
   | "WEBSOCKET"
   | "DATABASE"
   | "BGP"
-  | "MCP";
+  | "MCP"
+  | "GRPC"
+  | "SMTP"
+  | "FTP"
+  | "ICMP"
+  | "MAIL";
 
 export type ProbeHealthState = "ONLINE" | "DEGRADED" | "OFFLINE" | "FLAPPING";
 
@@ -23,6 +28,8 @@ export interface ProbeJob {
   id: string;
   monitorId: string;
   url: string;
+  /** Encrypted client certificate bundle for mTLS HTTP monitors. */
+  clientCert?: string;
   type: string;
   timeout: number;
   method?: string;

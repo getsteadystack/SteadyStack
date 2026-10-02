@@ -1,8 +1,24 @@
 import type { ExecutionContext } from "@cloudflare/workers-types";
 import type { MonitorStatus } from "@steadystack/types";
-import { checkHttpUniversal, checkPortUniversal } from "@steadystack/core";
+import {
+  checkHttpUniversal,
+  checkPortUniversal,
+  decryptSecret,
+  isEncrypted,
+  DEFAULT_CHECK_TIMEOUT_SECONDS,
+} from "@steadystack/core";
 import { CheckErrorReason, MonitorStatus as Status, MonitorType } from "./constants";
 import type { Env } from "./env";
+
+/**
+ * Decrypts an encrypted headers/config JSON blob before parsing; passthrough
+ * for legacy plaintext values.
+ */
+async function decryptIfNeeded(value: string, env?: Env): Promise<string> {
+  if (!value) return value;
+  if (!isEncrypted(value)) return value;
+  return await decryptSecret(value, env?.ENCRYPTION_SECRET);
+}
 
 /** Base cooldown (ms) between duplicate alerts for the same monitor. */
 const ALERT_COOLDOWN_BASE = 15 * 60 * 1000;
@@ -26,7 +42,7 @@ export interface CheckOutcome {
  *
  * The function checks the status of the URL by making an HTTP GET request, establishing a TCP connection, or sending a ping based on the URL protocol. It measures the latency and captures any error reasons if the check fails. The function handles various protocols and classifies errors into specific categories for better diagnostics. If the monitor is explicitly marked as "MAINTENANCE", the check is skipped.
  *
- * @param monitor - An object containing the URL to be monitored and optional timeout settings.
+ * @param monitor - An object containing the URL to be monitored. A fixed internal timeout is applied.
  * @param env - Optional worker environment bindings (used by browser/sequence checks).
  * @param prisma - Optional database client (used by heartbeat checks).
  * @returns An object containing the status ("UP", "DOWN", or "MAINTENANCE"), the latency in milliseconds, and an optional error reason.
@@ -224,7 +240,7 @@ export async function performCheck(monitor: any, env?: Env, prisma?: any): Promi
   if (monitor.type === MonitorType.WEBSOCKET) {
     const { checkWebSocket } = await import("./services/websocket-monitor");
     try {
-      const listenSeconds = monitor.timeout || 5;
+      const listenSeconds = DEFAULT_CHECK_TIMEOUT_SECONDS;
       const wsAssertion = monitor.expectation
         ? (JSON.parse(monitor.expectation) as any)
         : undefined;
@@ -261,6 +277,127 @@ export async function performCheck(monitor: any, env?: Env, prisma?: any): Promi
         status: Status.DOWN,
         latency: 0,
         errorReason: CheckErrorReason.DATABASE_CHECK_FAILED,
+      };
+    }
+  }
+
+  if (monitor.type === MonitorType.GRPC) {
+    const { checkGrpcHealth } = await import("@steadystack/core");
+    try {
+      const grpcConfig = monitor.expectation
+        ? (JSON.parse(monitor.expectation) as any)
+        : {};
+      const result = await checkGrpcHealth(monitor.url, {
+        serviceName: grpcConfig.serviceName,
+        useTls: grpcConfig.useTls === true || monitor.url.startsWith("grpcs://") || monitor.url.includes(":443"),
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        status: result.status,
+        latency: result.latency,
+        errorReason: result.errorReason,
+      };
+    } catch (e: any) {
+      return {
+        status: Status.DOWN,
+        latency: 0,
+        errorReason: CheckErrorReason.GRPC_CHECK_FAILED,
+      };
+    }
+  }
+
+  if (monitor.type === MonitorType.SMTP) {
+    const { checkSmtp } = await import("@steadystack/core");
+    try {
+      const smtpConfig = monitor.headers
+        ? (JSON.parse(await decryptIfNeeded(monitor.headers, env)) as any)
+        : {};
+      const result = await checkSmtp(monitor.url, {
+        username: smtpConfig.username,
+        password: smtpConfig.password,
+        ehloDomain: smtpConfig.ehloDomain,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        status: result.status,
+        latency: result.latency,
+        errorReason: result.errorReason,
+      };
+    } catch (e: any) {
+      return {
+        status: Status.DOWN,
+        latency: 0,
+        errorReason: CheckErrorReason.SMTP_CHECK_FAILED,
+      };
+    }
+  }
+
+  if (monitor.type === MonitorType.FTP) {
+    const { checkFtp } = await import("@steadystack/core");
+    try {
+      const ftpConfig = monitor.headers
+        ? (JSON.parse(await decryptIfNeeded(monitor.headers, env)) as any)
+        : {};
+      const result = await checkFtp(monitor.url, {
+        username: ftpConfig.username,
+        password: ftpConfig.password,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        status: result.status,
+        latency: result.latency,
+        errorReason: result.errorReason,
+      };
+    } catch (e: any) {
+      return {
+        status: Status.DOWN,
+        latency: 0,
+        errorReason: CheckErrorReason.FTP_CHECK_FAILED,
+      };
+    }
+  }
+
+  if (monitor.type === MonitorType.ICMP) {
+    const { checkIcmpPing } = await import("@steadystack/core");
+    try {
+      const result = await checkIcmpPing(monitor.url, {
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        status: result.status,
+        latency: result.latency,
+        errorReason: result.errorReason,
+      };
+    } catch (e: any) {
+      return {
+        status: Status.DOWN,
+        latency: 0,
+        errorReason: CheckErrorReason.ICMP_CHECK_FAILED,
+      };
+    }
+  }
+
+  if (monitor.type === MonitorType.MAIL) {
+    const { checkMailRetrieval } = await import("@steadystack/core");
+    try {
+      const mailConfig = monitor.headers
+        ? (JSON.parse(await decryptIfNeeded(monitor.headers, env)) as any)
+        : {};
+      const result = await checkMailRetrieval(monitor.url, {
+        username: mailConfig.username,
+        password: mailConfig.password,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        status: result.status,
+        latency: result.latency,
+        errorReason: result.errorReason,
+      };
+    } catch (e: any) {
+      return {
+        status: Status.DOWN,
+        latency: 0,
+        errorReason: CheckErrorReason.MAIL_CHECK_FAILED,
       };
     }
   }
@@ -375,11 +512,26 @@ export async function performInternalRequest(
         Object.assign(headersObj, extraHeaders);
       }
 
+      // mTLS: decrypt the client certificate bundle (cert+key PEM) when present
+      let clientCert: string | undefined;
+      let clientKey: string | undefined;
+      if (monitor.clientCert) {
+        try {
+          const raw = await decryptIfNeeded(monitor.clientCert, env);
+          const parsed = JSON.parse(raw) as { cert?: string; key?: string };
+          clientCert = parsed.cert;
+          clientKey = parsed.key;
+        } catch {
+          console.error("[MTLS] Failed to parse client certificate bundle");
+        }
+      }
+
       const checkResult = await checkHttpUniversal(urlStr, {
         method: monitor.method,
         headers: headersObj,
         body: monitor.body,
-        timeoutSeconds: monitor.timeout,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+        ...(clientCert && clientKey ? { clientCert, clientKey } : {}),
       });
 
       currentStatus = checkResult.status;
@@ -388,15 +540,23 @@ export async function performInternalRequest(
 
       // 3. Deep Payload/Status Validation (WASM/Rust Optimized Bridge)
       if (currentStatus === Status.UP && monitor.expectation) {
-        const { validatePayload } = await import("./lib/payload-parser");
-        const validation = validatePayload(
-          checkResult.bodyText,
-          checkResult.statusCode || 200,
-          monitor.expectation,
-        );
-        if (!validation.success) {
+        const { validatePayload, validateBodySize } = await import("./lib/payload-parser");
+        // Body size thresholds are checked against the exact received bytes
+        // before content expectations (null size = size within thresholds).
+        const sizeValidation = validateBodySize(checkResult.bodySizeBytes ?? null, monitor.expectation);
+        if (!sizeValidation.success) {
           currentStatus = Status.DOWN;
-          errorReason = validation.errorMessage || `HTTP_${checkResult.statusCode || 200}`;
+          errorReason = sizeValidation.errorMessage;
+        } else {
+          const validation = validatePayload(
+            checkResult.bodyText,
+            checkResult.statusCode || 200,
+            monitor.expectation,
+          );
+          if (!validation.success) {
+            currentStatus = Status.DOWN;
+            errorReason = validation.errorMessage || `HTTP_${checkResult.statusCode || 200}`;
+          }
         }
       }
     } else if (urlStr.startsWith("tcp://")) {
@@ -409,7 +569,7 @@ export async function performInternalRequest(
       const checkResult = await checkPortUniversal(
         hostname,
         parseInt(port, 10),
-        (monitor.timeout || 10) * 1000,
+        DEFAULT_CHECK_TIMEOUT_SECONDS * 1000,
       );
 
       if (checkResult.isOpen) {
@@ -420,7 +580,11 @@ export async function performInternalRequest(
       }
     } else if (urlStr.startsWith("ping://")) {
       const hostname = urlStr.replace("ping://", "");
-      const checkResult = await checkPortUniversal(hostname, 80, (monitor.timeout || 10) * 1000);
+      const checkResult = await checkPortUniversal(
+        hostname,
+        80,
+        DEFAULT_CHECK_TIMEOUT_SECONDS * 1000,
+      );
 
       if (checkResult.isOpen) {
         currentStatus = Status.UP;

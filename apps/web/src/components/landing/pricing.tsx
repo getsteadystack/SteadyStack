@@ -106,7 +106,7 @@ export default function Pricing() {
                 The Initiate
               </h3>
               <p className="text-xs text-muted-foreground mt-1">
-                Full core function for indie devs & side projects.
+                Free uptime monitoring for indie developers and side projects.
               </p>
               <div className="mt-6 flex flex-col gap-1.5 h-[52px] justify-center">
                 <div className="flex items-baseline gap-1">

@@ -66,7 +66,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.url !== undefined) updateData.url = String(body.url).trim();
   if (body.type !== undefined) updateData.type = body.type;
   if (body.interval !== undefined) updateData.interval = Number(body.interval);
-  if (body.timeout !== undefined) updateData.timeout = Number(body.timeout);
   if (body.method !== undefined) updateData.method = String(body.method).toUpperCase();
   if (body.headers !== undefined)
     updateData.headers = body.headers ? JSON.stringify(body.headers) : null;
@@ -77,8 +76,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (body.checkRegions !== undefined)
     updateData.checkRegions = body.checkRegions ? JSON.stringify(body.checkRegions) : null;
   if (body.alertThreshold !== undefined) updateData.alertThreshold = Number(body.alertThreshold);
-  if (body.dynamicThresholding !== undefined)
-    updateData.dynamicThresholding = Boolean(body.dynamicThresholding);
   if (body.runbookUrl !== undefined)
     updateData.runbookUrl = body.runbookUrl ? String(body.runbookUrl).trim() : null;
 
@@ -88,7 +85,6 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       type: updateData.type || existing.type,
       interval: updateData.interval || existing.interval,
       checkRegionsCount: body.checkRegions ? body.checkRegions.length : undefined,
-      dynamicThresholding: updateData.dynamicThresholding,
     });
     if (!limitCheck.allowed) {
       return NextResponse.json(

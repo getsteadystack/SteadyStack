@@ -1,4 +1,14 @@
-import { checkHttpUniversal, checkPortUniversal } from "@steadystack/core";
+import {
+  checkHttpUniversal,
+  checkPortUniversal,
+  checkGrpcHealth,
+  checkSmtp,
+  checkFtp,
+  checkIcmpPing,
+  checkMailRetrieval,
+  decryptSecret,
+  DEFAULT_CHECK_TIMEOUT_SECONDS,
+} from "@steadystack/core";
 import { env } from "@steadystack/env/probe";
 import type { ProbeJob, CheckResult } from "@steadystack/types";
 
@@ -74,11 +84,35 @@ async function runCheck(job: ProbeJob): Promise<CheckResult> {
 
   try {
     if (job.type === "HTTP" || job.type === "HTTPS" || job.url.startsWith("http")) {
+      // Headers and the mTLS cert bundle are stored encrypted; the probe holds
+      // the same platform ENCRYPTION_SECRET so it can decrypt them locally.
+      let rawHeaders = job.headers;
+      if (rawHeaders) {
+        try {
+          rawHeaders = await decryptSecret(rawHeaders, env.ENCRYPTION_SECRET);
+        } catch {
+          // decryptSecret already falls back to the raw payload on failure
+        }
+      }
+      let clientCert: string | undefined;
+      let clientKey: string | undefined;
+      if (job.clientCert) {
+        try {
+          const raw = await decryptSecret(job.clientCert, env.ENCRYPTION_SECRET);
+          const parsed = JSON.parse(raw) as { cert?: string; key?: string };
+          clientCert = parsed.cert;
+          clientKey = parsed.key;
+        } catch {
+          console.error(`[MTLS] Failed to decrypt client cert for monitor ${job.monitorId}`);
+        }
+      }
       const checkResult = await checkHttpUniversal(job.url, {
         method: job.method,
-        headers: job.headers,
+        headers: rawHeaders,
         body: job.body,
-        timeoutSeconds: job.timeout,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+        clientCert,
+        clientKey,
       });
 
       return {
@@ -93,11 +127,107 @@ async function runCheck(job: ProbeJob): Promise<CheckResult> {
 
     if (job.type === "PING" || job.url.startsWith("ping://")) {
       const hostname = job.url.replace("ping://", "");
-      const checkResult = await checkPortUniversal(hostname, 80, (job.timeout || 10) * 1000);
+      const checkResult = await checkPortUniversal(hostname, 80, DEFAULT_CHECK_TIMEOUT_SECONDS * 1000);
 
       return {
         monitorId: job.monitorId,
         status: checkResult.isOpen ? "UP" : "DOWN",
+        latency: checkResult.latency,
+        errorReason: checkResult.errorReason,
+        timestamp,
+        region,
+      };
+    }
+
+    if (job.type === "GRPC") {
+      const grpcConfig = job.expectation ? (JSON.parse(job.expectation) as any) : {};
+      const checkResult = await checkGrpcHealth(job.url, {
+        serviceName: grpcConfig.serviceName,
+        useTls: grpcConfig.useTls === true || job.url.startsWith("grpcs://") || job.url.includes(":443"),
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        monitorId: job.monitorId,
+        status: checkResult.status,
+        latency: checkResult.latency,
+        errorReason: checkResult.errorReason,
+        timestamp,
+        region,
+      };
+    }
+
+    // SMTP/FTP/MAIL credentials are stored encrypted (same column as HTTP
+    // custom headers) — decrypt once here so no handler sees the envelope.
+    let protocolHeaders: Record<string, string> = {};
+    if (job.headers) {
+      try {
+        const raw = await decryptSecret(job.headers, env.ENCRYPTION_SECRET);
+        const parsed = JSON.parse(raw) as Record<string, string>;
+        if (parsed && !Array.isArray(parsed)) protocolHeaders = parsed;
+      } catch {
+        // Malformed or unparseable payload — proceed without credentials.
+      }
+    }
+
+    if (job.type === "SMTP") {
+      const smtpConfig = protocolHeaders;
+      const checkResult = await checkSmtp(job.url, {
+        username: smtpConfig.username,
+        password: smtpConfig.password,
+        ehloDomain: smtpConfig.ehloDomain,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        monitorId: job.monitorId,
+        status: checkResult.status,
+        latency: checkResult.latency,
+        errorReason: checkResult.errorReason,
+        timestamp,
+        region,
+      };
+    }
+
+    if (job.type === "FTP") {
+      const ftpConfig = protocolHeaders;
+      const checkResult = await checkFtp(job.url, {
+        username: ftpConfig.username,
+        password: ftpConfig.password,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        monitorId: job.monitorId,
+        status: checkResult.status,
+        latency: checkResult.latency,
+        errorReason: checkResult.errorReason,
+        timestamp,
+        region,
+      };
+    }
+
+    if (job.type === "ICMP") {
+      const checkResult = await checkIcmpPing(job.url, {
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        monitorId: job.monitorId,
+        status: checkResult.status,
+        latency: checkResult.latency,
+        errorReason: checkResult.errorReason,
+        timestamp,
+        region,
+      };
+    }
+
+    if (job.type === "MAIL") {
+      const mailConfig = protocolHeaders;
+      const checkResult = await checkMailRetrieval(job.url, {
+        username: mailConfig.username,
+        password: mailConfig.password,
+        timeoutSeconds: DEFAULT_CHECK_TIMEOUT_SECONDS,
+      });
+      return {
+        monitorId: job.monitorId,
+        status: checkResult.status,
         latency: checkResult.latency,
         errorReason: checkResult.errorReason,
         timestamp,
@@ -111,7 +241,7 @@ async function runCheck(job: ProbeJob): Promise<CheckResult> {
       const checkResult = await checkPortUniversal(
         hostname ?? "",
         parseInt(portStr ?? "80", 10),
-        (job.timeout || 10) * 1000,
+        DEFAULT_CHECK_TIMEOUT_SECONDS * 1000,
       );
 
       return {

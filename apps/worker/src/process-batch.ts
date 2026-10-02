@@ -8,7 +8,7 @@ import {
   ProxyError,
   SSL_ALERT_MILESTONES,
 } from "./constants";
-import { ProxyMesh, QuantumAnomalyDetector } from "./services/mesh";
+import { ProxyMesh, QuantumAnomalyDetector, isProxyInfrastructureError } from "./services/mesh";
 import { InsightService, InsightType, InsightSeverity } from "./lib/insight-service";
 import { performRegionalChecks, getAverageLatency } from "./services/regional-monitor";
 import {
@@ -19,6 +19,7 @@ import {
   shouldSendAlert,
 } from "./check-runner";
 import { queueNotification } from "./lib/send-notification";
+import { DEFAULT_CHECK_TIMEOUT_SECONDS } from "@steadystack/core";
 import { evaluateQuorum } from "./services/quorum-engine";
 import type { ProbeCheckResult } from "@steadystack/types";
 import type { Env } from "./env";
@@ -67,6 +68,7 @@ export async function processBatch(
   const monitorIds = monitors.map((m) => m.id);
   const activeIncidentsMap = new Map<string, any>();
   const eventCountsMap = new Map<string, number>();
+  const recentLatenciesMap = new Map<string, number[]>();
 
   // 1. Fetch Active Incidents
   const activeIncidents = await incidentService.findActiveIncidentsForMonitors(monitorIds);
@@ -77,6 +79,9 @@ export async function processBatch(
       activeIncidentsMap.set(incident.monitorId, incident);
     }
   }
+
+  // 1.5 Preload active insights for all monitors to avoid N+1 queries during creation
+  const preloadedInsightsMap = await insightService.preloadActiveInsights(monitorIds);
 
   // 2. Fetch Event Counts (for flapping detection)
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
@@ -93,51 +98,47 @@ export async function processBatch(
   for (const count of eventCounts) {
     eventCountsMap.set(count.monitorId, count._count);
   }
+
+  // 3. Fetch Recent Events for Dynamic Thresholding
+  const dynamicIds = monitors.filter((m) => m.dynamicThresholding).map((m) => m.id);
+  if (dynamicIds.length > 0) {
+    // Note: To properly fetch max 50 events PER monitorId and avoid global limit domination,
+    // we use Promise.all to issue parallel queries. In Prisma without raw SQL, this is the most
+    // efficient way to handle "Top N per Group" without complex joins or missing older events.
+    const dynamicQueries = dynamicIds.map((id) =>
+      prisma.monitorEvent.findMany({
+        where: { monitorId: id, status: Status.UP },
+        orderBy: { timestamp: "desc" },
+        take: 50,
+        select: { monitorId: true, latency: true },
+      }),
+    );
+
+    const queryResults = await Promise.all(dynamicQueries);
+    for (const events of queryResults) {
+      if (events.length > 0) {
+        recentLatenciesMap.set(
+          events[0].monitorId,
+          events.map((e: any) => e.latency),
+        );
+      }
+    }
+  }
   // --- BULK FETCH DATA END ---
+
+  const insightPromises: Promise<void>[] = [];
 
   for (let i = 0; i < monitors.length; i++) {
     const monitor = monitors[i];
 
-    // --- DYNAMIC THRESHOLDING CALCULATION ---
-    let effectiveTimeout = monitor.timeout || 10;
+    // --- ANOMALY BASELINE (recent latencies feed the anomaly detector) ---
     let capturedLatencies: number[] | undefined;
-
     if (monitor.dynamicThresholding) {
-      try {
-        const lastEvents = await prisma.monitorEvent.findMany({
-          where: { monitorId: monitor.id, status: Status.UP },
-          orderBy: { timestamp: "desc" },
-          take: 50, // Get recent events to compute p95
-          select: { latency: true },
-        });
-
-        if (lastEvents.length >= 10) {
-          const latencies = lastEvents.map((e: any) => e.latency);
-          capturedLatencies = latencies;
-          // Sort ascending to find p95
-          const sorted = [...latencies].sort((a: number, b: number) => a - b);
-          const p95Index = Math.floor(sorted.length * 0.95);
-          const p95Latency = sorted[p95Index];
-
-          // Calc dynamic (p95 + 30% buffer, convert ms to seconds)
-          let calcTimeout = (p95Latency * 1.3) / 1000;
-
-          // Enforce bounds min 2, max 30
-          if (calcTimeout < 2) calcTimeout = 2;
-          if (calcTimeout > 30) calcTimeout = 30;
-
-          effectiveTimeout = calcTimeout;
-          console.log(
-            `[DynamicThreshold] ${monitor.name}: p95=${p95Latency}ms -> New Timeout=${effectiveTimeout.toFixed(2)}s`,
-          );
-        }
-      } catch (calcErr) {
-        console.error(`[DynamicThreshold] Failed to calculate for ${monitor.name}:`, calcErr);
+      const latencies = recentLatenciesMap.get(monitor.id) || [];
+      if (latencies.length >= 10) {
+        capturedLatencies = latencies;
       }
     }
-
-    // Set the resolved timeout on the monitor object for the checks
-    monitor.timeout = effectiveTimeout;
 
     // --- PROCESSING LOGIC START ---
     try {
@@ -341,20 +342,15 @@ export async function processBatch(
                 retryResult.status = Status.UP;
                 delete retryResult.errorReason;
               } else {
-                // KEY FIX: If the PROXY itself failed (not the target), don't use this as
+                // ARCHITECTURE DECISION: If the PROXY itself failed (not the target), we do not use this as
                 // confirmation of DOWN. Proxy failures (CORS blocks, scraper bans, etc.) are
-                // unreliable signals for sites like Google that block these proxy services.
-                const isProxyFailure =
-                  proxyResult.error &&
-                  !proxyResult.error.startsWith("TARGET_HTTP_") &&
-                  !proxyResult.error.startsWith("HTTP_") &&
-                  !proxyResult.error.startsWith("CLUSTER_HTTP_");
+                // unreliable signals for sites that block these proxy services.
+                const isProxyFailure = isProxyInfrastructureError(proxyResult.error);
 
                 if (isProxyFailure) {
                   console.warn(
                     `[MultiVector] Component 18-1-0 proxy itself failed (${proxyResult.error}), not a target failure. Skipping as inconclusive.`,
                   );
-                  // Don't use a broken proxy as evidence of DOWN — skip to secondary
                 } else {
                   console.log(
                     `[MultiVector] Component 18-1-0 target confirmed DOWN. Trying secondary vector Component 18-1-1...`,
@@ -370,11 +366,15 @@ export async function processBatch(
                   delete retryResult.errorReason;
                 } else {
                   // Check if secondary proxy also just failed at the proxy level
-                  const isSecondaryProxyFailure =
-                    secondaryProxy.error &&
-                    !secondaryProxy.error.startsWith("TARGET_HTTP_") &&
-                    !secondaryProxy.error.startsWith("HTTP_") &&
-                    !secondaryProxy.error.startsWith("CLUSTER_HTTP_");
+                  const isSecondaryProxyFailure = isProxyInfrastructureError(secondaryProxy.error);
+
+                  if (isSecondaryProxyFailure) {
+                    console.warn(
+                      `[MultiVector] Component 18-1-1 proxy itself failed (${secondaryProxy.error}), not a target failure. Skipping as inconclusive.`,
+                    );
+                  } else {
+                    console.log(`[MultiVector] Component 18-1-1 target confirmed DOWN.`);
+                  }
 
                   if (isProxyFailure && isSecondaryProxyFailure) {
                     // BOTH proxies failed at the infrastructure level — this is a proxy network
@@ -387,14 +387,15 @@ export async function processBatch(
                     delete retryResult.errorReason;
                   } else {
                     console.log(
-                      `[MultiVector] Component 18-1-1 also DOWN. Trying final High-Fidelity Vector 19-3-1...`,
+                      `[MultiVector] Proceeding to final High-Fidelity Vector 19-3-1 for ${monitor.name}...`,
                     );
-                    // Use captured latencies for quantum verification if available
+
                     const finalVector = await mesh.component_19_3_1(
                       monitor.url,
                       capturedLatencies || [],
                       2000,
                     );
+
                     if (finalVector.status === Status.UP) {
                       console.log(
                         `[MultiVector] Component 19-3-1 reported UP! False positive averted for ${monitor.name}. (Anomaly: ${finalVector.anomaly?.isAnomaly})`,
@@ -402,8 +403,20 @@ export async function processBatch(
                       retryResult.status = Status.UP;
                       delete retryResult.errorReason;
                     } else {
+                      const isFinalProxyFailure =
+                        finalVector.error &&
+                        !finalVector.error.startsWith("TARGET_HTTP_") &&
+                        !finalVector.error.startsWith("HTTP_") &&
+                        !finalVector.error.startsWith("CLUSTER_HTTP_");
+
+                      if (isFinalProxyFailure) {
+                        console.warn(
+                          `[MultiVector] Component 19-3-1 proxy itself failed (${finalVector.error}), skipping as inconclusive.`,
+                        );
+                      }
+
                       console.warn(
-                        `[MultiVector] ALL verification vectors (Local, Retry, 18-1-0, 18-1-1, 19-3-1) confirmed DOWN for ${monitor.name}.`,
+                        `[MultiVector] Verification vectors confirmed DOWN for ${monitor.name}.`,
                       );
                     }
                   }
@@ -432,13 +445,16 @@ export async function processBatch(
           );
 
           // Store insight
-          await insightService.createInsight({
-            monitorId: monitor.id,
-            type: InsightType.ANOMALY,
-            severity: anomaly.score > 5 ? InsightSeverity.CRITICAL : InsightSeverity.WARNING,
-            message: `Latency Anomaly Detected: ${monitor.name} is performing significantly outside expected baseline (Z-Score: ${anomaly.score}).`,
-            metadata: { score: anomaly.score, latency },
-          });
+          await insightService.createInsight(
+            {
+              monitorId: monitor.id,
+              type: InsightType.ANOMALY,
+              severity: anomaly.score > 5 ? InsightSeverity.CRITICAL : InsightSeverity.WARNING,
+              message: `Latency Anomaly Detected: ${monitor.name} is performing significantly outside expected baseline (Z-Score: ${anomaly.score}).`,
+              metadata: { score: anomaly.score, latency },
+            },
+            preloadedInsightsMap,
+          );
         }
 
         // Periodically run heuristic advice (every ~10 checks)
@@ -449,7 +465,12 @@ export async function processBatch(
               orderBy: { timestamp: "desc" },
               take: 20,
             });
-            await insightService.analyzeAndProvideAdvice(monitor.id, monitor.name, recentEvents);
+            await insightService.analyzeAndProvideAdvice(
+              monitor.id,
+              monitor.name,
+              recentEvents,
+              preloadedInsightsMap,
+            );
           } catch (e) {
             console.error(`[InsightAdvice] Failed for ${monitor.name}:`, e);
           }
@@ -822,6 +843,15 @@ export async function processBatch(
       // We count it as processed (failed) to avoid infinite retry loops for bad data
       // Unless it's a timeout error, which might be retryable
       processedIds.push(monitor.id);
+    }
+  }
+
+  // Await all accumulated background insight advice checks concurrently
+  if (insightPromises.length > 0) {
+    try {
+      await Promise.allSettled(insightPromises);
+    } catch (err) {
+      console.error("[InsightAdvice] Batch evaluation failed:", err);
     }
   }
 

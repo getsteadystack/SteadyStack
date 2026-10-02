@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Activity, Twitter, Github } from "lucide-react";
+import { Activity, Twitter, Github, Globe } from "lucide-react";
+import { FooterLocaleSwitcher } from "./footer-locale-switcher";
 
 export default function LandingFooter() {
   return (
@@ -308,6 +309,23 @@ export default function LandingFooter() {
               className="block h-11 w-auto"
             />
           </a>
+          <a
+            href="https://startupfa.me/s/steadystack?utm_source=steadystack.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="SteadyStack - Featured on Startup Fame"
+            className="transition-opacity hover:opacity-85"
+          >
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="https://startupfa.me/badges/featured-badge-small.webp"
+              alt="SteadyStack - Featured on Startup Fame"
+              width={224}
+              height={36}
+              loading="lazy"
+              className="block h-9 w-auto"
+            />
+          </a>
         </div>
 
         {/* Footer Bottom */}
@@ -332,6 +350,10 @@ export default function LandingFooter() {
             </a>
           </div>
           <div className="flex items-center gap-4 text-muted-foreground">
+            <div className="inline-flex items-center gap-1.5">
+              <Globe className="size-4 text-muted-foreground/70" />
+              <FooterLocaleSwitcher />
+            </div>
             <Link
               href="https://x.com/snackforcode"
               className="hover:text-foreground transition-all"

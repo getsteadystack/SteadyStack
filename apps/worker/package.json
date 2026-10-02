@@ -4,13 +4,13 @@
   "private": true,
   "main": "src/index.ts",
   "scripts": {
-    "dev": "wrangler dev --test-scheduled",
+    "dev": "node scripts/dev.js",
+    "dev:wrangler": "wrangler dev --test-scheduled",
     "cron:local": "node scripts/local-cron.js",
     "deploy": "wrangler deploy",
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "re2js": "^1.2.14",
     "@cloudflare/puppeteer": "^0.0.9",
     "@steadystack/core": "workspace:*",
     "@steadystack/db": "workspace:*",

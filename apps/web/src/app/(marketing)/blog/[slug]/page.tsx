@@ -21,16 +21,21 @@ export async function generateMetadata({
 
   const { title, description, date, tags } = post.meta;
   const url = `https://steadystack.dev/blog/${slug}`;
+  const pageTitle = title.includes("SteadyStack")
+    ? title
+    : title.length + 14 <= 60
+      ? `${title} | SteadyStack`
+      : title;
 
   return {
-    title: `${title} | SteadyStack Engineering`,
+    title: pageTitle,
     description,
     keywords: tags,
     alternates: { canonical: url },
     openGraph: {
       type: "article",
       url,
-      title,
+      title: pageTitle,
       description,
       siteName: "SteadyStack",
       publishedTime: date,

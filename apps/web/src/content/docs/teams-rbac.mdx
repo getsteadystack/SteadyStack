@@ -1,0 +1,101 @@
+---
+title: "Teams & RBAC"
+description: "Invite teammates, assign roles, and control who can edit monitors, view incidents, and manage billing."
+lastUpdated: "2026-09-16"
+section: "Workspace & Governance"
+order: 12
+---
+
+# Teams & RBAC
+
+SteadyStack is organized around **workspaces**. Every monitor, status page, and
+incident belongs to exactly one workspace, and every person in a workspace has
+exactly one role. Roles are enforced server-side — hiding a button in the UI is
+a courtesy, not the security boundary.
+
+## Roles
+
+| Capability | Owner | Admin | Member | Viewer |
+| --- | :-: | :-: | :-: | :-: |
+| View monitors, incidents, SLA reports | ✅ | ✅ | ✅ | ✅ |
+| Create / edit / delete monitors | ✅ | ✅ | ✅ | — |
+| Acknowledge and resolve incidents | ✅ | ✅ | ✅ | — |
+| Create / edit alert channels & rules | ✅ | ✅ | — | — |
+| Create / edit status pages | ✅ | ✅ | — | — |
+| Invite members, change roles | ✅ | ✅ | — | — |
+| Remove members | ✅ | ✅ | — | — |
+| Rename or delete the workspace | ✅ | — | — | — |
+| Manage billing and subscription | ✅ | — | — | — |
+| Delete the workspace | ✅ | — | — | — |
+
+Notes:
+
+- There is exactly **one Owner** — the person who created the workspace. The
+  Owner role cannot be granted to a second member.
+- An Owner can transfer ownership in **Settings → Team**; the transfer demotes
+  them to Admin and promotes the target member. Deleting a workspace requires
+  being the Owner, so ownership can't end up in a state where nobody can delete it.
+- Admins manage the *content* of the workspace (monitors, alerting, status
+  pages, membership). Billing and workspace-level deletion stay with the Owner.
+- Members work with monitors and incidents day-to-day. They cannot alter the
+  alerting topology, which prevents an accidental "nobody gets paged" mistake.
+- Viewers are read-only — useful for stakeholders, auditors, and on-call
+  engineers from adjacent teams.
+
+<Check>
+Changing a member's role takes effect on their next request; there is no need
+to log out and back in. Active sessions re-read role on each server action.
+</Check>
+
+## Inviting members
+
+Owners and Admins can invite people from **Settings → Team**:
+
+1. Enter the invitee's email address and pick a role for them.
+2. SteadyStack emails them an invitation link tied to that workspace and role.
+3. The invitee accepts by signing in with that email — the invitation is then
+   consumed and their membership becomes active.
+
+Invitation rules:
+
+- The email address must match the account they sign in with. An invitation
+  sent to `ops@acme.com` can't be redeemed by `ops+work@acme.com`.
+- Invitations can be revoked before acceptance (they then stop working
+  immediately) and can be re-sent.
+- Invited members count toward the workspace's seat limit on your plan.
+
+## Changing or removing members
+
+- **Change role**: Settings → Team → member row → role selector. The change
+  applies immediately.
+- **Remove member**: Settings → Team → member row → remove. Their access ends
+  immediately; monitors and incidents they created **stay** in the workspace.
+- You cannot remove or demote the workspace Owner, and you cannot remove
+  yourself if you are the Owner — transfer ownership first.
+
+## API keys
+
+API keys (Settings → API Keys) authenticate calls to the
+[REST API](/docs/api-reference) and are scoped to **the workspace they were
+created in** — they are not personal credentials:
+
+- A key can read and write everything its workspace's REST API exposes, with
+  the same role-based limits as an Admin.
+- Deleting a key revokes it immediately; requests with a deleted key fail
+  with `401`.
+- Keys are shown **once** at creation. Store them in your secret manager, not
+  in dotfiles.
+
+<Tip>
+Create one key per integration (CI, Terraform, scripts) rather than sharing a
+single key. If an integration leaks, you rotate one key without touching the
+rest.
+</Tip>
+
+## How enforcement works
+
+Every privileged server action and REST endpoint resolves your membership in
+the workspace from your session (or API key) **on the server**, then checks the
+required role before touching data. Client-side role checks only decide what
+to render. If you see a `403` from the API or a "not allowed" toast in the
+dashboard, it's the server's decision — not a UI glitch.

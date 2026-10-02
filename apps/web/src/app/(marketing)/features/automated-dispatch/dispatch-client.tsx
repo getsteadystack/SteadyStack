@@ -304,30 +304,30 @@ export function DispatchClient() {
       {/* Feature stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-12 border-t border-border/20">
         <div className="space-y-2">
-          <h3 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+          <h2 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-500" />
             Signed Webhooks
-          </h3>
+          </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
             All POST payload calls contain a custom sha256 signature header, allowing your endpoint
             to verify the integrity and origin of the request.
           </p>
         </div>
         <div className="space-y-2">
-          <h3 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+          <h2 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-500" />
             Retry Backoff
-          </h3>
+          </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Automatic retry with exponential backoff ensures delivery even during temporary network
             interruptions on third-party webhook receivers.
           </p>
         </div>
         <div className="space-y-2">
-          <h3 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
+          <h2 className="text-sm font-mono font-bold text-emerald-500 uppercase tracking-widest flex items-center gap-2">
             <CheckCircle2 className="size-4 text-emerald-500" />
             Payload Customization
-          </h3>
+          </h2>
           <p className="text-xs text-muted-foreground leading-relaxed">
             Customize JSON schemas to match your internal format requirements directly inside our
             integrations panel.

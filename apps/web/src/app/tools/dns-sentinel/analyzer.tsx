@@ -292,9 +292,9 @@ export function DNSAnalyzer() {
               <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-from)_0%,_transparent_70%)] opacity-20" />
               <div className="relative z-10 max-w-xl mx-auto space-y-6">
                 <div className="space-y-2">
-                  <h3 className="text-2xl font-black font-mono uppercase italic tracking-tighter">
+                  <h2 className="text-2xl font-black font-mono uppercase italic tracking-tighter">
                     Initialize Domain Watcher
-                  </h3>
+                  </h2>
                   <p className="text-xs text-muted-foreground font-mono uppercase tracking-widest leading-relaxed">
                     Continuous DNS monitoring. Get alerted the microsecond your MX/SPF/DMARC records
                     are tampered with or expire.

@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { toast } from "@/components/ui/sonner";
 
 import { updateUserPreferences } from "@/actions/user";
+import { LOCALES } from "@/i18n/locales";
 import { useRouter } from "next/navigation";
 
 export function RegionalForm() {
@@ -13,6 +14,7 @@ export function RegionalForm() {
   const [timezone, setTimezone] = useState("UTC");
   const [dateFormat, setDateFormat] = useState("MM/DD/YYYY");
   const [timeFormat, setTimeFormat] = useState("HH:mm");
+  const [locale, setLocale] = useState("en");
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
@@ -23,6 +25,8 @@ export function RegionalForm() {
       if (session.user.dateFormat) setDateFormat(session.user.dateFormat);
       // @ts-expect-error - additionalFields are not yet typed in client
       if (session.user.timeFormat) setTimeFormat(session.user.timeFormat);
+      // @ts-expect-error - additionalFields are not yet typed in client
+      if (session.user.locale) setLocale(session.user.locale);
     }
   }, [session]);
 
@@ -35,6 +39,7 @@ export function RegionalForm() {
         timezone,
         dateFormat,
         timeFormat,
+        locale,
       });
 
       if (!result.success) {
@@ -47,6 +52,7 @@ export function RegionalForm() {
         timezone,
         dateFormat,
         timeFormat,
+        locale,
       });
 
       toast.success("Regional settings updated");
@@ -114,6 +120,25 @@ export function RegionalForm() {
             <option value="HH:mm">24-hour (14:30)</option>
             <option value="hh:mm a">12-hour (02:30 PM)</option>
           </select>
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[10px] font-bold text-primary/70 uppercase tracking-widest font-mono">
+            Language
+          </label>
+          <select
+            value={locale}
+            onChange={(e) => setLocale(e.target.value)}
+            className="bg-black border border-primary/20 focus:border-primary/60 text-white text-sm rounded-sm p-2.5 font-mono focus:outline-none focus:ring-1 focus:ring-primary/20 transition-all appearance-none"
+          >
+            {LOCALES.map((l) => (
+              <option key={l.code} value={l.code}>
+                {l.nativeLabel} ({l.code})
+              </option>
+            ))}
+          </select>
+          <p className="text-[10px] text-muted-foreground font-mono">
+            Overrides your browser language. The /es, /ja… URL prefix always wins.
+          </p>
         </div>
       </div>
 

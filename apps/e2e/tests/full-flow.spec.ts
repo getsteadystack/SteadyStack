@@ -12,9 +12,21 @@ const MONITOR = {
   url: "https://example.com",
 };
 
+/**
+ * Critical lifecycle: signup → dashboard → create monitor → verify listing →
+ * delete via the row dropdown + confirmation dialog.
+ *
+ * Selectors are pinned to the real UI:
+ *  - Signup form (components/sign-up-form.tsx): labels "Name", "Email",
+ *    "Password"; submit button "Sign Up"; success toast + redirect to /dashboard.
+ *  - Monitor form (components/monitors/monitor-form.tsx): inputs named
+ *    "name" and "url" (labels "Friendly Name" / "Target URL / Domain");
+ *    submit "Create Monitor".
+ *  - Monitor list (components/monitors/monitor-list.tsx): row dropdown
+ *    (MoreHorizontal icon) → "Delete" menu item → dialog "Decommission
+ *    Target" → confirm button "Confirm Destruction".
+ */
 test.describe("E2E Critical Flow", () => {
-  // Cleanup user if exists (though we use unique email)
-  // We can add afterAll to clean up if we want to keep DB clean.
   test.afterAll(async () => {
     try {
       const user = await db.user.findUnique({
@@ -31,90 +43,61 @@ test.describe("E2E Critical Flow", () => {
   test("Complete Lifecycle: SignUp -> Create -> Verify -> Delete", async ({ page }) => {
     await test.step("Sign Up", async () => {
       await page.goto("/signup");
-      await expect(page).toHaveTitle(/Registration|Sign Up/i);
 
-      await page.getByLabel("Operator Identity").fill(TEST_USER.name);
-      await page.getByLabel("Email Command").fill(TEST_USER.email);
-      await page.getByLabel("Access Key").fill(TEST_USER.password);
+      // Labels are wired via htmlFor → id (field.name), so getByLabel works.
+      await page.getByLabel("Name", { exact: true }).fill(TEST_USER.name);
+      await page.getByLabel("Email", { exact: true }).fill(TEST_USER.email);
+      await page.getByLabel("Password", { exact: true }).fill(TEST_USER.password);
 
-      await page.getByRole("button", { name: /Initiate|Register/i }).click();
+      await page.getByRole("button", { name: "Sign Up" }).click();
 
-      // Expect redirect to dashboard
-      await expect(page).toHaveURL(/\/dashboard/);
-      await expect(page.getByText("Monitor Status")).toBeVisible(); // Dashboard header?
+      // Success: redirect to /dashboard (see sign-up-form onSuccess).
+      await expect(page).toHaveURL(/\/dashboard/, { timeout: 20_000 });
+      // Dashboard stats render client-side ("Active Monitors" stat card).
+      await expect(page.getByText("Active Monitors")).toBeVisible({ timeout: 20_000 });
     });
 
     await test.step("Create Monitor", async () => {
-      // Find "Create" or "New" button in header or command palette
-      // Assuming there's a visible "New Monitor" or "+" button or link
-      // Based on grep, it's in header.tsx. Let's try finding link to /new
-      const createLink = page.getByRole("link", {
-        name: /New Monitor|Create/i,
-      });
+      await page.goto("/dashboard/monitors/new");
 
-      // Fallback: direct navigation if UI button is hidden behind menu
-      if ((await createLink.count()) > 0 && (await createLink.isVisible())) {
-        await createLink.click();
-      } else {
-        await page.goto("/dashboard/monitors/new");
-      }
+      // The monitor type defaults to HTTP — no interaction needed.
+      // Form fields are plain inputs with name attributes; the labels are
+      // not wired with htmlFor, so target the inputs by name.
+      await page
+        .locator('input[name="name"]')
+        .fill(MONITOR.name);
+      await page.locator('input[name="url"]').fill(MONITOR.url);
 
-      await expect(page).toHaveURL(/\/monitors\/new/);
+      await page.getByRole("button", { name: "Create Monitor" }).click();
 
-      // Fill Monitor Form
-      // We assume standard labels "Name" and "URL" or "Target"
-      await page.getByLabel("Name", { exact: false }).fill(MONITOR.name);
-      await page.getByLabel("URL", { exact: false }).fill(MONITOR.url);
-
-      // Select Type if needed (default usually HTTP)
-
-      await page.getByRole("button", { name: /create|monitor/i }).click();
-
-      // Wait for success and redirect
-      await expect(page).toHaveURL(/\/dashboard\/monitors(\/|$)/);
+      // Success returns to the monitors list.
+      await expect(page).toHaveURL(/\/dashboard\/monitors(\/|$)/, { timeout: 20_000 });
     });
 
     await test.step("Verify Listing", async () => {
-      await page.goto("/dashboard/monitors"); // Ensure we are on list
-      await expect(page.getByText(MONITOR.name)).toBeVisible();
-      // Optionally check status badge
+      await page.goto("/dashboard/monitors");
+      await expect(page.getByText(MONITOR.name).first()).toBeVisible({ timeout: 15_000 });
     });
 
     await test.step("Delete Monitor", async () => {
-      // Navigate to monitor details
-      await page.getByText(MONITOR.name).click();
+      // Open the row's dropdown menu (trigger is the MoreHorizontal icon
+      // button inside the monitor's row). Scope by the row containing the
+      // monitor's name to avoid matching other rows.
+      const row = page.locator("tr", { hasText: MONITOR.name });
+      await row.locator("button").last().click();
 
-      // Look for "Settings" or "Delete"
-      // Assuming a "Settings" tab or button exists in the details layout
-      const settingsLink = page.getByRole("link", { name: /settings/i });
-      if (await settingsLink.isVisible()) {
-        await settingsLink.click();
-      } else if (page.url().includes("/settings")) {
-        // already there
-      } else {
-        // Try navigating directly if we can assume ID in URL
-        // Or look for delete button directly
-      }
+      await page.getByRole("menuitem", { name: "Delete" }).click();
 
-      // If we are in settings, look for Delete button
-      // It might be "Delete Monitor" in a danger zone
-      const deleteButton = page.getByRole("button", {
-        name: /delete monitor/i,
-      });
-      await expect(deleteButton).toBeVisible();
-      await deleteButton.click();
+      // Confirmation dialog: "Decommission Target" with "Confirm Destruction".
+      const dialog = page.getByRole("dialog");
+      await expect(dialog).toBeVisible();
+      await expect(dialog.getByText(MONITOR.name)).toBeVisible();
+      await dialog.getByRole("button", { name: "Confirm Destruction" }).click();
 
-      // Confirm modal
-      const confirmButton = page.getByRole("button", {
-        name: /confirm|delete|continuing/i,
-      });
-      if (await confirmButton.isVisible()) {
-        await confirmButton.click();
-      }
-
-      // Expect redirect back to list
-      await expect(page).toHaveURL(/\/dashboard\/monitors/);
-      await expect(page.getByText(MONITOR.name)).not.toBeVisible();
+      // Row disappears from the list.
+      await expect(
+        page.locator("tr", { hasText: MONITOR.name }),
+      ).toHaveCount(0, { timeout: 15_000 });
     });
   });
 });

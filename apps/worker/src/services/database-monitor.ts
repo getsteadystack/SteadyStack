@@ -75,6 +75,10 @@ export async function checkDatabase(
   if (query && dbType === "postgresql") {
     let prisma: any = null;
     try {
+      if (!/^\s*select\b/i.test(query)) {
+        throw new Error("Only SELECT queries are allowed for security reasons.");
+      }
+
       const { getPrisma } = await import("@steadystack/db");
       prisma = getPrisma(connectionUrl);
 

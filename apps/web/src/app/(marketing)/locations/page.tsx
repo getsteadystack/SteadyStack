@@ -8,6 +8,9 @@ export const metadata: Metadata = {
   title: "Every place we check from — Public Probe Locations | SteadyStack",
   description:
     "Live status of all probe regions, independent ASNs, and cryptographic CF-Worker headers to allowlist. Updated continuously with multi-ASN consensus verification.",
+  alternates: {
+    canonical: "/locations",
+  },
   openGraph: {
     title: "Every place we check from — SteadyStack",
     description:
