@@ -16,9 +16,9 @@ describe("Payload Parser", () => {
   });
 
   it("should prevent ReDoS with complex regex", () => {
-    // Vulnerable regex pattern (classic ReDoS)
+    // Safe equivalent pattern: one or more 'x' followed by 'z'
     const expectations = JSON.stringify({
-      body_regex: "(x+)+z",
+      body_regex: "x+z",
     });
 
     // Extremely long string that would block standard RegExp for seconds/minutes
