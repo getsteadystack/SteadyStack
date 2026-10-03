@@ -5,10 +5,12 @@ import { Check, Sparkles, ArrowRight, ShieldCheck, AlertCircle } from "lucide-re
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LTD_CONFIG } from "@/lib/ltd-config";
+import { useLtdStats } from "@/lib/use-ltd-stats";
 
 export default function Pricing() {
   const [billing, setBilling] = useState<"monthly" | "yearly" | "lifetime">("monthly");
-  const isSoldOut = LTD_CONFIG.isGloballySoldOut || LTD_CONFIG.claimedCount >= LTD_CONFIG.totalCap;
+  const ltdStats = useLtdStats();
+  const isSoldOut = ltdStats.isSoldOut;
 
   const plans = [
     {
@@ -26,7 +28,7 @@ export default function Pricing() {
       ctaLabel:
         billing === "lifetime"
           ? isSoldOut
-            ? "Sold Out (100/100 Claimed)"
+            ? `Sold Out (${ltdStats.claimedCount}/${ltdStats.totalCap} Claimed)`
             : "Claim $49 Founder License"
           : "Start Free",
       ctaHref:
@@ -249,7 +251,7 @@ export default function Pricing() {
               <div className="flex items-center justify-between text-xs font-mono mb-1.5">
                 <span className="text-[#868279]">Founder Batch Allocation</span>
                 <span className="font-bold text-[#23211a]">
-                  {LTD_CONFIG.claimedCount} / {LTD_CONFIG.totalCap}
+                  {ltdStats.claimedCount} / {ltdStats.totalCap}
                 </span>
               </div>
               <div className="w-full h-2 rounded-full bg-[#f4f2eb] overflow-hidden">
@@ -259,7 +261,7 @@ export default function Pricing() {
                     isSoldOut ? "bg-red-500" : "bg-[#ffd439]",
                   )}
                   style={{
-                    width: `${Math.min(100, (LTD_CONFIG.claimedCount / LTD_CONFIG.totalCap) * 100)}%`,
+                    width: `${ltdStats.percentage}%`,
                   }}
                 />
               </div>

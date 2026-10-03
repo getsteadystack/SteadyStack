@@ -20,6 +20,7 @@ import { PLANS, type PlanTier, type UsageSummary } from "@/lib/billing";
 import { toast } from "@/components/ui/sonner";
 import { syncStripeSubscriptionAction } from "@/actions/user";
 import { LTD_CONFIG } from "@/lib/ltd-config";
+import { useLtdStats } from "@/lib/use-ltd-stats";
 
 interface BillingFormProps {
   initialUsage?: UsageSummary;
@@ -44,6 +45,7 @@ const LTD_TIERS = LTD_CONFIG.tiers.map((t) => ({
 }));
 
 export function BillingForm({ initialUsage }: BillingFormProps) {
+  const ltdStats = useLtdStats();
   const searchParams = useSearchParams();
   const dealParam = searchParams.get("deal");
   const [billingCycle, setBillingCycle] = useState<"monthly" | "annual">("annual");
@@ -229,9 +231,9 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
               <Sparkles className="size-3.5 text-[#ffd439]" />
               <span>
                 Founder Lifetime Deal •{" "}
-                {LTD_CONFIG.isGloballySoldOut
+                {ltdStats.isSoldOut
                   ? "Sold Out"
-                  : `${LTD_CONFIG.claimedCount}/${LTD_CONFIG.totalCap} Claimed`}
+                  : `${ltdStats.claimedCount}/${ltdStats.totalCap} Claimed`}
               </span>
             </div>
             <h2 className="text-2xl font-bold tracking-tight text-foreground font-serif">
@@ -254,16 +256,16 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
             <button
               type="button"
               onClick={() => handleLifetimeCheckout(selectedLtdTier)}
-              disabled={loadingPlan === selectedLtdTier || LTD_CONFIG.isGloballySoldOut}
+              disabled={loadingPlan === selectedLtdTier || ltdStats.isSoldOut}
               className={`inline-flex items-center gap-2 px-6 py-2.5 rounded-xl text-xs font-bold transition-all shadow-sm cursor-pointer ${
-                LTD_CONFIG.isGloballySoldOut
+                ltdStats.isSoldOut
                   ? "bg-muted text-muted-foreground cursor-not-allowed border border-border"
                   : "bg-foreground hover:bg-foreground/90 text-background hover:scale-[1.02] active:scale-[0.98]"
               }`}
             >
               {loadingPlan === selectedLtdTier ? (
                 <Loader2 className="size-4 animate-spin" />
-              ) : LTD_CONFIG.isGloballySoldOut ? (
+              ) : ltdStats.isSoldOut ? (
                 <span>Batch Sold Out</span>
               ) : (
                 <>
@@ -345,14 +347,14 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (!LTD_CONFIG.isGloballySoldOut) {
+                    if (!ltdStats.isSoldOut) {
                       setSelectedLtdTier(tier.id);
                       handleLifetimeCheckout(tier.id);
                     }
                   }}
-                  disabled={loadingPlan === tier.id || LTD_CONFIG.isGloballySoldOut}
+                  disabled={loadingPlan === tier.id || ltdStats.isSoldOut}
                   className={`w-full py-2 px-3 rounded-xl text-xs font-semibold transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                    LTD_CONFIG.isGloballySoldOut
+                    ltdStats.isSoldOut
                       ? "bg-muted text-muted-foreground cursor-not-allowed border border-border"
                       : isSelected
                         ? "bg-foreground text-background hover:bg-foreground/90 shadow-xs"
@@ -361,7 +363,7 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
                 >
                   {loadingPlan === tier.id ? (
                     <Loader2 className="size-3.5 animate-spin" />
-                  ) : LTD_CONFIG.isGloballySoldOut ? (
+                  ) : ltdStats.isSoldOut ? (
                     "Sold Out"
                   ) : isSelected ? (
                     "Proceed with this tier"

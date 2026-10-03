@@ -16,9 +16,11 @@ import {
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LTD_CONFIG } from "@/lib/ltd-config";
+import { useLtdStats } from "@/lib/use-ltd-stats";
 
 export default function LtdSpotlight() {
   const [activeTier, setActiveTier] = useState<1 | 2 | 3>(2);
+  const ltdStats = useLtdStats();
 
   const tiers = [
     {
@@ -105,9 +107,9 @@ export default function LtdSpotlight() {
             <Sparkles className="size-3.5 text-[#ffd439]" />
             <span>
               Lifetime Deal Pricing •{" "}
-              {LTD_CONFIG.isGloballySoldOut
+              {ltdStats.isSoldOut
                 ? "Sold Out"
-                : `${LTD_CONFIG.claimedCount}/${LTD_CONFIG.totalCap} Claimed`}
+                : `${ltdStats.claimedCount}/${ltdStats.totalCap} Claimed`}
             </span>
           </div>
 
@@ -203,7 +205,7 @@ export default function LtdSpotlight() {
 
                 {/* Bottom CTA */}
                 <div className="p-7 sm:p-8 pt-0">
-                  {LTD_CONFIG.isGloballySoldOut ? (
+                  {ltdStats.isSoldOut ? (
                     <button
                       type="button"
                       disabled

@@ -22,6 +22,7 @@ import LtdSpotlight from "@/components/landing/ltd-spotlight";
 import LtdSavingsCalculator from "@/components/landing/ltd-savings-calculator";
 import LtdFaq from "@/components/landing/ltd-faq";
 import { LTD_CONFIG } from "@/lib/ltd-config";
+import { getLtdStatsAction } from "@/actions/ltd";
 
 export const dynamic = "force-dynamic";
 
@@ -42,7 +43,8 @@ export const metadata: Metadata = {
   },
 };
 
-export default function LtdPage() {
+export default async function LtdPage() {
+  const ltdStats = await getLtdStatsAction();
   const comparisonRows = [
     {
       feature: "Active Edge Endpoints",
@@ -131,9 +133,9 @@ export default function LtdPage() {
             </span>
             <span>
               Founder Cohort 1 •{" "}
-              {LTD_CONFIG.isGloballySoldOut
+              {ltdStats.isSoldOut
                 ? "Sold Out"
-                : `${LTD_CONFIG.claimedCount}/${LTD_CONFIG.totalCap} Claimed`}
+                : `${ltdStats.claimedCount}/${ltdStats.totalCap} Claimed`}
             </span>
           </div>
 
@@ -147,7 +149,7 @@ export default function LtdPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-14">
-            {LTD_CONFIG.isGloballySoldOut ? (
+            {ltdStats.isSoldOut ? (
               <button
                 type="button"
                 disabled
@@ -252,7 +254,7 @@ export default function LtdPage() {
 
             {/* Table Footer Action Row */}
             <div className="p-6 bg-[#faf8f5] border-t border-[#e8e6df] grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {LTD_CONFIG.isGloballySoldOut ? (
+              {ltdStats.isSoldOut ? (
                 <>
                   <div className="py-3 rounded-xl border border-[#e8e6df] bg-[#e8e6df] text-[#868279] font-semibold text-xs text-center cursor-not-allowed">
                     Tier 1 (Sold Out)
@@ -315,7 +317,7 @@ export default function LtdPage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5 w-full relative z-10">
-            {LTD_CONFIG.isGloballySoldOut ? (
+            {ltdStats.isSoldOut ? (
               <button
                 type="button"
                 disabled

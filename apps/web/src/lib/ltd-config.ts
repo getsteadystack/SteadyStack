@@ -19,7 +19,7 @@ export interface LtdTierConfig {
 
 export const LTD_CONFIG = {
   totalCap: 100,
-  claimedCount: 84, // Current claimed batch counter
+  claimedCount: Number.parseInt(process.env.NEXT_PUBLIC_LTD_CLAIMED_BASELINE || "0", 10),
   isGloballySoldOut: process.env.NEXT_PUBLIC_LTD_SOLD_OUT === "true" || false,
   tiers: [
     {
