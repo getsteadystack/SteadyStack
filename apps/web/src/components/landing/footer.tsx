@@ -241,6 +241,15 @@ export default function LandingFooter() {
                 Privacy Policy
               </Link>
               <Link
+                href={"/anchor-privacy" as any}
+                className="text-muted-foreground hover:text-foreground text-xs font-medium transition-colors w-fit flex items-center gap-1.5"
+              >
+                Anchor Privacy Policy
+                <span className="text-[9px] bg-primary/10 text-primary px-1.5 py-0.2 rounded font-mono font-bold">
+                  New
+                </span>
+              </Link>
+              <Link
                 href="/terms"
                 className="text-muted-foreground hover:text-foreground text-xs font-medium transition-colors w-fit"
               >
