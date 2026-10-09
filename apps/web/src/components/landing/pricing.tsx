@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, Sparkles, ArrowRight, ShieldCheck, AlertCircle } from "lucide-react";
+import { Check, Sparkles, ArrowRight, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { LTD_CONFIG } from "@/lib/ltd-config";
@@ -12,157 +12,145 @@ export default function Pricing() {
   const ltdStats = useLtdStats();
   const isSoldOut = ltdStats.isSoldOut;
 
-  const plans = [
-    {
-      id: "free",
-      tag: billing === "lifetime" ? "Lifetime Tier 1 • Starter" : "Community",
-      name: billing === "lifetime" ? "Solo Founder Lifetime" : "Starter / Free",
-      description:
-        billing === "lifetime"
-          ? "Lifetime edge monitoring for solo developers and freelancers (Maps to Starter tier)."
-          : "Essential edge monitoring for developers and small side projects.",
-      priceMonthly: 0,
-      priceYearly: 0,
-      priceLifetime: 49,
-      period: billing === "lifetime" ? "one-time payment" : "forever",
-      ctaLabel:
-        billing === "lifetime"
-          ? isSoldOut
-            ? `Sold Out (${ltdStats.claimedCount}/${ltdStats.totalCap} Claimed)`
-            : "Claim $49 Founder License"
-          : "Start Free",
-      ctaHref:
-        billing === "lifetime"
-          ? isSoldOut
-            ? "/signup?plan=pro"
-            : "/signup?deal=ltd-tier-1"
-          : "/signup",
-      highlighted: false,
-      isSoldOut: billing === "lifetime" && isSoldOut,
-      features:
-        billing === "lifetime"
-          ? [
-              "50 Endpoints included",
-              "1-minute check frequency",
-              "3 Global edge probe regions",
-              "2-of-3 Quorum consensus",
-              "2 Custom CNAME status portals",
-              "1 Team seat",
-              "Slack & Discord webhook alerts",
-              "30-day metrics retention",
-            ]
-          : [
-              "50 Endpoints included",
-              "3-minute check frequency",
-              "3 Global edge probe regions",
-              "2-of-3 Quorum consensus",
-              "SSL expiry alerts (7-day countdown)",
-              "Slack & Discord webhook alerts",
-              "30-day metrics retention",
-            ],
-    },
+  const recurringPlans = [
     {
       id: "pro",
-      tag: billing === "lifetime" ? "Lifetime Tier 2 • Pro Agency" : "Growth & Agencies",
-      name: billing === "lifetime" ? "Agency Growth Lifetime" : "Pro Agency",
+      tag: "Growth & Agencies",
+      name: "Pro Agency",
       description:
-        billing === "lifetime"
-          ? "Reliability suite with 5 white-label portals for boutique agencies (Maps to Pro Agency tier)."
-          : "Complete reliability toolkit with white-label status portals and automated SLA reports.",
+        "Complete reliability toolkit with white-label status portals, multi-region quorum consensus, and automated SLA reports.",
       priceMonthly: 29,
       priceYearly: 22,
       priceLifetime: 99,
-      period: billing === "lifetime" ? "one-time payment" : "/ month",
-      ctaLabel:
-        billing === "lifetime"
-          ? isSoldOut
-            ? "Sold Out (100/100 Claimed)"
-            : "Claim $99 Agency License"
-          : "Start 7-Day Free Trial",
-      ctaHref:
-        billing === "lifetime"
-          ? isSoldOut
-            ? "/signup?plan=pro"
-            : "/signup?deal=ltd-tier-2"
-          : "/signup?plan=pro",
-      highlighted: billing !== "lifetime",
+      period: "/ month",
+      ctaLabel: "Start 14-Day Free Trial",
+      ctaHref: "/signup?plan=pro",
+      highlighted: true,
       badge: "★ Most Popular",
-      isSoldOut: billing === "lifetime" && isSoldOut,
-      features:
-        billing === "lifetime"
-          ? [
-              "120 Endpoints included",
-              "60-second check frequency",
-              "All 7 Global edge probe regions",
-              "4-of-7 Quorum consensus verification",
-              "5 White-label client status portals",
-              "3 Team seats",
-              "Automated monthly client SLA PDFs",
-              "45-day telemetry retention",
-            ]
-          : [
-              "250 Endpoints included",
-              "30-second check frequency",
-              "All 7 Global edge probe regions",
-              "4-of-7 Quorum consensus verification",
-              "Unlimited white-label status portals",
-              "Custom CNAME domain per client",
-              "Automated monthly client SLA PDFs",
-              "PagerDuty, OpsGenie & Webhook routing",
-              "1-year high-resolution telemetry retention",
-            ],
+      isSoldOut: false,
+      features: [
+        "250 Endpoints included",
+        "30-second check frequency",
+        "All 7 Global edge probe regions",
+        "4-of-7 Quorum consensus verification",
+        "Unlimited white-label status portals",
+        "Custom CNAME domain per client",
+        "Automated monthly client SLA PDFs",
+        "PagerDuty, OpsGenie & Webhook routing",
+        "1-year high-resolution telemetry retention",
+      ],
     },
     {
       id: "enterprise",
-      tag: billing === "lifetime" ? "Lifetime Tier 3 • Scale Fleet" : "Scale",
-      name: billing === "lifetime" ? "Scale Fleet Lifetime" : "Enterprise Scale",
+      tag: "Scale",
+      name: "Enterprise Scale",
       description:
-        billing === "lifetime"
-          ? "High-capacity fleet with 15 white-label portals for scaling dev shops (Maps to Enterprise tier)."
-          : "Dedicated consensus infrastructure with custom webhook pipelines and SLA guarantees.",
+        "Dedicated consensus infrastructure with high-frequency heartbeats, custom webhook pipelines, and SLA guarantees.",
       priceMonthly: 79,
       priceYearly: 62,
       priceLifetime: 199,
-      period: billing === "lifetime" ? "one-time payment" : "/ month",
-      ctaLabel:
-        billing === "lifetime"
-          ? isSoldOut
-            ? "Sold Out (100/100 Claimed)"
-            : "Claim $199 Scale License"
-          : "Start Free Trial",
-      ctaHref:
-        billing === "lifetime"
-          ? isSoldOut
-            ? "/signup?plan=enterprise"
-            : "/signup?deal=ltd-tier-3"
-          : "/signup?plan=enterprise",
-      highlighted: billing === "lifetime",
-      badge: billing === "lifetime" ? "★ Best Value • Founder Edition" : "★ Scale Choice",
-      isSoldOut: billing === "lifetime" && isSoldOut,
-      features:
-        billing === "lifetime"
-          ? [
-              "250 Endpoints included",
-              "30-second check frequency",
-              "All 7 Global edge probe regions",
-              "4-of-7 Quorum consensus",
-              "15 White-label client status portals",
-              "5 Team seats & role permissions",
-              "Automated monthly client SLA PDFs",
-              "90-day telemetry retention",
-            ]
-          : [
-              "1,500 Endpoints included",
-              "10-second check frequency",
-              "100 White-Label Client Status Portals",
-              "50 Team Seats & Role Permissions",
-              "Automated monthly client SLA PDFs",
-              "Unlimited manual run-checks",
-              "Priority probe execution queue",
-              "1-Year Telemetry Retention",
-            ],
+      period: "/ month",
+      ctaLabel: "Start 14-Day Free Trial",
+      ctaHref: "/signup?plan=enterprise",
+      highlighted: false,
+      badge: "★ Scale Choice",
+      isSoldOut: false,
+      features: [
+        "1,500 Endpoints included",
+        "10-second check frequency",
+        "100 White-Label Client Status Portals",
+        "50 Team Seats & Role Permissions",
+        "Automated monthly client SLA PDFs",
+        "Unlimited manual run-checks",
+        "Priority probe execution queue",
+        "1-Year Telemetry Retention",
+      ],
     },
   ];
+
+  const lifetimePlans = [
+    {
+      id: "free",
+      tag: "Lifetime Tier 1 • Starter",
+      name: "Solo Founder Lifetime",
+      description:
+        "Lifetime edge monitoring for solo developers and freelancers (Maps to Starter tier).",
+      priceMonthly: 0,
+      priceYearly: 0,
+      priceLifetime: 49,
+      period: "one-time payment",
+      ctaLabel: isSoldOut
+        ? `Sold Out (${ltdStats.claimedCount}/${ltdStats.totalCap} Claimed)`
+        : "Claim $49 Founder License",
+      ctaHref: isSoldOut ? "/signup?plan=pro" : "/signup?deal=ltd-tier-1",
+      highlighted: false,
+      isSoldOut,
+      features: [
+        "50 Endpoints included",
+        "1-minute check frequency",
+        "3 Global edge probe regions",
+        "2-of-3 Quorum consensus",
+        "2 Custom CNAME status portals",
+        "1 Team seat",
+        "Slack & Discord webhook alerts",
+        "30-day metrics retention",
+      ],
+    },
+    {
+      id: "pro",
+      tag: "Lifetime Tier 2 • Pro Agency",
+      name: "Agency Growth Lifetime",
+      description:
+        "Reliability suite with 5 white-label portals for boutique agencies (Maps to Pro Agency tier).",
+      priceMonthly: 29,
+      priceYearly: 22,
+      priceLifetime: 99,
+      period: "one-time payment",
+      ctaLabel: isSoldOut ? "Sold Out (100/100 Claimed)" : "Claim $99 Agency License",
+      ctaHref: isSoldOut ? "/signup?plan=pro" : "/signup?deal=ltd-tier-2",
+      highlighted: true,
+      badge: "★ Most Popular",
+      isSoldOut,
+      features: [
+        "120 Endpoints included",
+        "60-second check frequency",
+        "All 7 Global edge probe regions",
+        "4-of-7 Quorum consensus verification",
+        "5 White-label client status portals",
+        "3 Team seats",
+        "Automated monthly client SLA PDFs",
+        "45-day telemetry retention",
+      ],
+    },
+    {
+      id: "enterprise",
+      tag: "Lifetime Tier 3 • Scale Fleet",
+      name: "Scale Fleet Lifetime",
+      description:
+        "High-capacity fleet with 15 white-label portals for scaling dev shops (Maps to Enterprise tier).",
+      priceMonthly: 79,
+      priceYearly: 62,
+      priceLifetime: 199,
+      period: "one-time payment",
+      ctaLabel: isSoldOut ? "Sold Out (100/100 Claimed)" : "Claim $199 Scale License",
+      ctaHref: isSoldOut ? "/signup?plan=enterprise" : "/signup?deal=ltd-tier-3",
+      highlighted: false,
+      badge: "★ Best Value • Founder Edition",
+      isSoldOut,
+      features: [
+        "250 Endpoints included",
+        "30-second check frequency",
+        "All 7 Global edge probe regions",
+        "4-of-7 Quorum consensus",
+        "15 White-label client status portals",
+        "5 Team seats & role permissions",
+        "Automated monthly client SLA PDFs",
+        "90-day telemetry retention",
+      ],
+    },
+  ];
+
+  const plans = billing === "lifetime" ? lifetimePlans : recurringPlans;
 
   return (
     <section
@@ -196,7 +184,7 @@ export default function Pricing() {
               ? isSoldOut
                 ? "All 100 founder licenses have been claimed. Monthly and annual agency subscription plans remain active with 7-day free trials."
                 : `Strictly capped at ${LTD_CONFIG.totalCap} licenses (${LTD_CONFIG.totalCap - LTD_CONFIG.claimedCount} remaining) before transitioning exclusively to monthly subscriptions.`
-              : "Start free with 50 monitors. Upgrade to unlock 7-region edge quorum, white-label client portals, or lock in lifetime access with no recurring bills."}
+              : "Start with a 14-day full agency trial. Unlock 7-region edge quorum, white-label client portals, or lock in lifetime access with no recurring bills."}
           </p>
 
           {/* Billing Switcher (Twin.so Style with Lifetime Option) */}
@@ -270,7 +258,14 @@ export default function Pricing() {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 items-stretch mb-16 text-left">
+        <div
+          className={cn(
+            "grid items-stretch mb-16 text-left",
+            plans.length === 2
+              ? "grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-8"
+              : "grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8",
+          )}
+        >
           {plans.map((plan) => {
             const price =
               billing === "monthly"

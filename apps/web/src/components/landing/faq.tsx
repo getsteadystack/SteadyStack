@@ -5,7 +5,7 @@ export default function FAQ() {
   const faqs = [
     {
       q: "How fast are checks performed, and are there interval limits per tier?",
-      a: `Verification checks execute natively across our global edge Durable Objects. The Free tier supports 3-minute checks for up to 50 active monitors with 3-region quorum consensus. The Pro plan supports checks down to 30 seconds across 7 global regions with 4-of-7 quorum consensus, and Enterprise Scale supports 10-second high-frequency telemetry.`,
+      a: `Verification checks execute natively across our global edge Durable Objects. Every new account starts with a 14-day free trial of our Pro Agency tier, offering checks down to 30 seconds across 7 global regions with 4-of-7 quorum consensus. Enterprise Scale supports 10-second high-frequency telemetry.`,
     },
     {
       q: "What is multi-region quorum consensus, and how does it prevent 3 AM false alarms?",
@@ -33,7 +33,7 @@ export default function FAQ() {
     },
     {
       q: "Is telemetry data encrypted, and what is your log retention policy?",
-      a: "All client configurations, webhook secrets, and telemetry logs are encrypted at rest and in transit. Raw event logs and latency metrics are retained for 30 days on Free, and up to 1 full year on Pro Agency and Enterprise Scale, with automated S3/R2 backup capabilities.",
+      a: "All client configurations, webhook secrets, and telemetry logs are encrypted at rest and in transit. Raw event logs and latency metrics are retained for 45 days on Pro Agency, and up to 1 full year on Enterprise Scale, with automated S3/R2 backup capabilities.",
     },
   ];
 

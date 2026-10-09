@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import Link from "next/navigation";
 import {
   Check,
   CreditCard,
@@ -15,6 +14,7 @@ import {
   Sparkles,
   ArrowRight,
   Gift,
+  AlertCircle,
 } from "lucide-react";
 import { PLANS, type PlanTier, type UsageSummary } from "@/lib/billing";
 import { toast } from "@/components/ui/sonner";
@@ -223,6 +223,52 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
         </div>
       )}
 
+      {/* Trial Expired Alert Banner */}
+      {usage.isTrialExpired && (
+        <div className="relative overflow-hidden rounded-2xl border border-amber-500/30 bg-amber-500/10 p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-700 dark:text-amber-400 border border-amber-500/30">
+              <AlertCircle className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-foreground">14-Day Agency Trial Ended</h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-amber-500/20 text-amber-700 dark:text-amber-300">
+                  UPGRADE REQUIRED
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Your 14-day trial has expired. Subscribe to an Agency plan below to maintain live
+                multi-region monitoring and continuous client status portals.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Grandfathered Account Banner */}
+      {usage.isGrandfathered && (
+        <div className="relative overflow-hidden rounded-2xl border border-blue-500/30 bg-blue-500/10 p-5 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-500/20 text-blue-700 dark:text-blue-400 border border-blue-500/30">
+              <ShieldCheck className="h-5 w-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-semibold text-foreground">Grandfathered Free Tier</h3>
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-semibold bg-blue-500/20 text-blue-700 dark:text-blue-300">
+                  LEGACY ACCESS PRESERVED
+                </span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                Your account is grandfathered under legacy free tier terms (50 monitors, 3-region
+                quorum). Upgrade whenever you need white-label portals or custom CNAME domains.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* FOUNDER LIFETIME DEAL SPOTLIGHT BANNER */}
       <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-6 sm:p-8 shadow-sm">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-border">
@@ -387,7 +433,7 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
               </span>
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 border border-emerald-500/30">
                 <ShieldCheck className="size-3 text-emerald-600 dark:text-emerald-400" />
-                {currentPlan.name}
+                {usage.isGrandfathered ? "Initiate (Grandfathered Free)" : currentPlan.name}
               </span>
             </div>
             <h2 className="text-xl font-bold tracking-tight text-foreground">
@@ -571,97 +617,99 @@ export function BillingForm({ initialUsage }: BillingFormProps) {
       </div>
 
       {/* Pricing Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {(Object.keys(PLANS) as PlanTier[]).map((tierKey) => {
-          const plan = PLANS[tierKey];
-          const isCurrent = usage.plan === tierKey;
-          const isProPlan = plan.id === "NETRUNNER";
-          const price = billingCycle === "annual" ? plan.annualPriceMonthly : plan.monthlyPrice;
+      <div className="grid grid-cols-1 md:grid-cols-2 max-w-4xl mx-auto gap-6">
+        {(Object.keys(PLANS) as PlanTier[])
+          .filter((tierKey) => tierKey !== "INITIATE")
+          .map((tierKey) => {
+            const plan = PLANS[tierKey];
+            const isCurrent = usage.plan === tierKey;
+            const isProPlan = plan.id === "NETRUNNER";
+            const price = billingCycle === "annual" ? plan.annualPriceMonthly : plan.monthlyPrice;
 
-          return (
-            <div
-              key={tierKey}
-              className={`relative flex flex-col justify-between rounded-2xl border p-6 transition-all duration-200 ${
-                isProPlan
-                  ? "border-2 border-foreground bg-card shadow-lg ring-1 ring-foreground/10"
-                  : isCurrent
-                    ? "border-border bg-card/70 shadow-sm"
-                    : "border-border bg-card shadow-sm hover:border-foreground/30 hover:shadow-md"
-              }`}
-            >
-              {isProPlan && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#ffd439] text-[#23211a] flex items-center gap-1.5 shadow-sm whitespace-nowrap z-10">
-                  Most Popular for Agencies
-                </div>
-              )}
+            return (
+              <div
+                key={tierKey}
+                className={`relative flex flex-col justify-between rounded-2xl border p-6 transition-all duration-200 ${
+                  isProPlan
+                    ? "border-2 border-foreground bg-card shadow-lg ring-1 ring-foreground/10"
+                    : isCurrent
+                      ? "border-border bg-card/70 shadow-sm"
+                      : "border-border bg-card shadow-sm hover:border-foreground/30 hover:shadow-md"
+                }`}
+              >
+                {isProPlan && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full text-[10px] font-mono font-bold tracking-wider uppercase bg-[#ffd439] text-[#23211a] flex items-center gap-1.5 shadow-sm whitespace-nowrap z-10">
+                    Most Popular for Agencies
+                  </div>
+                )}
 
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h4 className="text-base font-bold text-foreground">{plan.name}</h4>
-                  <p className="text-xs text-muted-foreground min-h-[32px]">{plan.description}</p>
-                </div>
+                <div className="space-y-4">
+                  <div className="space-y-1">
+                    <h4 className="text-base font-bold text-foreground">{plan.name}</h4>
+                    <p className="text-xs text-muted-foreground min-h-[32px]">{plan.description}</p>
+                  </div>
 
-                <div className="flex flex-col gap-1 py-3 border-y border-border">
-                  <div className="flex items-baseline gap-1.5">
-                    {billingCycle === "annual" && plan.monthlyPrice > 0 && (
-                      <span className="text-sm line-through text-muted-foreground font-mono">
-                        ${plan.monthlyPrice}
+                  <div className="flex flex-col gap-1 py-3 border-y border-border">
+                    <div className="flex items-baseline gap-1.5">
+                      {billingCycle === "annual" && plan.monthlyPrice > 0 && (
+                        <span className="text-sm line-through text-muted-foreground font-mono">
+                          ${plan.monthlyPrice}
+                        </span>
+                      )}
+                      <span className="text-3xl font-extrabold text-foreground">${price}</span>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        / mo {billingCycle === "annual" && price > 0 ? "(billed annually)" : ""}
+                      </span>
+                    </div>
+                    {plan.monthlyPrice === 0 && (
+                      <span className="text-[10px] text-muted-foreground font-mono font-semibold uppercase tracking-wider">
+                        Free Forever
                       </span>
                     )}
-                    <span className="text-3xl font-extrabold text-foreground">${price}</span>
-                    <span className="text-xs text-muted-foreground font-mono">
-                      / mo {billingCycle === "annual" && price > 0 ? "(billed annually)" : ""}
-                    </span>
+                    {billingCycle === "annual" && plan.monthlyPrice > 0 && (
+                      <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-semibold uppercase tracking-wider">
+                        {tierKey === "NETRUNNER"
+                          ? "Billed $348 annually — Save $120/yr"
+                          : "Billed $948 annually — Save $240/yr"}
+                      </span>
+                    )}
                   </div>
-                  {plan.monthlyPrice === 0 && (
-                    <span className="text-[10px] text-muted-foreground font-mono font-semibold uppercase tracking-wider">
-                      Free Forever
-                    </span>
-                  )}
-                  {billingCycle === "annual" && plan.monthlyPrice > 0 && (
-                    <span className="text-[10px] text-emerald-700 dark:text-emerald-400 font-mono font-semibold uppercase tracking-wider">
-                      {tierKey === "NETRUNNER"
-                        ? "Billed $348 annually — Save $120/yr"
-                        : "Billed $948 annually — Save $240/yr"}
-                    </span>
-                  )}
+
+                  <ul className="space-y-2.5 text-xs text-foreground/90">
+                    {plan.features.map((feat, idx) => (
+                      <li key={idx} className="flex items-start gap-2">
+                        <Check className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
+                        <span>{feat}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <ul className="space-y-2.5 text-xs text-foreground/90">
-                  {plan.features.map((feat, idx) => (
-                    <li key={idx} className="flex items-start gap-2">
-                      <Check className="size-4 text-emerald-600 dark:text-emerald-400 shrink-0 mt-0.5" />
-                      <span>{feat}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div className="pt-6">
+                  <button
+                    type="button"
+                    onClick={() => handleCheckout(tierKey)}
+                    disabled={isCurrent || loadingPlan === tierKey}
+                    className={`w-full py-2.5 px-4 rounded-xl font-medium text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
+                      isCurrent
+                        ? "bg-muted text-muted-foreground cursor-not-allowed border border-border"
+                        : isProPlan
+                          ? "bg-foreground hover:bg-foreground/90 text-background shadow-sm"
+                          : "bg-muted hover:bg-muted/80 text-foreground border border-border"
+                    }`}
+                  >
+                    {loadingPlan === tierKey ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : isCurrent ? (
+                      "Active Plan"
+                    ) : (
+                      `Subscribe to ${plan.name}`
+                    )}
+                  </button>
+                </div>
               </div>
-
-              <div className="pt-6">
-                <button
-                  type="button"
-                  onClick={() => handleCheckout(tierKey)}
-                  disabled={isCurrent || loadingPlan === tierKey}
-                  className={`w-full py-2.5 px-4 rounded-xl font-medium text-xs transition-all flex items-center justify-center gap-2 cursor-pointer ${
-                    isCurrent
-                      ? "bg-muted text-muted-foreground cursor-not-allowed border border-border"
-                      : isProPlan
-                        ? "bg-foreground hover:bg-foreground/90 text-background shadow-sm"
-                        : "bg-muted hover:bg-muted/80 text-foreground border border-border"
-                  }`}
-                >
-                  {loadingPlan === tierKey ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : isCurrent ? (
-                    "Active Plan"
-                  ) : (
-                    `Subscribe to ${plan.name}`
-                  )}
-                </button>
-              </div>
-            </div>
-          );
-        })}
+            );
+          })}
       </div>
 
       {/* Stripe Tax & VAT/GST Compliance Footer Badge */}

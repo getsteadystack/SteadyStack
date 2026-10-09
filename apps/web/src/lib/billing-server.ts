@@ -164,6 +164,7 @@ export async function getUserUsageSummary(userId: string): Promise<UsageSummary>
   }
 
   let isTrialActive = false;
+  let isTrialExpired = false;
   let trialDaysRemaining = 0;
 
   if (subscription?.status === "TRIALING") {
@@ -173,9 +174,17 @@ export async function getUserUsageSummary(userId: string): Promise<UsageSummary>
       if (msRemaining > 0) {
         isTrialActive = true;
         trialDaysRemaining = Math.max(1, Math.ceil(msRemaining / (1000 * 60 * 60 * 24)));
+      } else {
+        isTrialExpired = true;
       }
     }
+  } else if (subscription?.status === "EXPIRED") {
+    isTrialExpired = true;
   }
+
+  // Account is on legacy grandfathered Initiate tier if on INITIATE without an active/expired trial
+  const isGrandfathered =
+    plan === "INITIATE" && !isTrialActive && !isTrialExpired && !subscription?.isLifetime;
 
   return {
     clientsUsed: clientsCount,
@@ -192,6 +201,8 @@ export async function getUserUsageSummary(userId: string): Promise<UsageSummary>
     isApproachingLimit: warnings.length > 0,
     warnings,
     isTrialActive,
+    isTrialExpired,
+    isGrandfathered,
     trialDaysRemaining,
   };
 }

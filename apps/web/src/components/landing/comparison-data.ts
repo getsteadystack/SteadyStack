@@ -155,9 +155,9 @@ export const featureComparisons: FeatureComparisonItem[] = [
   // Pricing & Limits
   {
     category: "Pricing & Limits",
-    name: "Free tier check interval",
-    description: "Frequency of health checks on free plan",
-    steadystack: "3m (1m for first 10)",
+    name: "Entry tier check interval",
+    description: "Frequency of health checks on entry agency tier",
+    steadystack: "30s–60s",
     uptimerobot: "5 minutes",
     betteruptime: "3 minutes",
     checkly: "1 minute",
@@ -165,9 +165,9 @@ export const featureComparisons: FeatureComparisonItem[] = [
   },
   {
     category: "Pricing & Limits",
-    name: "Free monitor limit",
-    description: "Number of active targets on free plan",
-    steadystack: "50 monitors",
+    name: "Starter monitor capacity",
+    description: "Number of active targets included on entry agency tier",
+    steadystack: "250 monitors (14-day full trial)",
     uptimerobot: "50 monitors",
     betteruptime: "10 monitors",
     checkly: "10 monitors",
@@ -175,8 +175,8 @@ export const featureComparisons: FeatureComparisonItem[] = [
   },
   {
     category: "Pricing & Limits",
-    name: "Commercial use on free tier",
-    description: "Legally permitted for business and production workloads",
+    name: "Commercial agency rights",
+    description: "Legally permitted for agency client and production workloads",
     steadystack: "✓ Guaranteed in writing (stable ToS)",
     uptimerobot: "Permitted (ToS modified June 2026)",
     betteruptime: "Unstated",

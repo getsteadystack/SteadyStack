@@ -33,11 +33,14 @@ export interface PlanDetails {
   features: string[];
 }
 
+/** Active recurring subscription tiers available for self-service purchase */
+export const ACTIVE_SUBSCRIPTION_PLANS: PlanTier[] = ["NETRUNNER", "CONSTRUCT"];
+
 export const PLANS: Record<PlanTier, PlanDetails> = {
   INITIATE: {
     id: "INITIATE",
-    name: "Free",
-    description: "Essential multi-client uptime monitoring with SteadyStack status badge.",
+    name: "Free (Legacy)",
+    description: "Legacy tier for grandfathered accounts with SteadyStack status badge.",
     monthlyPrice: 0,
     annualPriceMonthly: 0,
     limits: {
@@ -337,5 +340,7 @@ export interface UsageSummary {
   isApproachingLimit: boolean;
   warnings: UsageWarning[];
   isTrialActive?: boolean;
+  isTrialExpired?: boolean;
+  isGrandfathered?: boolean;
   trialDaysRemaining?: number;
 }
