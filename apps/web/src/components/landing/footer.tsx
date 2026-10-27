@@ -5,7 +5,7 @@ export default function LandingFooter() {
     <footer className="py-16 md:py-20 border-t border-[#e8e6df] bg-[#fbfbf9] text-[#23211a] relative overflow-hidden">
       <div className="max-w-6xl mx-auto px-6 md:px-12 flex flex-col gap-16">
         {/* Main Grid Content */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-12 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-12 md:gap-8">
           {/* Col 1 - Brand */}
           <div className="flex flex-col gap-4">
             <div className="flex items-center gap-2">
@@ -228,7 +228,22 @@ export default function LandingFooter() {
             </div>
           </div>
 
-          {/* Col 5 - Legal */}
+          {/* Col 5 - Other Projects */}
+          <div className="flex flex-col gap-4">
+            <span className="text-muted-foreground/50 text-[10px] font-bold uppercase tracking-wider">
+              Other Projects
+            </span>
+            <div className="flex flex-col gap-2.5">
+              <a
+                href="/unsaid-privacy-policy.html"
+                className="text-muted-foreground hover:text-foreground text-xs font-medium transition-colors w-fit"
+              >
+                Unsaid App Privacy Policy
+              </a>
+            </div>
+          </div>
+
+          {/* Col 6 - Legal */}
           <div className="flex flex-col gap-4">
             <span className="text-muted-foreground/50 text-[10px] font-bold uppercase tracking-wider">
               Legal
